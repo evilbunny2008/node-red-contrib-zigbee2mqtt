@@ -31,7 +31,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "@evilbunny/zigbee2mqtt/in:status.no_server"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/in:status.no_server"
                 });
             }
         }
@@ -86,7 +86,7 @@ module.exports = function(RED) {
             this.status({
                 fill: "red",
                 shape: "dot",
-                text: "@evilbunny/zigbee2mqtt/in:status.no_connection"
+                text: "@evilbunny/node-red-contrib-zigbee2mqtt/in:status.no_connection"
             });
         }
 

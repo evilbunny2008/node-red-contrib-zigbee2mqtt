@@ -446,7 +446,7 @@ module.exports = function(RED) {
             let msg = opts.msg;
             let payload = null;
             let payload_all = null;
-            let text = RED._("@evilbunny/zigbee2mqtt/server:status.received");
+            let text = RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:status.received");
             let item = this.getDeviceOrGroupByKey(opts.key);
 
             if (item) {
@@ -458,7 +458,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "@evilbunny/zigbee2mqtt/server:status.no_device"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/server:status.no_device"
                 });
                 return;
             }
@@ -577,7 +577,7 @@ module.exports = function(RED) {
             let msg = opts.msg;
             let payload = {};
             let math = [];
-            let text = RED._("@evilbunny/zigbee2mqtt/server:status.received");
+            let text = RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:status.received");
 
             for (let index in node.config.device_id) {
                 let item = that.getDeviceOrGroupByKey(node.config.device_id[index]);
@@ -606,7 +606,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "@evilbunny/zigbee2mqtt/server:status.no_device"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/server:status.no_device"
                 });
                 return;
             }

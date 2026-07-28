@@ -15,15 +15,15 @@
     }
 </style>
 <script type='text/javascript'>
-    $.getScript('resources/@evilbunny/zigbee2mqtt/tokeninput/jquery.tokeninput.js');
+    $.getScript('resources/@evilbunny/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
 </script>
 
 
 
 <script type="text/x-red" data-template-name="zigbee2mqtt-eb-bridge">
-    <link rel="stylesheet" href="resources/@evilbunny/zigbee2mqtt/css/multiple-select.css" type="text/css" />
-    <link rel="stylesheet" href="resources/@evilbunny/zigbee2mqtt/css/common.css" type="text/css" />
-    <link rel="stylesheet" href="resources/@evilbunny/zigbee2mqtt/tokeninput/token-input-facebook.css" type="text/css" />
+    <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
+    <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
+    <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/tokeninput/token-input-facebook.css" type="text/css" />
 
     <div class="form-row">
         <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
@@ -190,19 +190,19 @@
             });
             node.tabs.addTab({
                 id: "node-z2m-tab-bridge",
-                label: RED._("@evilbunny/zigbee2mqtt/bridge:tabs.bridge")
+                label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:tabs.bridge")
             });
             node.tabs.addTab({
                 id: "node-z2m-tab-devices",
-                label: RED._("@evilbunny/zigbee2mqtt/bridge:tabs.devices")
+                label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:tabs.devices")
             });
             node.tabs.addTab({
                 id: "node-z2m-tab-groups",
-                label: RED._("@evilbunny/zigbee2mqtt/bridge:tabs.groups")
+                label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:tabs.groups")
             });
             node.tabs.addTab({
                 id: "node-z2m-tab-map",
-                label: RED._("@evilbunny/zigbee2mqtt/bridge:tabs.map")
+                label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:tabs.map")
             });
 
             $('#refreshBtn').on("click", function(){
@@ -229,31 +229,31 @@
                         $('#config_legacy_api')
                             .html(data.config.advanced.legacy_api
                                 ? '<b style="color:#c10000;">' +
-                                RED._("@evilbunny/zigbee2mqtt/bridge:label.turn_off_legacy_api") + '</b>'
-                                : '<b style="color:green;">' + RED._("@evilbunny/zigbee2mqtt/bridge:label.ok") +
+                                RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.turn_off_legacy_api") + '</b>'
+                                : '<b style="color:green;">' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.ok") +
                                 '</b>');
                         $('#config_advanced_output')
                             .html(data.config.advanced.output !== 'json'
                                 ? '<b style="color:#c10000;">' +
-                                RED._("@evilbunny/zigbee2mqtt/bridge:label.should_be_json") + '</b>'
-                                : '<b style="color:green;">' + RED._("@evilbunny/zigbee2mqtt/bridge:label.ok") +
+                                RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.should_be_json") + '</b>'
+                                : '<b style="color:green;">' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.ok") +
                                 '</b>');
-                        // $('#config_last_seen').html(data.config.advanced.last_seen!=='disabled'?'<b style="color:green;">'+RED._("@evilbunny/zigbee2mqtt/bridge:label.ok")+'</b> ' + data.config.advanced.last_seen:'<b>'+RED._("@evilbunny/zigbee2mqtt/bridge:label.disabled")+'</b>');
+                        // $('#config_last_seen').html(data.config.advanced.last_seen!=='disabled'?'<b style="color:green;">'+RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.ok")+'</b> ' + data.config.advanced.last_seen:'<b>'+RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.disabled")+'</b>');
                         $('#config_availability')
                             .html(data.availability !== false ? '<b style="color:green;">' +
-                                RED._("@evilbunny/zigbee2mqtt/bridge:label.ok") + '</b>' : '<b>' +
-                                RED._("@evilbunny/zigbee2mqtt/bridge:label.disabled") + '</b>');
+                                RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.ok") + '</b>' : '<b>' +
+                                RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.disabled") + '</b>');
                         $('#config_restart_required')
                             .html(data.restart_required
                                 ? '<b style="color:#c10000;">' +
-                                RED._("@evilbunny/zigbee2mqtt/bridge:label.restart_needed") + '</b>'
-                                : '<b style="color:green;">' + RED._("@evilbunny/zigbee2mqtt/bridge:label.ok") +
+                                RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.restart_needed") + '</b>'
+                                : '<b style="color:green;">' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.ok") +
                                 '</b>');
                         $('#config_mqtt_disable_retain')
                             .html(data.config.mqtt.force_disable_retain
                                 ? '<b style="color:#c10000;">' +
-                                RED._("@evilbunny/zigbee2mqtt/bridge:label.retain_disabled_error") + '</b>'
-                                : '<b style="color:green;">' + RED._("@evilbunny/zigbee2mqtt/bridge:label.ok") +
+                                RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.retain_disabled_error") + '</b>'
+                                : '<b style="color:green;">' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.ok") +
                                 '</b>');
 
                         $('.log_level_btn').each(function() {
@@ -276,7 +276,7 @@
 
                 //restart
                 $('#restart_btn').off('click').on('click', function () {
-                    if (confirm(RED._("@evilbunny/zigbee2mqtt/bridge:label.sure_restart"))) {
+                    if (confirm(RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:label.sure_restart"))) {
                         $.getJSON('/zigbee2mqtt-eb/restart', {
                             controllerID: node.server
                         });
@@ -331,14 +331,14 @@
                     var $btn = $(this);
                     $('#z2m_map_img').html('');
                     $btn.find('.fa-refresh').addClass('fa-spin');
-                    $btn.find('span').text(RED._("@evilbunny/zigbee2mqtt/bridge:map.loading"));
+                    $btn.find('span').text(RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:map.loading"));
                     $('#z2m_map_fullscreen_btn').hide();
                     $.getJSON('/zigbee2mqtt-eb/refreshMap', {
                         controllerID: node.server,
                         engine: $('#node-input-engine').val()
                     }).done(function (data, textStatus, jqXHR) {
                         $btn.find('.fa-refresh').removeClass('fa-spin');
-                        $btn.find('span').text(RED._("@evilbunny/zigbee2mqtt/bridge:map.refresh"));
+                        $btn.find('span').text(RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:map.refresh"));
                         $('#z2m_map_fullscreen_btn').show();
                         $('#z2m_map_img').html(data.svg).find('svg').attr('width','100%').attr('height','100%');
                     });
@@ -375,7 +375,7 @@
                           var input = '<input class="node-input-devices-friendly_name" type="text" value="' + device.friendly_name + '">';
                           var info = '<div class="device_wr"><span><b>' + device.ieee_address + '</b>: ' + device.definition.model + '</span></div>';
                           var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="' + device.ieee_address + '"><i class="fa fa-remove"></i></a>'
-                          var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-ieee_address="' + device.ieee_address + '"><i class="fa fa-check"></i>&nbsp;' + RED._("@evilbunny/zigbee2mqtt/bridge:devices.set") + '</a>'
+                          var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-ieee_address="' + device.ieee_address + '"><i class="fa fa-check"></i>&nbsp;' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:devices.set") + '</a>'
 
                           $('#node-z2m-devices_table tbody').append('<tr><td>' + input + '</td><td>' + info + '</td><td>' + saveBtn + '</td><td>' + removeBtn + '</td><</tr>');
                         });
@@ -393,7 +393,7 @@
                             });
                         });
                         $('#node-z2m-devices_table .red-ui-item-remove').on('click', function () {
-                            if (confirm(RED._("@evilbunny/zigbee2mqtt/bridge:devices.sure_remove"))) {
+                            if (confirm(RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:devices.sure_remove"))) {
                                 var id = $(this).attr('data-id');
                                 $(this).closest('tr').remove();
 
@@ -415,7 +415,7 @@
 
                             // var info = '<div class="device_wr"><span><b>'+device.ieee_address+'</b>: '+device.modelID+'</span><div class="help-tips">'+device.description+'</div></div>';
                             var removeBtn = '<a href="#" class="red-ui-item-remove red-ui-button" data-id="' + group.id + '"><i class="fa fa-remove"></i></a>'
-                            var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-id="' + group.id + '"><i class="fa fa-check"></i>&nbsp;' + RED._("@evilbunny/zigbee2mqtt/bridge:groups.set") + '</a>'
+                            var saveBtn = '<a href="#" class="red-ui-item-save red-ui-button" data-id="' + group.id + '"><i class="fa fa-check"></i>&nbsp;' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:groups.set") + '</a>'
 
                             $('#node-z2m-groups_table tbody').append('<tr class="group_row_' + group.id + '"><td>' + input + '</td><td>' + saveBtn + '</td><td>' + removeBtn + '</td></tr><tr class="group_row_' + group.id + '"><td colspan="4" style="padding-bottom:25px;"><input type="hidden" data-group_id="' + group.id + '" id="tokeninput_'+group.id+'" class="tokeninput"/></td></tr>');
 
@@ -434,9 +434,9 @@
                                 theme:'facebook',
                                 prePopulate:tokeninputArrPrePopulate,
                                 processPrePopulate:true,
-                                hintText:RED._("@evilbunny/zigbee2mqtt/bridge:tokeninput.type_to_search"),
-                                noResultsText:RED._("@evilbunny/zigbee2mqtt/bridge:tokeninput.no_results"),
-                                searchingText:RED._("@evilbunny/zigbee2mqtt/bridge:tokeninput.searching"),
+                                hintText:RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:tokeninput.type_to_search"),
+                                noResultsText:RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:tokeninput.no_results"),
+                                searchingText:RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:tokeninput.searching"),
                                 deleteText:'&times;',
                                 animateDropdown:true,
                                 resultsFormatter:function (item) {
@@ -483,7 +483,7 @@
                             });
                         });
                         $('#node-z2m-groups_table .red-ui-item-remove').on('click', function () {
-                            if (confirm(RED._("@evilbunny/zigbee2mqtt/bridge:groups.sure_remove"))) {
+                            if (confirm(RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:groups.sure_remove"))) {
                                 var id = $(this).attr('data-id');
                                 $('.group_row_' + id).remove();
 
@@ -496,7 +496,7 @@
                             }
                         });
                         $('#node-z2m-tab-groups .red-ui-item-add').on('click', function () {
-                            var name = prompt(RED._("@evilbunny/zigbee2mqtt/bridge:groups.enter_group_name"), "");
+                            var name = prompt(RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:groups.enter_group_name"), "");
                             if (name) {
                                 $.getJSON('/zigbee2mqtt-eb/addGroup', {
                                     controllerID: node.server,
