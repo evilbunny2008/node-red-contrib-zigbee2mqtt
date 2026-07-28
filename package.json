@@ -1,11 +1,11 @@
 {
   "author": {
-    "name": "Andrey Popov",
-    "email": "andrey_popov@me.com"
+    "name": "evilbunny2008",
+    "email": "34211365+evilbunny2008@users.noreply.github.com"
   },
   "name": "@evilbunny/node-red-contrib-zigbee2mqtt",
   "description": "Fork of Zigbee2mqtt connectivity nodes for node-red",
-  "version": "3.1.6",
+  "version": "3.2.6",
   "publishConfig": {
     "access": "public"
   },
@@ -33,14 +33,14 @@
     }
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=22.9.0"
   },
-  "homepage": "https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb",
+  "homepage": "https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb.git"
+    "url": "git+https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt.git"
   },
   "bugs": {
-    "url": "https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/issues"
+    "url": "https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt/issues"
   }
 }
