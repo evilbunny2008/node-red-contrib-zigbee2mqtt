@@ -162,4 +162,15 @@ module.exports = function(RED) {
             res.status(404).end();
         }
     });
+
+    // This file exists purely to register the httpAdmin routes above (used by the
+    // editor's device/group pickers). It has no runtime behaviour of its own, but is
+    // registered as a real (invisible) node so that node-red-dev/other node package
+    // validators can parse it like any other node file.
+    function Zigbee2mqttApiNode(config) {
+        RED.nodes.createNode(this, config);
+    }
+    RED.nodes.registerType('zigbee2mqtt-eb-api', Zigbee2mqttApiNode, {
+        category: '' // empty category keeps it out of the palette
+    });
 }

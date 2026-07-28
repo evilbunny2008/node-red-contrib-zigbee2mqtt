@@ -1,4 +1,16 @@
+<script type="text/x-red" data-template-name="zigbee2mqtt-eb-api" data-hidden="true">
+</script>
+
 <script type='text/javascript'>
+    // This node has no editable properties and is never shown in the palette;
+    // it exists only so the runtime side (api.js) can register its httpAdmin
+    // routes as a normal, parseable node module.
+    RED.nodes.registerType('zigbee2mqtt-eb-api', {
+        category: '',
+        defaults: {},
+        label: function () { return 'zigbee2mqtt-eb-api'; }
+    });
+
     $.getScript('resources/@evilbunny/zigbee2mqtt/js/multiple-select.min.js');
     $.getScript('resources/@evilbunny/zigbee2mqtt/js/zigbee2mqtt-helpers.js');
 </script>
