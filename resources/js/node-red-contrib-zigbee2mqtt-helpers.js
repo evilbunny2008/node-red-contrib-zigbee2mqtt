@@ -186,6 +186,7 @@ class Zigbee2MqttEditor {
             });
         }
         that.getDevicePropertyInput().multipleSelect('enable');
+        that.getDevicePropertyInput().multipleSelect('refresh'); // sync internal data model with the option elements just appended
 
         // restore previously-selected properties (supports legacy single-string values too)
         let selected = that.property;
@@ -201,8 +202,6 @@ class Zigbee2MqttEditor {
         });
         that.property = selected;
         that.getDevicePropertyInput().multipleSelect('setSelects', selected);
-
-        that.getDevicePropertyInput().multipleSelect('refresh');
     }
 
     buildLabel(name, property, unit) {
