@@ -499,12 +499,12 @@ module.exports = function(RED) {
                     return;
                 }
 
+                // always output an object keyed by property name, even for a single
+                // selected property, so payload.<property> works consistently regardless of count
+                payload = collected;
                 if (stateList.length === 1) {
-                    // preserve existing behaviour: a single selected property outputs its raw value
-                    payload = text = collected[stateList[0]];
+                    text = collected[stateList[0]];
                 } else {
-                    // multiple selected properties: output an object containing just those keys
-                    payload = collected;
                     useProperty = null; // unit-suffix below only makes sense for a single property
                 }
             } else {
