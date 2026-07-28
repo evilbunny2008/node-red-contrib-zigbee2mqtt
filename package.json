@@ -5,7 +5,7 @@
   },
   "name": "@evilbunny/zigbee2mqtt",
   "description": "Fork of Zigbee2mqtt connectivity nodes for node-red",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "publishConfig": {
     "access": "public"
   },
