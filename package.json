@@ -5,7 +5,7 @@
   },
   "name": "node-red-contrib-zigbee2mqtt-eb",
   "description": "Fork of Zigbee2mqtt connectivity nodes for node-red",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "dependencies": {
     "@viz-js/viz": "^3.28.0",
     "jquery": "^4.0.0",
