@@ -20,6 +20,7 @@ module.exports = function(RED) {
                     node.server.nodeSend(node, {
                         'msg': message_in,
                         'key': key,
+                        'state': node.config.state,
                     });
                 });
 
