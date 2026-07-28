@@ -35,12 +35,12 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "homepage": "https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb",
+  "homepage": "https://github.com/evilbunny2008/zigbee2mqtt",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb.git"
+    "url": "git+https://github.com/evilbunny2008/zigbee2mqtt.git"
   },
   "bugs": {
-    "url": "https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/issues"
+    "url": "https://github.com/evilbunny2008/zigbee2mqtt/issues"
   }
 }

@@ -3,18 +3,18 @@ This was forked from [andreypopov/node-red-contrib-zigbee2mqtt](https://github.c
 
 I've made other improvements, such as more state options to support ZigBee devices I own. [I submitted a PR](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/154) for the changes but given all the unmerged PRs, I don't expect my PR will be merged.
 
-# node-red-contrib-zigbee2mqtt-eb
+# zigbee2mqtt
 [![platform](https://img.shields.io/badge/platform-Node--RED-red?logo=nodered)](https://nodered.org)
-[![Min Node Version](https://img.shields.io/node/v/node-red-contrib-zigbee2mqtt-eb.svg)](https://nodejs.org/en/)
-[![GitHub version](https://img.shields.io/github/package-json/v/evilbunny2008/node-red-contrib-zigbee2mqtt-eb?logo=npm)](https://www.npmjs.com/package/node-red-contrib-zigbee2mqtt-eb)
-[![GitHub stars](https://img.shields.io/github/stars/evilbunny2008/node-red-contrib-zigbee2mqtt-eb)](https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/stargazers)
-[![Package Quality](https://packagequality.com/shield/node-red-contrib-zigbee2mqtt-eb.svg)](https://packagequality.com/#?package=node-red-contrib-zigbee2mqtt-eb)
+[![Min Node Version](https://img.shields.io/node/v/zigbee2mqtt.svg)](https://nodejs.org/en/)
+[![GitHub version](https://img.shields.io/github/package-json/v/evilbunny2008/zigbee2mqtt?logo=npm)](https://www.npmjs.com/package/zigbee2mqtt)
+[![GitHub stars](https://img.shields.io/github/stars/evilbunny2008/zigbee2mqtt)](https://github.com/evilbunny2008/zigbee2mqtt/stargazers)
+[![Package Quality](https://packagequality.com/shield/zigbee2mqtt.svg)](https://packagequality.com/#?package=zigbee2mqtt)
 
-[![issues](https://img.shields.io/github/issues/evilbunny2008/node-red-contrib-zigbee2mqtt-eb?logo=github)](https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/issues)
-![GitHub last commit](https://img.shields.io/github/last-commit/evilbunny2008/node-red-contrib-zigbee2mqtt-eb)
-![NPM Total Downloads](https://img.shields.io/npm/dt/node-red-contrib-zigbee2mqtt-eb.svg)
-![NPM Downloads per month](https://img.shields.io/npm/dm/node-red-contrib-zigbee2mqtt-eb)
-![Repo size](https://img.shields.io/github/repo-size/evilbunny2008/node-red-contrib-zigbee2mqtt-eb)
+[![issues](https://img.shields.io/github/issues/evilbunny2008/zigbee2mqtt?logo=github)](https://github.com/evilbunny2008/zigbee2mqtt/issues)
+![GitHub last commit](https://img.shields.io/github/last-commit/evilbunny2008/zigbee2mqtt)
+![NPM Total Downloads](https://img.shields.io/npm/dt/zigbee2mqtt.svg)
+![NPM Downloads per month](https://img.shields.io/npm/dm/zigbee2mqtt)
+![Repo size](https://img.shields.io/github/repo-size/evilbunny2008/zigbee2mqtt)
 
 Node-Red Nodes for Zigbee2mqtt connectivity.
 
@@ -36,7 +36,7 @@ Next edit the settings.js to match your server
 
 Finally install this module
 ```
-npm install node-red-contrib-zigbee2mqtt-eb
+npm install @evilbunny/zigbee2mqtt
 ```
 and then you can start Node Red by doing
 ```
@@ -54,11 +54,11 @@ Extra features:
 * groups support
 * network map generation
 
-<img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/blob/main/readme/1.png?raw=true">
-<img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/blob/main/readme/2.png?raw=true">
-<img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/blob/main/readme/3.png?raw=true">
-<img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/blob/main/readme/4.png?raw=true">
-<img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt-eb/blob/main/readme/5.png?raw=true">
+<img src="https://github.com/evilbunny2008/zigbee2mqtt/blob/main/readme/1.png?raw=true">
+<img src="https://github.com/evilbunny2008/zigbee2mqtt/blob/main/readme/2.png?raw=true">
+<img src="https://github.com/evilbunny2008/zigbee2mqtt/blob/main/readme/3.png?raw=true">
+<img src="https://github.com/evilbunny2008/zigbee2mqtt/blob/main/readme/4.png?raw=true">
+<img src="https://github.com/evilbunny2008/zigbee2mqtt/blob/main/readme/5.png?raw=true">
 
 # Support
 Developing and supporting this plugin needs time and efforts. Appreciate your support on [Patreon](https://www.patreon.com/bePatron?u=12661781). Here, you can sign up to be a member and help support my project.
