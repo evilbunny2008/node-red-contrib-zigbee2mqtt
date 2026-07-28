@@ -464,18 +464,48 @@ module.exports = function(RED) {
             }
 
             let useProperty = null;
-            if (node.config.state && node.config.state !== '0') {
-                if (item.homekit && node.config.state.split("homekit_").join('') in item.homekit) {
-                    payload = item.homekit[node.config.state.split("homekit_").join('')];
-                    useProperty = node.config.state.split("homekit_").join('');
-                } else if (payload_all && node.config.state in payload_all) {
-                    payload = text = payload_all[node.config.state];
-                    useProperty = node.config.state;
-                } else {
-                    //state was not found in payload (button case)
+            // normalize config.state: supports the new array format, and legacy single-string configs
+            let stateList = node.config.state;
+            if (typeof stateList === 'string') {
+                stateList = (stateList && stateList !== '0') ? [stateList] : [];
+            }
+            if (!Array.isArray(stateList)) {
+                stateList = [];
+            }
+
+            if (stateList.length) {
+                let collected = {};
+                let foundAny = false;
+
+                for (let prop of stateList) {
+                    let homekitKey = prop.split("homekit_").join('');
+                    if (item.homekit && homekitKey in item.homekit) {
+                        collected[prop] = item.homekit[homekitKey];
+                        useProperty = homekitKey;
+                        foundAny = true;
+                    } else if (payload_all && prop in payload_all) {
+                        collected[prop] = payload_all[prop];
+                        useProperty = prop;
+                        foundAny = true;
+                    }
+                    // if a requested property isn't present on this message, it's just skipped
+                    // (e.g. a button event won't carry every sensor property)
+                }
+
+                if (!foundAny) {
+                    //none of the requested properties were found in payload (button case)
                     //payload: { last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
                     //payload: { action: 'single', last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
                     return;
+                }
+
+                if (stateList.length === 1) {
+                    // preserve existing behaviour: a single selected property outputs its raw value
+                    payload = text = collected[stateList[0]];
+                } else {
+                    // multiple selected properties: output an object containing just those keys
+                    payload = collected;
+                    useProperty = null; // unit-suffix below only makes sense for a single property
                 }
             } else {
                 payload = payload_all;
