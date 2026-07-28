@@ -38,7 +38,7 @@ module.exports = function(RED) {
             node.mqtt = node.connectMQTT();
             if (node.mqtt) {
                 node.mqtt.on('connect', () => this.onMQTTConnect());
-                node.mqtt.on('message', (topic, message) => this.onMQTTMessage(topic, message));
+                node.mqtt.on('message', (topic, message) => this.onMQTTMessage(topic, message, packet));
  
                 node.mqtt.on('close', () => this.onMQTTClose());
                 node.mqtt.on('end', () => this.onMQTTEnd());
@@ -708,7 +708,8 @@ module.exports = function(RED) {
                 'node_send':true,
                 'key':node.config.device_id,
                 'msg': {},
-                'filter': false //skip the same payload, send only changes
+                'filter': false, //skip the same payload, send only changes
+                'retained': false //replayed from the broker's retained store, not a live event
             }, opts);
 
             let msg = opts.msg;
@@ -807,14 +808,12 @@ module.exports = function(RED) {
                 } catch (e) {}
             }
 
-            if ('firstMsg' in node && node.firstMsg) {
-                node.firstMsg = false;
-
-                if (opts.node_send && 'outputAtStartup' in node.config && !node.config.outputAtStartup) {
-                    // console.log('Skipped first value');
-                    node.last_value = payload;
-                    return;
-                }
+            if (opts.retained && opts.node_send
+                && 'outputAtStartup' in node.config && !node.config.outputAtStartup) {
+                // Retained message replayed by the broker on (re)connect - not a live event.
+                // Seed last_value so change-filtering still works, but do not emit.
+                node.last_value = payload;
+                return;
             }
 
             if (opts.filter) {
@@ -886,7 +885,8 @@ module.exports = function(RED) {
                 'key':node.config.device_id,
                 'msg': {},
                 'changed': null,
-                'filter': false //skip the same payload, send only changes
+                'filter': false, //skip the same payload, send only changes
+                'retained': false //replayed from the broker's retained store, not a live event
             }, opts);
 
             let msg = opts.msg;
@@ -926,14 +926,12 @@ module.exports = function(RED) {
                 return;
             }
 
-            if ('firstMsg' in node && node.firstMsg) {
-                node.firstMsg = false;
-
-                if (opts.node_send && 'outputAtStartup' in node.config && !node.config.outputAtStartup) {
-                    // console.log('Skipped first value');
-                    node.last_value = payload;
-                    return;
-                }
+            if (opts.retained && opts.node_send
+                && 'outputAtStartup' in node.config && !node.config.outputAtStartup) {
+                // Retained message replayed by the broker on (re)connect - not a live event.
+                // Seed last_value so change-filtering still works, but do not emit.
+                node.last_value = payload;
+                return;
             }
             //
             // if (opts.filter) {
@@ -1028,7 +1026,7 @@ module.exports = function(RED) {
             node.log('MQTT Close');
         }
 
-        onMQTTMessage(topic, message) {
+        onMQTTMessage(topic, message, packet) {
             var node = this;
             var messageString = message.toString();
             
@@ -1187,7 +1185,8 @@ module.exports = function(RED) {
                 node.emit('onMQTTMessage', {
                     topic: topic,
                     payload: payload,
-                    item: node.getDeviceOrGroupByKey(topic)
+                    item: node.getDeviceOrGroupByKey(topic),
+                    retained: !!(packet && packet.retain)
                 });
 
             }
