@@ -148,10 +148,9 @@ class Zigbee2MqttEditor {
             numberDisplayed: 1,
             dropWidth: 320,
             width: 320,
-            single: !(typeof $(this).attr('multiple') !== typeof undefined && $(this).attr('multiple') !== false)
+            single: false, // always allow selecting multiple attributes; no selection = complete payload
+            placeholder: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.complete_payload")
         }).multipleSelect('disable');
-
-        that.getDevicePropertyInput().html('<option value="0">'+ RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.complete_payload")+'</option>');
 
         let html = '';
         let device = that.getDevice();
@@ -187,11 +186,22 @@ class Zigbee2MqttEditor {
             });
         }
         that.getDevicePropertyInput().multipleSelect('enable');
-        if (that.getDevicePropertyInput().find('option[value='+that.property+']').length) {
-            that.getDevicePropertyInput().val(that.property);
-        } else {
-            that.getDevicePropertyInput().val(that.getDevicePropertyInput().find('option').eq(0).attr('value'));
+
+        // restore previously-selected properties (supports legacy single-string values too)
+        let selected = that.property;
+        if (typeof selected === 'string') {
+            selected = selected && selected !== '0' ? [selected] : [];
         }
+        if (!Array.isArray(selected)) {
+            selected = [];
+        }
+        // drop any selections that no longer exist as options for this device
+        selected = selected.filter(function(value) {
+            return that.getDevicePropertyInput().find('option[value="' + value + '"]').length > 0;
+        });
+        that.property = selected;
+        that.getDevicePropertyInput().multipleSelect('setSelects', selected);
+
         that.getDevicePropertyInput().multipleSelect('refresh');
     }
 
