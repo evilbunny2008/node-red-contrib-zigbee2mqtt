@@ -5,15 +5,15 @@ I've made other improvements, such as more state options to support ZigBee devic
 
 # @evilbunny/node-red-contrib-zigbee2mqtt
 [![platform](https://img.shields.io/badge/platform-Node--RED-red?logo=nodered)](https://nodered.org)
-[![Min Node Version](https://img.shields.io/node/v/node-red-contrib-zigbee2mqtt.svg)](https://nodejs.org/en/)
+[![Min Node Version](https://img.shields.io/node/v/@evilbunny/node-red-contrib-zigbee2mqtt.svg)](https://nodejs.org/en/)
 [![GitHub version](https://img.shields.io/github/package-json/v/evilbunny2008/node-red-contrib-zigbee2mqtt?logo=npm)](https://www.npmjs.com/package/node-red-contrib-zigbee2mqtt)
 [![GitHub stars](https://img.shields.io/github/stars/evilbunny2008/node-red-contrib-zigbee2mqtt)](https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt/stargazers)
-[![Package Quality](https://packagequality.com/shield/node-red-contrib-zigbee2mqtt.svg)](https://packagequality.com/#?package=node-red-contrib-zigbee2mqtt)
+[![Package Quality](https://packagequality.com/shield/@evilbunny/node-red-contrib-zigbee2mqtt.svg)](https://packagequality.com/#?package=node-red-contrib-zigbee2mqtt)
 
 [![issues](https://img.shields.io/github/issues/evilbunny2008/node-red-contrib-zigbee2mqtt?logo=github)](https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt/issues)
 ![GitHub last commit](https://img.shields.io/github/last-commit/evilbunny2008/node-red-contrib-zigbee2mqtt)
-![NPM Total Downloads](https://img.shields.io/npm/dt/node-red-contrib-zigbee2mqtt.svg)
-![NPM Downloads per month](https://img.shields.io/npm/dm/node-red-contrib-zigbee2mqtt)
+![NPM Total Downloads](https://img.shields.io/npm/dt/@evilbunny/node-red-contrib-zigbee2mqtt.svg)
+![NPM Downloads per month](https://img.shields.io/npm/dm/@evilbunny/node-red-contrib-zigbee2mqtt)
 ![Repo size](https://img.shields.io/github/repo-size/evilbunny2008/node-red-contrib-zigbee2mqtt)
 
 Node-Red Nodes for Zigbee2mqtt connectivity.
