@@ -3,9 +3,12 @@
     "name": "Andrey Popov",
     "email": "andrey_popov@me.com"
   },
-  "name": "node-red-contrib-zigbee2mqtt-eb",
+  "name": "@evilbunny/zigbee2mqtt",
   "description": "Fork of Zigbee2mqtt connectivity nodes for node-red",
   "version": "3.1.6",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@viz-js/viz": "^3.28.0",
     "jquery": "^4.0.0",

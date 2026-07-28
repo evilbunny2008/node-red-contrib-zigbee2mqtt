@@ -446,7 +446,7 @@ module.exports = function(RED) {
             let msg = opts.msg;
             let payload = null;
             let payload_all = null;
-            let text = RED._("node-red-contrib-zigbee2mqtt-eb/server:status.received");
+            let text = RED._("@evilbunny/zigbee2mqtt/server:status.received");
             let item = this.getDeviceOrGroupByKey(opts.key);
 
             if (item) {
@@ -458,54 +458,24 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "node-red-contrib-zigbee2mqtt-eb/server:status.no_device"
+                    text: "@evilbunny/zigbee2mqtt/server:status.no_device"
                 });
                 return;
             }
 
             let useProperty = null;
-            // normalize config.state: supports the new array format, and legacy single-string configs
-            let stateList = node.config.state;
-            if (typeof stateList === 'string') {
-                stateList = (stateList && stateList !== '0') ? [stateList] : [];
-            }
-            if (!Array.isArray(stateList)) {
-                stateList = [];
-            }
-
-            if (stateList.length) {
-                let collected = {};
-                let foundAny = false;
-
-                for (let prop of stateList) {
-                    let homekitKey = prop.split("homekit_").join('');
-                    if (item.homekit && homekitKey in item.homekit) {
-                        collected[prop] = item.homekit[homekitKey];
-                        useProperty = homekitKey;
-                        foundAny = true;
-                    } else if (payload_all && prop in payload_all) {
-                        collected[prop] = payload_all[prop];
-                        useProperty = prop;
-                        foundAny = true;
-                    }
-                    // if a requested property isn't present on this message, it's just skipped
-                    // (e.g. a button event won't carry every sensor property)
-                }
-
-                if (!foundAny) {
-                    //none of the requested properties were found in payload (button case)
+            if (node.config.state && node.config.state !== '0') {
+                if (item.homekit && node.config.state.split("homekit_").join('') in item.homekit) {
+                    payload = item.homekit[node.config.state.split("homekit_").join('')];
+                    useProperty = node.config.state.split("homekit_").join('');
+                } else if (payload_all && node.config.state in payload_all) {
+                    payload = text = payload_all[node.config.state];
+                    useProperty = node.config.state;
+                } else {
+                    //state was not found in payload (button case)
                     //payload: { last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
                     //payload: { action: 'single', last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
                     return;
-                }
-
-                if (stateList.length === 1) {
-                    // preserve existing behaviour: a single selected property outputs its raw value
-                    payload = text = collected[stateList[0]];
-                } else {
-                    // multiple selected properties: output an object containing just those keys
-                    payload = collected;
-                    useProperty = null; // unit-suffix below only makes sense for a single property
                 }
             } else {
                 payload = payload_all;
@@ -607,7 +577,7 @@ module.exports = function(RED) {
             let msg = opts.msg;
             let payload = {};
             let math = [];
-            let text = RED._("node-red-contrib-zigbee2mqtt-eb/server:status.received");
+            let text = RED._("@evilbunny/zigbee2mqtt/server:status.received");
 
             for (let index in node.config.device_id) {
                 let item = that.getDeviceOrGroupByKey(node.config.device_id[index]);
@@ -636,7 +606,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "node-red-contrib-zigbee2mqtt-eb/server:status.no_device"
+                    text: "@evilbunny/zigbee2mqtt/server:status.no_device"
                 });
                 return;
             }
