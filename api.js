@@ -171,6 +171,6 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
     }
     RED.nodes.registerType('zigbee2mqtt-eb-api', Zigbee2mqttApiNode, {
-        category: '' // empty category keeps it out of the palette
+        category: 'config' // config-type nodes are automatically excluded from the palette
     });
 }
