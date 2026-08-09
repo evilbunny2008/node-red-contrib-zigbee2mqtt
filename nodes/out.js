@@ -13,7 +13,18 @@ module.exports = function(RED) {
             if (node.server) {
                 node.status({}); //clean
 
-                node.on('input', function(message) {
+                node.on('input', function(message, send, done) {
+                    // for Node-RED < 1.0 compatibility
+                    send = send || function() { node.send.apply(node, arguments); };
+                    done = done || function(err) { if (err) { node.error(err, message); } };
+
+                    function sendResult(success, err) {
+                        let result = RED.util.cloneMessage(message);
+                        result.payload = success;
+                        send(result);
+                        done(err);
+                    }
+
                     clearTimeout(node.cleanTimer);
 
                     let key = node.config.device_id;
@@ -245,8 +256,9 @@ module.exports = function(RED) {
                                 {'qos':parseInt(node.server.config.mqtt_qos||0)},
                                 function(err) {
                                     if (err) {
-                                        node.error(err);
+                                        node.error(err, message);
                                     }
+                                    sendResult(!err, err);
                             });
 
                             let fill = node.server.getDeviceAvailabilityColor(node.server.getTopic('/'+device.friendly_name));
@@ -269,6 +281,7 @@ module.exports = function(RED) {
                                 shape: "dot",
                                 text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.no_payload"
                             });
+                            sendResult(false);
                         }
                     } else {
                         node.status({
@@ -276,6 +289,7 @@ module.exports = function(RED) {
                             shape: "dot",
                             text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.no_device"
                         });
+                        sendResult(false);
                     }
                 });
 

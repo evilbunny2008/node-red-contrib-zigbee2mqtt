@@ -14,7 +14,7 @@ module.exports = function(RED) {
                 }
             }, true);
         } else {
-            res.json([{},{}]);
+            res.json([[],[]]);
         }
     });
 

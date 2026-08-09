@@ -54,11 +54,17 @@ class Zigbee2MqttEditor {
     async build() {
         let that = this;
         // console.log('build : '+(this.refresh?'true':false));
-        await that.buildDeviceIdInput().then(()=>{
+        try {
+            await that.buildDeviceIdInput();
             that.buildDevicePropertyInput();
             that.buildDeviceOptionsInput();
-        });
-        that.bind();
+        } catch (err) {
+            console.error('Zigbee2MqttEditor build() failed', err);
+        } finally {
+            // always (re)bind handlers, even if a build step above failed,
+            // otherwise selecting a server does nothing until the node is saved/reopened
+            that.bind();
+        }
     }
 
     async buildDeviceIdInput() {
@@ -92,7 +98,7 @@ class Zigbee2MqttEditor {
         let html = '';
 
         //groups
-        let groups = data[1];
+        let groups = Array.isArray(data[1]) ? data[1] : [];
         groups.sort(function(a, b) {
             return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
         });
@@ -110,7 +116,7 @@ class Zigbee2MqttEditor {
         }
 
         //devices
-        let devices = data[0];
+        let devices = Array.isArray(data[0]) ? data[0] : [];
         devices.sort(function(a, b) {
             return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
         });
