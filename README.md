@@ -19,30 +19,7 @@ I've made other improvements, such as more state options to support ZigBee devic
 Node-Red Nodes for Zigbee2mqtt connectivity.
 
 # Install
-You should do the following:
-```
-npm install -g node-red
-mkdir -p /opt/node-red
-useradd -d /opt/node-red -M node-red
-chown -R node-red: /opt/node-red
-su -s /bin/bash - node-red
-mkdir -p .node-red
-cd .node-red
-node-red admin init
-```
-
-Next edit the settings.js to match your server
-```nano settings.js```
-
-Finally install this module
-```
-npm install @evilbunny/node-red-contrib-zigbee2mqtt
-```
-and then you can start Node Red by doing
-```
-cd ..
-node-red
-```
+You can install this by going to the hamburger menu in Node Red, then go to "Manage palette". Click on the "Palette" tab on the left side, then click on the "Install" tab then search for "@evilbunny/node-red-contrib-zigbee2mqtt" then click "install"
 
 # Available nodes
 * zigbee2mqtt-eb-in: listen to device
