@@ -1,7 +1,7 @@
 # Forked
 This was forked from [andreypopov/node-red-contrib-zigbee2mqtt](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt) but that repo was last updated more than 18 months ago and the dependencies were horribly out of date and wouldn't cleanly install for me.
 
-I've made other improvements, such as more state options to support ZigBee devices I own. [I submitted a PR](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/154) for the changes but given all the unmerged PRs, I don't expect my PR will be merged.
+I've made other improvements, such as more state options to support ZigBee devices I own. [I submitted a PR](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/154) for the changes but given the other unmerged PRs, I don't expect my changes to be merged.
 
 # @evilbunny/node-red-contrib-zigbee2mqtt
 [![platform](https://img.shields.io/badge/platform-Node--RED-red?logo=nodered)](https://nodered.org)
