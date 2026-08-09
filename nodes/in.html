@@ -20,7 +20,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
-        <select id="node-input-state" class="s-width" data-i18n="[placeholder]multiselect.complete_payload"></select>
+        <select id="node-input-state" class="s-width" multiple="multiple" data-i18n="[placeholder]multiselect.complete_payload"></select>
     </div>
     <div class="form-row">
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
@@ -117,8 +117,8 @@
                 this.topic = null;
             }
 
-            let $property = $('#node-input-state');
-            this.state = $property.val()!=='0'?$property.val():null;
+            let state = $('#node-input-state').multipleSelect('getSelects', 'value');
+            this.state = state.length ? state : null;
         }
     });
 
