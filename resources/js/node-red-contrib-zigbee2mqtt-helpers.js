@@ -183,6 +183,13 @@ class Zigbee2MqttEditor {
             });
         }
 
+        if (device) {
+            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.common")});
+            html.appendTo(that.getDevicePropertyInput());
+            $('<option value="last_seen">last_seen</option>').appendTo(html);
+            $('<option value="linkquality">linkquality, lqi</option>').appendTo(html);
+        }
+
         if (device && 'homekit' in device && device.homekit && Object.keys(device.homekit).length) {
             html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.homekit")});
             html.appendTo(that.getDevicePropertyInput());

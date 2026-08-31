@@ -31,6 +31,7 @@
         "msg_topic": "msg.topic",
         "complete_payload": "Complete payload",
         "zigbee2mqtt": "zigbee2mqtt",
+        "common": "Common",
         "homekit": "Apple Homekit"
     }
 }

@@ -1,7 +1,7 @@
 # Forked
 This was forked from [andreypopov/node-red-contrib-zigbee2mqtt](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt) but that repo was last updated more than 18 months ago and the dependencies were horribly out of date and wouldn't cleanly install for me.
 
-I've made other improvements, such as more state options to support ZigBee devices I own. [I submitted a PR](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/154) for the changes but given the other unmerged PRs, I don't expect my changes to be merged.
+I've made other improvements, such as more state options to support ZigBee devices I own. [I submitted a PR](https://github.com/andreypopov/node-red-contrib-zigbee2mqtt/pull/154) for the changes but given all the unmerged PRs, I don't expect my PR will be merged.
 
 # @evilbunny/node-red-contrib-zigbee2mqtt
 [![platform](https://img.shields.io/badge/platform-Node--RED-red?logo=nodered)](https://nodered.org)
@@ -19,7 +19,30 @@ I've made other improvements, such as more state options to support ZigBee devic
 Node-Red Nodes for Zigbee2mqtt connectivity.
 
 # Install
-You can install this by going to the hamburger menu in Node Red, then go to "Manage palette". Click on the "Palette" tab on the left side, then click on the "Install" tab then search for "@evilbunny/node-red-contrib-zigbee2mqtt" then click "install"
+You should do the following:
+```
+npm install -g node-red
+mkdir -p /opt/node-red
+useradd -d /opt/node-red -M node-red
+chown -R node-red: /opt/node-red
+su -s /bin/bash - node-red
+mkdir -p .node-red
+cd .node-red
+node-red admin init
+```
+
+Next edit the settings.js to match your server
+```nano settings.js```
+
+Finally install this module
+```
+npm install @evilbunny/node-red-contrib-zigbee2mqtt
+```
+and then you can start Node Red by doing
+```
+cd ..
+node-red
+```
 
 # Available nodes
 * zigbee2mqtt-eb-in: listen to device
@@ -36,3 +59,6 @@ Extra features:
 <img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt/blob/main/readme/3.png?raw=true">
 <img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt/blob/main/readme/4.png?raw=true">
 <img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt/blob/main/readme/5.png?raw=true">
+
+# Support
+Developing and supporting this plugin needs time and efforts. Appreciate your support on [Patreon](https://www.patreon.com/bePatron?u=12661781). Here, you can sign up to be a member and help support my project.

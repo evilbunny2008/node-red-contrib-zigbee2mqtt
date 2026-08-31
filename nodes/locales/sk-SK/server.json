@@ -31,6 +31,7 @@
         "msg_topic": "msg.téma",
         "complete_payload": "Kompletná záťaž",
         "zigbee2mqtt": "zigbee2mqtt",
+        "common": "Bežné",
         "homekit": "Apple Homekit"
     }
 }
