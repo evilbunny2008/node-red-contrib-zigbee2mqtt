@@ -18,6 +18,15 @@ if (typeof window !== 'undefined' && typeof window.Z2MDebug === 'undefined') {
  * As funções estão organizadas por categoria funcional.
  */
 
+// Node-RED's TypedInput widget stores its instance under the jQuery data key
+// "noderedTypedInput" (older checks for "typedInput"/"red-ui-typedInput" never match),
+// and puts its container next to the original <input>, not around it.
+function Z2MHasTypedInput($el) {
+    if (!$el || !$el.length) return false;
+    return !!($el.data('noderedTypedInput') || $el.next('.red-ui-typedInput-container').length);
+}
+if (typeof window !== 'undefined') window.Z2MHasTypedInput = Z2MHasTypedInput;
+
 class Zigbee2MqttEditor {
    
     // ═══════════════════════════════════════════════════════════════════════
@@ -344,8 +353,7 @@ class Zigbee2MqttEditor {
                     
                     const $cmdCheck = that.getDeviceCommandInput();
                     if ($cmdCheck && $cmdCheck.length) {
-                        const hasWidget = !!($cmdCheck.data('typedInput') || 
-                                             $cmdCheck.data('red-ui-typedInput'));
+                        const hasWidget = Z2MHasTypedInput($cmdCheck);
                         
                         if (hasWidget) {
                             that.debug.log('|     ✅ Command TypedInput EXISTS after build!');
@@ -473,7 +481,11 @@ class Zigbee2MqttEditor {
                 if (cmdType === 'str') cmd = 'custom';
                 
                 $('.help_block').hide();
-                $('.help_block__' + cmdType + '_' + cmd).show();
+                // only plain names map to a help block; a JSON or free-text command
+                // would otherwise be an invalid CSS selector
+                if (/^[\w-]+$/.test(String(cmdType) + '_' + String(cmd))) {
+                    $('.help_block__' + cmdType + '_' + cmd).show();
+                }
                 
                 that.debug.log('|     ✅ Command change complete');
             });
@@ -523,7 +535,7 @@ class Zigbee2MqttEditor {
                     const $payload = that.getDevicePayloadInput(); // ✅ Garantir variável correta
                     try {
                         let currentCmd = that.node.command;
-                        if ($cmd && $cmd.data('typedInput')) {
+                        if ($cmd && Z2MHasTypedInput($cmd)) {
                             const val = $cmd.typedInput('value');
                             currentCmd = (val && typeof val === 'object' && val.value) ? val.value : val;
                         }
@@ -597,7 +609,7 @@ class Zigbee2MqttEditor {
         return new Promise((resolve) => {
             const startTime = Date.now();
             const check = () => {
-                const isInitialized = !!($element.data('typedInput') || $element.data('red-ui-typedInput'));
+                const isInitialized = Z2MHasTypedInput($element);
                 if (isInitialized) return resolve(true);
                 if (Date.now() - startTime >= timeout) return resolve(false);
                 // Polling mais agressivo (10ms) reduz a percepção de atraso
@@ -872,7 +884,7 @@ class Zigbee2MqttEditor {
             that._lastBuiltCommand = undefined;
             
             try {
-                if ($cmd.data('typedInput')) {
+                if (Z2MHasTypedInput($cmd)) {
                     $cmd.typedInput('destroy');
                 }
             } catch(e) {}
@@ -990,7 +1002,16 @@ class Zigbee2MqttEditor {
         that.debug.log('|        - Previous device:', that._lastBuiltDevice);
         that.debug.log('|        - Current device:', that.device_id);
 
-        if (deviceChanged) {
+        const savedType = that.node.commandType || 'z2m_cmd';
+        const keepSavedType = savedType !== 'z2m_cmd';
+
+        if (keepSavedType) {
+            // json / str / msg / flow / global / homekit / nothing: these don't come from the
+            // device's command list, so restore them as saved (even if the device changed)
+            currentType = savedType;
+            currentValue = (that.node.command === null || that.node.command === undefined) ? '' : that.node.command;
+            that.debug.log('|     ✅ Keeping saved non-z2m command:', currentType, '/', currentValue);
+        } else if (deviceChanged) {
             // 🔥 DEVICE MUDOU → Usar primeira opção!
             that.debug.log('|     🔥 Device changed → Using FIRST option');
             
@@ -1021,7 +1042,7 @@ class Zigbee2MqttEditor {
         // ══════════════════════════════════════════════════════════════════════════
         // 🔥 CRITICAL: ATUALIZAÇÃO SEM DESTRUIÇÃO (v4.2 FIX LOOP)
         // ══════════════════════════════════════════════════════════════════════════
-        const hasWidget = !!($cmd.data('typedInput') || $cmd.data('red-ui-typedInput'));
+        const hasWidget = Z2MHasTypedInput($cmd);
         
         // Ativar bloqueio TOTAL de eventos antes de qualquer alteração no widget
         that._isUpdatingInternally = true;
@@ -1074,7 +1095,7 @@ class Zigbee2MqttEditor {
         // PASSO 2: GARANTIR ESTADO LIMPO DO DOM
         // ══════════════════════════════════════════════════════════════════════════
         
-        if (!$cmd.parent().hasClass('red-ui-typedInput-container')) {
+        if (!Z2MHasTypedInput($cmd)) {
             $cmd.val('');
             $('#node-input-commandType').val('z2m_cmd');
         }
@@ -1204,7 +1225,7 @@ class Zigbee2MqttEditor {
         
         // 🚀 OTIMIZAÇÃO: Tentar ler direto, sem wait
         try {
-            if ($cmdInput && $cmdInput.length && $cmdInput.data('typedInput')) {
+            if ($cmdInput && $cmdInput.length && Z2MHasTypedInput($cmdInput)) {
                 currentCommandType = $cmdInput.typedInput('type');
                 let cmdValue = $cmdInput.typedInput('value');
                 
@@ -1403,7 +1424,7 @@ class Zigbee2MqttEditor {
         // ════════════════════════════════════════════════════════════════════════════
         const $cmd = that.getDeviceCommandInput();
         if ($cmd && $cmd.length) {
-            const hasWidget = !!($cmd.data('typedInput') || $cmd.data('red-ui-typedInput'));
+            const hasWidget = Z2MHasTypedInput($cmd);
             if (!hasWidget) {
                 that.debug.warn('|     ⚠️ Command widget missing - attempting quick re-init');
                 await that.buildDeviceCommandInput();
@@ -1450,7 +1471,7 @@ class Zigbee2MqttEditor {
             // 🔥 CRITICAL: Bloquear disparos de eventos durante o rebuild do payload
             that._isUpdatingInternally = true;
  
-            const hasTypedInput = !!($payloadInput.data('typedInput') || $payloadInput.data('red-ui-typedInput'));
+            const hasTypedInput = Z2MHasTypedInput($payloadInput);
             
             if (!hasTypedInput) {
                 // Primeira vez - criar
@@ -1537,7 +1558,7 @@ class Zigbee2MqttEditor {
             that.getDeviceOptionsTypeHelpBlock().hide();
             
             try {
-                if (that.getDeviceOptionsInput().length && that.getDeviceOptionsInput().data('typedInput')) {
+                if (that.getDeviceOptionsInput().length && Z2MHasTypedInput(that.getDeviceOptionsInput())) {
                     that.getDeviceOptionsInput().typedInput('destroy');
                 }
             } catch(e) {
@@ -1751,7 +1772,7 @@ class Zigbee2MqttEditor {
         if (!cmd || cmd === '') {
             const $cmd = that.getDeviceCommandInput();
             
-            if ($cmd && $cmd.length && $cmd.data('typedInput')) {
+            if ($cmd && $cmd.length && Z2MHasTypedInput($cmd)) {
                 try {
                     cmdType = $cmd.typedInput('type');
                     let cmdValue = $cmd.typedInput('value');
@@ -1999,8 +2020,8 @@ class Zigbee2MqttEditor {
         
         try {
             // Detetar se o widget está presente com qualquer uma das chaves possíveis
-            const hasCmdWidget = !!($cmdInput.data('typedInput') || $cmdInput.data('red-ui-typedInput'));
-            const hasPayWidget = !!($payloadInput.data('typedInput') || $payloadInput.data('red-ui-typedInput'));
+            const hasCmdWidget = Z2MHasTypedInput($cmdInput);
+            const hasPayWidget = Z2MHasTypedInput($payloadInput);
  
             if (hasCmdWidget) {
                 const val = $cmdInput.typedInput('value');
@@ -2233,7 +2254,7 @@ class Zigbee2MqttEditor {
         let val = (forcedValue !== null) ? forcedValue : null;
         
         if (val === null) {
-            if (!$payload || !$payload.length || !$payload.data('typedInput')) {
+            if (!$payload || !$payload.length || !Z2MHasTypedInput($payload)) {
                 return;
             }
             try {
