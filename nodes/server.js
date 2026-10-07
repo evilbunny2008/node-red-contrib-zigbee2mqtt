@@ -25,7 +25,7 @@ module.exports = function(RED) {
             node.devices = node.context().global.get('z2m_devices_' + node.id) || null;
             node.groups = node.context().global.get('z2m_groups_' + node.id) || null;
             
-            node.on('close', () => this.onClose());
+            node.on('close', (removed, done) => this.onClose(removed, done));
             node.setMaxListeners(50);
             
             // Rastrear nós clientes para limpeza
@@ -86,14 +86,20 @@ module.exports = function(RED) {
                 keepalive: 30, // Ainda mais reduzido para detecção rápida em redes instáveis
                 reconnectPeriod: 5000,
                 connectTimeout: 15000, // Timeout reduzido para falhar rápido e tentar reconectar
-                resubscribe: true,
-                will: { // Last Will & Testament para diagnóstico
-                    topic: 'node-red/zigbee2mqtt/status',
-                    payload: 'offline',
-                    qos: 1,
-                    retain: false
-                }
+                resubscribe: true
             };
+
+            // Last Will: the broker publishes this if the main connection drops without a
+            // clean disconnect (Node-RED crash, network loss). Only for the main connection,
+            // not the temporary map-refresh client. See publishStatus() for the rest.
+            if (!clientId) {
+                options.will = {
+                    topic: node.getStatusTopic(),
+                    payload: JSON.stringify({state: 'offline'}),
+                    qos: 1,
+                    retain: true
+                };
+            }
 
             // 3. Configurar Protocolo e TLS
             let baseUrl = 'mqtt://';
@@ -354,6 +360,29 @@ module.exports = function(RED) {
             if (path && !path.startsWith('/')) 
                 path = '/' + path;
             return this.getBaseTopic() + path;
+        }
+
+        /**
+         * Retained Node-RED connection status for this server node, in the same format as
+         * zigbee2mqtt's own bridge/state: {"state":"online"} / {"state":"offline"}.
+         * Published online on connect, offline on clean shutdown, and offline by the
+         * broker (Last Will) if the connection is lost.
+         */
+        getStatusTopic() {
+            return 'node-red/zigbee2mqtt/' + this.id + '/state';
+        }
+
+        publishStatus(state, callback) {
+            let node = this;
+            if (!node.mqtt || !node.connection) {
+                if (callback) callback();
+                return;
+            }
+            // state === null clears the retained message (used when the server node is deleted)
+            let payload = state === null ? '' : JSON.stringify({state: state});
+            node.mqtt.publish(node.getStatusTopic(), payload, {qos: 1, retain: true}, function () {
+                if (callback) callback();
+            });
         }
 
         restart() {
@@ -949,6 +978,7 @@ module.exports = function(RED) {
             var node = this;
             node.connection = true;  // ✅ Marca como conectado
             node.log('MQTT Connected');
+            node.publishStatus('online');
             node.emit('onMQTTConnect');
             node.subscribeMQTT();
         }
@@ -1163,9 +1193,9 @@ module.exports = function(RED) {
             }
         }
 
-        onClose() {
+        onClose(removed, done) {
             var node = this;
-            
+
             // Notificar clientes registados que o servidor vai fechar
             if (node.clientNodes) {
                 node.clientNodes.forEach(client => {
@@ -1174,23 +1204,44 @@ module.exports = function(RED) {
                 node.clientNodes.clear();
                 node.clientNodes = null;
             }
- 
+
             // Remover todos os listeners internos do EventEmitter do Node
             node.removeAllListeners();
-            
-            node.unsubscribeMQTT();
-            if (node.mqtt) {
-                try {
-                    // LIMPEZA: Remover listeners antes de fechar para evitar eventos 'close' tardios
-                    node.mqtt.removeAllListeners();
-                    node.mqtt.end(true); // Forçar fecho imediato
-                } catch(e) { 
-                    node.warn("Error closing MQTT client: " + e.message); 
+
+            const client = node.mqtt;
+            let finished = false;
+            const finish = () => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(guard);
+                if (client) {
+                    try {
+                        client.removeAllListeners();
+                        // clean disconnect, so the broker doesn't also fire the Last Will
+                        client.end(false, {}, () => {});
+                    } catch (e) {
+                        node.warn("Error closing MQTT client: " + e.message);
+                    }
                 }
                 node.mqtt = null; // Libertar referência para GC
+                node.connection = false;
+                node.log('MQTT connection closed and resources freed');
+                if (done) done();
+            };
+            // don't hold up a deploy if the broker doesn't acknowledge in time
+            const guard = setTimeout(() => {
+                if (client) { try { client.end(true); } catch (e) {} }
+                finish();
+            }, 2000);
+
+            if (client && node.connection) {
+                if (client.unsubscribe) client.unsubscribe(node.getTopic('/#'), function () {});
+                // deleted server node: clear its retained status; otherwise mark it offline
+                node.publishStatus(removed ? null : 'offline', finish);
+            } else {
+                finish();
             }
-            node.connection = false;
-            node.log('MQTT connection closed and resources freed');
+            if (node.devices_values instanceof Map) node.devices_values.clear();
         }
     }
 
