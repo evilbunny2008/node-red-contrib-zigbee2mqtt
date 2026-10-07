@@ -38,4 +38,4 @@ Extra features:
 <img src="https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt/blob/main/readme/5.png?raw=true">
 
 # Node-RED connection status
-Each server node publishes Node-RED's own connection status, retained, to `node-red/zigbee2mqtt/<server node id>/state`, using the same format as Zigbee2MQTT's `bridge/state`: `{"state":"online"}` when connected and `{"state":"offline"}` on shutdown. If Node-RED stops unexpectedly the broker publishes `offline` itself (MQTT Last Will). You can subscribe to it from Home Assistant or anything else to tell when Node-RED is down. The server node's ID is shown in its info panel in the Node-RED editor.
+Each server node publishes Node-RED's own connection status, retained, to `node-red/<base topic>/state` (e.g. `node-red/zigbee2mqtt/state` with the default base topic), using the same format as Zigbee2MQTT's `bridge/state`: `{"state":"online"}` when connected and `{"state":"offline"}` on shutdown. If Node-RED stops unexpectedly the broker publishes `offline` itself (MQTT Last Will). You can subscribe to it from Home Assistant or anything else to tell when Node-RED is down.

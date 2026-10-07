@@ -363,13 +363,13 @@ module.exports = function(RED) {
         }
 
         /**
-         * Retained Node-RED connection status for this server node, in the same format as
+         * Retained Node-RED connection status for this server node's base topic, in the same format as
          * zigbee2mqtt's own bridge/state: {"state":"online"} / {"state":"offline"}.
          * Published online on connect, offline on clean shutdown, and offline by the
          * broker (Last Will) if the connection is lost.
          */
         getStatusTopic() {
-            return 'node-red/zigbee2mqtt/' + this.id + '/state';
+            return 'node-red/' + this.getBaseTopic() + '/state';
         }
 
         publishStatus(state, callback) {
