@@ -24,12 +24,12 @@
   "node-red": {
     "version": ">=1.3.0",
     "nodes": {
+      "api": "api.js",
       "in": "nodes/in.js",
       "get": "nodes/get.js",
       "out": "nodes/out.js",
       "bridge": "nodes/bridge.js",
-      "server": "nodes/server.js",
-      "api": "api.js"
+      "server": "nodes/server.js"
     }
   },
   "engines": {

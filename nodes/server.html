@@ -1,3 +1,7 @@
+<script type='text/javascript'>
+    $.getScript('resources/@evilbunny/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
+</script>
+
 <script type="text/x-red" data-template-name="zigbee2mqtt-eb-server">
     <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
     <input autocomplete="false" name="hidden" type="text" style="display:none;">
@@ -19,12 +23,12 @@
         <input type="text" id="node-config-input-mqtt_port" placeholder="1883">
     </div>
     <div class="form-row">
-        <label for="node-config-input-mqtt_username" class="l-width"><i class="fa fa-user"></i> <span data-i18n="label.mqtt_username"></span></label>
-        <input type="text" id="node-config-input-mqtt_username" autocomplete="new-password">
+        <label for="node-config-input-mqtt_user" class="l-width"><i class="fa fa-user"></i> <span data-i18n="label.mqtt_username"></span></label>
+        <input type="text" id="node-config-input-mqtt_user" autocomplete="new-password">
     </div>
     <div class="form-row">
-        <label for="node-config-input-mqtt_password" class="l-width"><i class="fa fa-lock"></i> <span data-i18n="label.mqtt_password"></span></label>
-        <input type="password" id="node-config-input-mqtt_password" autocomplete="new-password">
+        <label for="node-config-input-mqtt_pass" class="l-width"><i class="fa fa-lock"></i> <span data-i18n="label.mqtt_password"></span></label>
+        <input type="password" id="node-config-input-mqtt_pass" autocomplete="new-password">
     </div>
     <div class="form-row">
         <label for="node-config-input-mqtt_qos" class="l-width"><i class="fa fa-empire"></i> <span data-i18n="node-red:mqtt.label.qos">QoS</span></label>
@@ -42,7 +46,6 @@
         </div>
     </div>
     <div class="form-tips" data-i18n="[html]tip.deploy"></div>
-
 </script>
 
 <script type='text/javascript'>
@@ -62,6 +65,25 @@
                 required: false,
                 validate:RED.validators.number()
             },
+            mqtt_qos: {
+                value: 0,
+                required: false,
+                validate:RED.validators.number()
+            },
+            tls: {
+                    type:"tls-config",
+                    required: false
+                },
+            usetls: {
+                value: false
+            },
+            base_topic: {
+                value: 'zigbee2mqtt',
+                required: true
+            },
+            // Legacy plaintext login from older versions. There is no form input for
+            // these any more; they're kept in defaults only so the editor doesn't drop
+            // them before they've been migrated into credentials (see oneditprepare/oneditsave).
             mqtt_username: {
                 value: null,
                 required: false
@@ -70,17 +92,11 @@
                 value: null,
                 required: false
             },
-            mqtt_qos: {
-                value: 0,
-                required: false,
-                validate:RED.validators.number()
-            },
-            tls: {type:"tls-config",required: false},
-            usetls: {value: false},
-            base_topic: {
-                value: 'zigbee2mqtt',
-                required: true
-            },
+        },
+
+        credentials: {
+            mqtt_user: { type: "text" },
+            mqtt_pass: { type: "password" }
         },
         label: function() {
             return this.name || this.host;
@@ -90,7 +106,19 @@
            if (node.mqtt_qos === undefined) {
                $('#node-config-input-mqtt_qos').val(0);
            }
+           // Migrate a legacy plaintext login into the credential inputs; it is saved
+           // as credentials and the plaintext copies are cleared in oneditsave.
+           let creds = node.credentials || {};
+           if (!creds.mqtt_user && node.mqtt_username) {
+               $('#node-config-input-mqtt_user').val(node.mqtt_username);
+           }
+           if (!creds.has_mqtt_pass && node.mqtt_password) {
+               $('#node-config-input-mqtt_pass').val(node.mqtt_password);
+           }
+        },
+        oneditsave: function () {
+            this.mqtt_username = null;
+            this.mqtt_password = null;
         }
     });
 </script>
-

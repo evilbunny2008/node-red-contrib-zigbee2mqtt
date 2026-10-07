@@ -1,6 +1,25 @@
 <script type="text/x-red" data-template-name="zigbee2mqtt-eb-api" data-hidden="true">
 </script>
 
+<!-- ============================================================================ -->
+<!-- 🔥 CRITICAL: Carregar Scripts SINCRONAMENTE (ordem importa!)              -->
+<!-- ============================================================================ -->
+
+<!-- 1️⃣ Debug System (PRIMEIRO - outros dependem dele) -->
+<script src="resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/debug.js"></script>
+
+<!-- 2️⃣ Config System -->
+<script src="resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/z2m-config.js"></script>
+
+<!-- 3️⃣ UI Libraries -->
+<script src="resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/multiple-select.min.js"></script>
+
+<!-- 4️⃣ Editor Class (depende de debug.js e z2m-config.js) -->
+<script src="resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/node-red-contrib-zigbee2mqtt-helpers.js"></script>
+
+<!-- ============================================================================ -->
+<!-- ✅ Verificação de Carregamento                                             -->
+<!-- ============================================================================ -->
 <script type='text/javascript'>
     // This node has no editable properties and is never shown in the palette;
     // it exists only so the runtime side (api.js) can register its httpAdmin
@@ -11,12 +30,38 @@
         label: function () { return 'zigbee2mqtt-eb-api'; }
     });
 
-    $.getScript('resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/multiple-select.min.js');
-    $.getScript('resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/node-red-contrib-zigbee2mqtt-helpers.js');
+    (function() {
+        if (typeof Z2MDebug === 'undefined') return;
+        var debug = Z2MDebug.create('api.html');
+        
+        debug.log('');
+        debug.log('╔═══════════════════════════════════════════════════════════╗');
+        debug.log('║ 🔍 [api.html] SCRIPT LOADING CHECK                       ║');
+        debug.log('╚═══════════════════════════════════════════════════════════╝');
+        
+        const checks = {
+            'Z2MDebug': typeof Z2MDebug !== 'undefined',
+            'Z2MConfig': typeof Z2MConfig !== 'undefined',
+            'Zigbee2MqttEditor': typeof Zigbee2MqttEditor !== 'undefined'
+        };
+        
+        let allOk = true;
+        for (let [name, status] of Object.entries(checks)) {
+            const icon = status ? '✅' : '❌';
+            debug.log(`  ${icon} ${name}: ${status ? 'LOADED' : 'MISSING'}`);
+            if (!status) allOk = false;
+        }
+        
+        if (allOk) {
+            debug.log('');
+            debug.log('✅ All scripts loaded successfully!');
+        } else {
+            debug.error('');
+            debug.error('❌ Some scripts FAILED to load!');
+            debug.error('   Check if files exist in resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/');
+        }
+        
+        debug.log('╚═══════════════════════════════════════════════════════════╝');
+        debug.log('');
+    })();
 </script>
-
-
-
-
-
-
