@@ -1,484 +1,24 @@
 <script type="text/javascript">
-// ✅ Usar Z2MDebug do contexto global (já carregado pelo api.html)
+// ✅ SIMPLIFICADO: Apenas herda Z2MDebug do parent (já carregado pelo api.html)
 (function(win) {
-    if (!win.Z2MDebug && win.parent && win.parent.Z2MDebug) {
-        win.Z2MDebug = win.parent.Z2MDebug;
+    // Ensure parent exists and prevent cross-origin errors
+    try {
+        if (!win.Z2MDebug && win.parent && win.parent.Z2MDebug) {
+            win.Z2MDebug = win.parent.Z2MDebug;
+        }
+    } catch(e) { console.warn('Z2MDebug inheritance failed:', e); }
+    
+    // ✅ OPCIONAL: Log de confirmação (só aparece se debug ativo)
+    if (win.Z2MDebug && win.Z2MDebug.isEnabled()) {
+        console.log('[Bridge] Z2MDebug inherited from parent');
     }
 })(window);
 </script>
 
-<style>
-    .server-status-section {
-        background: #fff;
-        padding: 15px;
-        border-radius: 6px;
-        border: 2px solid #e0e0e0;
-        margin-bottom: 20px;
-    }
-
-    .server-status-section.online {
-        border-color: #66bb6a;
-        background: #f1f8f4;
-    }
-
-    .server-status-section.offline,
-    .server-status-section.mqtt-offline,
-    .server-status-section.z2m-offline {
-        border-color: #ef5350;
-        background: #ffebee;
-    }
-
-    .server-status-title {
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .server-status-indicator {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        display: inline-block;
-    }
-
-    .server-status-indicator.online {
-        background: #66bb6a;
-        box-shadow: 0 0 6px rgba(102, 187, 106, 0.6);
-    }
-
-    .server-status-indicator.offline {
-        background: #ef5350;
-        box-shadow: 0 0 6px rgba(239, 83, 80, 0.6);
-    }
-
-    .server-status-details {
-        font-size: 12px;
-        color: #666;
-        margin-top: 8px;
-        line-height: 1.8;
-    }
-
-    .server-status-details strong {
-        color: #333;
-        font-weight: 600;
-    }
-
-    /* ═══════════════════════════════════════════════════════════ */
-    /* STATUS BADGES - SIMPLES */
-    /* ═══════════════════════════════════════════════════════════ */
-    .status-ok {
-        color: #2e7d32;
-        font-weight: 600;
-    }
-
-    .status-error {
-        color: #c62828;
-        font-weight: 600;
-    }
-
-    .status-warning {
-        color: #e65100;
-        font-weight: 600;
-    }
-
-    /* ═══════════════════════════════════════════════════════════ */
-    /* TABS - CORES SIMPLES */
-    /* ═══════════════════════════════════════════════════════════ */
-    .tab-button.error,
-    .tab-button.mqtt-error,
-    .tab-button.z2m-error {
-        background: #ffebee;
-        color: #c62828;
-        border-color: #ef5350;
-    }
-
-    .tab-button.warning {
-        background: #fff3e0;
-        color: #e65100;
-        border-color: #ff9800;
-    }
-
-    .tab-button.success {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border-color: #66bb6a;
-    }
-
-    /* ═══════════════════════════════════════════════════════════ */
-    /* REMOVER ANIMAÇÕES E TOOLTIPS */
-    /* ═══════════════════════════════════════════════════════════ */
-
-    /* Remover todas as animações de pulse */
-    @keyframes none {}
-
-    .server-status-section.mqtt-offline,
-    .server-status-section.z2m-offline {
-        animation: none;
-    }
-
-    .server-status-indicator.online {
-        animation: none;
-    }
-
-    /* Esconder tooltips/error boxes */
-    .error-message-box,
-    .component-error-badge {
-        display: none !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════════ */
-    /* STATUS GRID (mantida) */
-    /* ═══════════════════════════════════════════════════════════ */
-    .status-grid {
-        display: grid;
-        grid-template-columns: 180px 1fr;
-        gap: 12px;
-        font-size: 13px;
-        background: #f9f9f9;
-        padding: 15px;
-        border-radius: 6px;
-        border: 1px solid #e0e0e0;
-    }
-
-    .status-label {
-        font-weight: 600;
-        color: #555;
-    }
-
-    .status-value {
-        font-family: 'Courier New', monospace;
-        color: #333;
-    }
-    /* ═══════════════════════════════════════════════════════ */
-    /* TAB SYSTEM */
-    /* ═══════════════════════════════════════════════════════ */
-    .bridge-tabs {
-        margin: 15px 0 20px 0;
-        border-bottom: 2px solid #ddd;
-        display: flex;
-        gap: 4px;
-    }
-    
-    .tab-button {
-        background: #f5f5f5;
-        border: 1px solid #ddd;
-        border-bottom: none;
-        padding: 10px 20px;
-        cursor: pointer;
-        border-radius: 6px 6px 0 0;
-        font-size: 13px;
-        font-weight: 500;
-        transition: all 0.2s;
-        position: relative;
-    }
-    
-    .tab-button:hover {
-        background: #e8e8e8;
-    }
-    
-    .tab-button.active {
-        background: white;
-        font-weight: bold;
-        border-bottom: 2px solid white;
-        margin-bottom: -2px;
-    }
-    
-    .tab-button.error {
-        background: #ffebee;
-        color: #c62828;
-        border-color: #ef5350;
-    }
-    
-    .tab-button.warning {
-        background: #fff3e0;
-        color: #e65100;
-        border-color: #ff9800;
-    }
-    
-    .tab-button.success {
-        background: #e8f5e9;
-        color: #2e7d32;
-        border-color: #66bb6a;
-    }
-    
-    .tab-content {
-        display: none;
-        padding: 20px 0;
-        animation: fadeIn 0.3s;
-    }
-    
-    .tab-content.active {
-        display: block;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    /* ═══════════════════════════════════════════════════════ */
-    /* STATUS DISPLAY */
-    /* ═══════════════════════════════════════════════════════ */
-    .server-status-section {
-        background: #fff;
-        padding: 15px;
-        border-radius: 6px;
-        border: 2px solid #e0e0e0;
-        margin-bottom: 20px;
-    }
-    
-    .server-status-section.online {
-        border-color: #66bb6a;
-        background: #f1f8f4;
-    }
-    
-    .server-status-section.offline {
-        border-color: #ef5350;
-        background: #ffebee;
-    }
-    
-    .server-status-title {
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .server-status-indicator {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        display: inline-block;
-    }
-    
-    .server-status-indicator.online {
-        background: #66bb6a;
-        box-shadow: 0 0 6px rgba(102, 187, 106, 0.6);
-        animation: pulse 2s infinite;
-    }
-    
-    .server-status-indicator.offline {
-        background: #ef5350;
-        box-shadow: 0 0 6px rgba(239, 83, 80, 0.6);
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
-    }
-    
-    .server-status-details {
-        font-size: 12px;
-        color: #666;
-        margin-top: 8px;
-        line-height: 1.6;
-    }
-    
-    .server-status-details strong {
-        color: #333;
-        font-weight: 600;
-    }
-    
-    .status-grid {
-        display: grid;
-        grid-template-columns: 180px 1fr;
-        gap: 12px;
-        font-size: 13px;
-        background: #f9f9f9;
-        padding: 15px;
-        border-radius: 6px;
-        border: 1px solid #e0e0e0;
-    }
-    
-    .status-label {
-        font-weight: 600;
-        color: #555;
-    }
-    
-    .status-value {
-        font-family: 'Courier New', monospace;
-        color: #333;
-    }
-    
-    .status-ok { color: #2e7d32; font-weight: bold; }
-    .status-error { color: #c62828; font-weight: bold; }
-    .status-warning { color: #e65100; font-weight: bold; }
-    
-    /* ═══════════════════════════════════════════════════════ */
-    /* PERMIT JOIN SECTION */
-    /* ═══════════════════════════════════════════════════════ */
-    .permit-join-container {
-        background: #f5f5f5;
-        padding: 15px;
-        border-radius: 6px;
-        border: 1px solid #ddd;
-    }
-    
-    .permit-join-buttons {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-    
-    .permit-join-time-input {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    #node-input-permitjoin-time {
-        width: 100px;
-        padding: 6px 10px;
-        font-size: 14px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-    
-    .time-display {
-        color: #666;
-        font-size: 12px;
-        font-weight: 500;
-    }
-    
-    .red-ui-button:disabled,
-    .red-ui-button.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-    
-    /* ═══════════════════════════════════════════════════════ */
-    /* DEVICES/GROUPS TABLE */
-    /* ═══════════════════════════════════════════════════════ */
-    .z2m-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-    }
-    
-    .z2m-table th {
-        background: #f5f5f5;
-        padding: 10px;
-        text-align: left;
-        font-weight: 600;
-        border-bottom: 2px solid #ddd;
-        cursor: pointer;
-        user-select: none;
-        position: relative;
-    }
-    
-    .z2m-table th:hover {
-        background: #e8e8e8;
-    }
-    
-    .z2m-table th.sortable::after {
-        content: ' ⇅';
-        color: #999;
-        font-size: 10px;
-    }
-    
-    .z2m-table th.sorted-asc::after {
-        content: ' ↑';
-        color: #333;
-    }
-    
-    .z2m-table th.sorted-desc::after {
-        content: ' ↓';
-        color: #333;
-    }
-    
-    .z2m-table td {
-        padding: 8px 10px;
-        border-bottom: 1px solid #eee;
-        vertical-align: middle;
-    }
-    
-    .z2m-table tr:hover {
-        background: #f9f9f9;
-    }
-    
-    .z2m-table th.status-col {
-        width: 50px;
-        text-align: center;
-        cursor: default;
-    }
-    
-    .z2m-table th.status-col::after {
-        content: none;
-    }
-    
-    .z2m-table td.status-col {
-        text-align: center;
-        font-size: 16px;
-    }
-    
-    .device-status-online {
-        color: #2e7d32;
-        cursor: default;
-    }
-    
-    .device-status-offline {
-        color: #c62828;
-        cursor: default;
-    }
-    
-    .device-status-warning {
-        color: #e65100;
-        cursor: default;
-    }
-    
-    .device-status-interview {
-        color: #2196f3;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .device-status-interview:hover {
-        color: #1976d2;
-        transform: scale(1.2);
-    }
-    
-    .device-status-disabled {
-        color: #9e9e9e;
-        cursor: default;
-    }
-    
-    .device-status-not-supported {
-        color: #ff9800;
-        cursor: default;
-    }
-    
-    /* ═══════════════════════════════════════════════════════ */
-    /* COMMON STYLES */
-    /* ═══════════════════════════════════════════════════════ */
-    .l-width {
-        width: 150px;
-    }
-    
-    .s-width {
-        width: 150px;
-    }
-    
-    .form-tips {
-        padding: 10px;
-        background: #e3f2fd;
-        border-left: 4px solid #2196f3;
-        border-radius: 4px;
-        margin-bottom: 15px;
-    }
-    
-    .node-input-devices-friendly_name, .node-input-groups-friendly_name {
-        width: 100% !important;
-        min-width: 200px !important;
-    }
-</style>
-
+<link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
+<link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/bridge.css" type="text/css" />
 <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/tokeninput/token-input-facebook.css" type="text/css" />
+
 <script type='text/javascript'>
     $.getScript('resources/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
 </script>
@@ -522,19 +62,26 @@
             </a>
         </div>
         
+        <!-- ✅ VERSÃO CORRIGIDA DO PERMIT JOIN -->
         <div class="form-row">
             <label class="l-width">
                 <i class="fa fa-sign-in"></i> Permit Join
             </label>
-            <div class="permit-join-container" style="display: inline-block; width: 70%;">
+            
+            <!-- Container principal - CSS em bridge.css -->
+            <div class="permit-join-controls">
+                
+                <!-- Linha 1: Botões Start/Stop -->
                 <div class="permit-join-buttons">
                     <a class="red-ui-button" id="permit-join-start">
-                        <i class="fa fa-play"></i> <span data-i18n="label.permit_join_help"></span>
+                        <i class="fa fa-play"></i> <span data-i18n="label.permit_join_help">Start searching devices for 3 minutes</span>
                     </a>
                     <a class="red-ui-button" id="permit-join-stop" style="display:none;">
-                        <i class="fa fa-stop"></i> <span data-i18n="label.permit_join_cancel_help"></span>
+                        <i class="fa fa-stop"></i> <span data-i18n="label.permit_join_cancel_help">Stop searching devices</span>
                     </a>
                 </div>
+                
+                <!-- Linha 2: Input de tempo -->
                 <div class="permit-join-time-input">
                     <input type="number" 
                            id="node-input-permitjoin-time" 
@@ -623,20 +170,14 @@
         <table class="z2m-table" id="devices-table" style="display:none;">
             <thead>
                 <tr>
-                    <th class="status-col">
-                        <i class="fa fa-circle"></i>
-                    </th>
-                    <th class="sortable" data-sort="friendly_name" style="width:200px;">
-                        <span data-i18n="devices.friendly_name"></span>
-                    </th>
-                    <th class="sortable" data-sort="ieee_address" style="width:auto;">
-                        <span data-i18n="devices.device"></span>
-                    </th>
-                    <th class="sortable" data-sort="model" style="width:150px;">
-                        Model
-                    </th>
-                    <th style="width:80px;"></th>
-                    <th style="width:80px;"></th>
+                    <th class="status-col"><i class="fa fa-circle"></i></th>
+                    <th class="sortable" data-sort="friendly_name" style="width:180px;"><span data-i18n="devices.friendly_name"></span></th>
+                    <th class="sortable" data-sort="model" style="width:120px;">Model</th>
+                    <th style="width:60px;">LQI</th>
+                    <th style="width:60px;">Batt</th>
+                    <th style="width:100px;">Last Seen</th>
+                    <th style="width:50px;"></th>
+                    <th style="width:50px;"></th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -713,12 +254,19 @@ RED.nodes.registerType('zigbee2mqtt-bridge', {
    
     oneditprepare: function() {
         const node = this;
-        const debug = Z2MDebug.create('Z2M Bridge');
+        // ✅ DEFINIÇÃO LOCAL (Correto)
+        // Garante que 'debug' existe para todo o ciclo de vida da janela de edição
+        var debug = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Bridge') : {
+            log: function() { console.log.apply(console, arguments); },
+            warn: function() { console.warn.apply(console, arguments); },
+            error: function() { console.error.apply(console, arguments); },
+            isEnabled: function() { return false; }
+        };
         
         // ═══════════════════════════════════════════════════════
         // VARIÁVEIS GLOBAIS
         // ═══════════════════════════════════════════════════════
-        let permitJoinTimeout = null;
+         node._permitJoinTimeout = null;
         let devicesData = [];
         let groupsData = [];
         let hasMapData = false;
@@ -1167,10 +715,46 @@ RED.nodes.registerType('zigbee2mqtt-bridge', {
 
         $('#node-input-permitjoin-time').trigger('change');
         
-        // Mudança de servidor
+        // Mudança de servidor - Proteção contra duplicação
         $('#node-input-server').off('change').on('change', function() {
-            debug.log('🔄 Server changed');
-            init(); // ← Única reinicialização permitida
+            const val = $(this).val();
+            if (node._lastServer === val) return; // Impedir init duplo no arranque
+            node._lastServer = val;
+            debug.log('🔄 Server changed to:', val);
+            init();
+        });
+        // Delegar evento de clique para pastas (Suporte a Sub-níveis)
+        $('#devices-table').on('click', '.z2m-group-header-row', function() {
+            const $clickedHeader = $(this);
+            $clickedHeader.toggleClass('collapsed');
+            $clickedHeader.find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
+            $clickedHeader.find('i.fa-folder-open-o, i.fa-folder-o').toggleClass('fa-folder-open-o fa-folder-o');
+ 
+            const updateVisibility = () => {
+                $('#devices-table tbody tr').each(function() {
+                    const $row = $(this);
+                    if ($row.hasClass('z2m-group-header-row') && $row.is($clickedHeader)) return;
+ 
+                    // Obter o path dependendo se é device ou header de pasta
+                    const rowPath = $row.hasClass('z2m-device-row') ? $row.data('full-path') : $row.data('path');
+                    if (!rowPath) return;
+ 
+                    const segments = rowPath.split('/');
+                    let shouldBeVisible = true;
+ 
+                    // Verificar se algum dos pais acima está colapsado
+                    for (let i = 1; i < segments.length; i++) {
+                        const parentPath = segments.slice(0, i).join('/');
+                        const $parentHeader = $('#devices-table').find(`.z2m-group-header-row[data-path="${parentPath}"]`);
+                        if ($parentHeader.hasClass('collapsed')) {
+                            shouldBeVisible = false;
+                            break;
+                        }
+                    }
+                    $row.toggle(shouldBeVisible);
+                });
+            };
+            updateVisibility();
         });
         
         // Refresh All
@@ -1411,36 +995,37 @@ RED.nodes.registerType('zigbee2mqtt-bridge', {
         }
         function sortTable(tableId, data, sortKey, sortOrder) {
             const sorted = [...data].sort((a, b) => {
+                const partsA = (a.friendly_name || '').split(/[\/\\]/);
+                const partsB = (b.friendly_name || '').split(/[\/\\]/);
+                const pathA = partsA.slice(0, -1).join('/');
+                const pathB = partsB.slice(0, -1).join('/');
+ 
+                if (pathA !== pathB) return pathA.localeCompare(pathB);
+ 
                 let valA, valB;
-                
                 if (sortKey === 'friendly_name') {
-                    valA = a.friendly_name || '';
-                    valB = b.friendly_name || '';
-                } else if (sortKey === 'ieee_address') {
-                    valA = a.ieee_address || '';
-                    valB = b.ieee_address || '';
+                    valA = partsA.pop() || ''; valB = partsB.pop() || '';
                 } else if (sortKey === 'model') {
-                    valA = a.definition?.model || 'Unknown';
-                    valB = b.definition?.model || 'Unknown';
-                } else if (sortKey === 'id') {
-                    valA = a.id || 0;
-                    valB = b.id || 0;
+                    valA = a.definition?.model || ''; valB = b.definition?.model || '';
+                } else if (sortKey === 'lqi') {
+                    valA = a.current_values?.linkquality || 0; valB = b.current_values?.linkquality || 0;
+                } else if (sortKey === 'battery') {
+                    valA = a.current_values?.battery || 0; valB = b.current_values?.battery || 0;
+                } else if (sortKey === 'last_seen') {
+                    valA = a.last_seen || 0; valB = b.last_seen || 0;
                 }
-                
+ 
                 if (typeof valA === 'string') {
-                    return sortOrder === 'asc' ? 
-                        valA.localeCompare(valB) : 
-                        valB.localeCompare(valA);
+                    return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
                 } else {
                     return sortOrder === 'asc' ? valA - valB : valB - valA;
                 }
             });
-            
             return sorted;
         }
         
         function getDeviceStatusIcon(device) {
-        if (serverState.state !== 'online') return '';
+        if (serverState.state !== 'online' || !device) return '';
         
         if (device.disabled === true) {
             return '<span class="device-status-disabled" title="Device Disabled">⚫</span>';
@@ -1519,49 +1104,233 @@ RED.nodes.registerType('zigbee2mqtt-bridge', {
             
             renderDevicesTable(devicesData, sortKey, sortOrder);
         }
-        
+
         function renderDevicesTable(devices, sortKey, sortOrder) {
             const sortedDevices = sortTable('devices', devices, sortKey, sortOrder);
             const currentServer = $('#node-input-server').val();
             
             $('#devices-table tbody').empty();
             
-            sortedDevices.forEach(function(device) {
-                const model = device.definition?.model || 'Unknown';
+            const isOnline = serverState.state === 'online';
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASSO 1: IDENTIFICAR PASTAS ÚNICAS (CASE-INSENSITIVE)
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            const folderMap = new Map(); // key: lowercase path, value: {originalName, level}
+            
+            sortedDevices.forEach(device => {
+                const fullPath = device.friendly_name || '';
+                const parts = fullPath.split(/[\/\\]/);
+                parts.pop(); // Remove nome do device
+                
+                for (let i = 0; i < parts.length; i++) {
+                    const currentPath = parts.slice(0, i + 1).join('/');
+                    const normalizedPath = currentPath.toLowerCase(); // ← CRÍTICO: Normalize para comparação
+                    
+                    // Guardar o primeiro nome encontrado (preserva case original)
+                    if (!folderMap.has(normalizedPath)) {
+                        folderMap.set(normalizedPath, {
+                            originalPath: currentPath,      // "TESTE" ou "Teste" ou "teste"
+                            normalizedPath: normalizedPath, // "teste" (sempre lowercase)
+                            level: i,
+                            name: parts[i]                  // Primeiro nome encontrado
+                        });
+                    }
+                }
+            });
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASSO 2: ORDENAR DISPOSITIVOS POR PATH NORMALIZADO
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            const devicesSortedByPath = [...sortedDevices].sort((a, b) => {
+                const pathA = (a.friendly_name || '').toLowerCase();
+                const pathB = (b.friendly_name || '').toLowerCase();
+                return pathA.localeCompare(pathB);
+            });
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASSO 3: RENDERIZAR HEADERS E DEVICES
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            const renderedFolders = new Set(); // Usando paths NORMALIZADOS
+            
+            devicesSortedByPath.forEach(device => {
+                const fullPath = device.friendly_name || '';
+                const parts = fullPath.split(/[\/\\]/);
+                const leafName = parts.pop();
+                const folders = parts;
+                
+                // ✅ Renderizar headers (usando path normalizado para verificação)
+                for (let i = 0; i < folders.length; i++) {
+                    const currentPath = folders.slice(0, i + 1).join('/');
+                    const normalizedPath = currentPath.toLowerCase(); // ← Normalize para comparação
+                    
+                    // ✅ Verificar se JÁ foi renderizado (usando path normalizado)
+                    if (!renderedFolders.has(normalizedPath)) {
+                        renderedFolders.add(normalizedPath);
+                        
+                        // ✅ Buscar o nome ORIGINAL da pasta (do primeiro device)
+                        const folderInfo = folderMap.get(normalizedPath);
+                        const displayName = folderInfo ? folderInfo.name : folders[i];
+                        
+                        const indent = i * 20;
+                        
+                        $('#devices-table tbody').append(`
+                            <tr class="z2m-group-header-row" 
+                                data-path="${normalizedPath}" 
+                                data-original-path="${currentPath}"
+                                data-level="${i}"
+                                style="cursor:pointer; user-select:none;">
+                                <td class="status-col">
+                                    <i class="fa fa-chevron-down" style="font-size:10px; color:#aaa;"></i>
+                                </td>
+                                <td colspan="7" style="padding-left: ${indent}px; color: #555; font-size: 11px; text-transform: uppercase; font-weight: bold; background: #f0f0f0;">
+                                    <i class="fa fa-folder-open-o"></i> ${displayName}
+                                </td>
+                            </tr>
+                        `);
+                    }
+                }
+                
+                // ✅ Renderizar o device
                 const statusIcon = getDeviceStatusIcon(device);
-                const input = `<input type="text" value="${device.friendly_name}" class="node-input-devices-friendly_name">`;
-                const info = `<div><b>${device.ieee_address}</b></div>`;
-                const modelCell = `<div>${model}</div>`;
+                const lqi = isOnline ? (device.current_values?.linkquality || '—') : '—';
+                const battery = isOnline ? 
+                    (device.current_values?.battery !== undefined ? device.current_values.battery + '%' : '—') : '—';
+                const lastSeen = device.last_seen ? new Date(device.last_seen).toLocaleTimeString() : '—';
+                const model = device.definition?.model || 'Unknown';
+                
+                const indent = folders.length * 20;
+                const branchIndicator = folders.length > 0 ? '<span style="color:#ccc;margin-right:5px;">└─</span>' : '';
+                
+                const input = `
+                    <div style="display:flex; align-items:center; padding-left:${indent}px;">
+                        ${branchIndicator}
+                        <input type="text" 
+                               value="${leafName}" 
+                               data-full-name="${fullPath}" 
+                               class="node-input-devices-friendly_name" 
+                               style="flex:1;">
+                    </div>`;
+                
                 const saveBtn = `<a href="#" class="red-ui-button device-save-btn" data-ieee="${device.ieee_address}"><i class="fa fa-check"></i></a>`;
                 const removeBtn = `<a href="#" class="red-ui-button device-remove-btn" data-ieee="${device.ieee_address}"><i class="fa fa-trash"></i></a>`;
                 
-                $('#devices-table tbody').append(
-                    `<tr data-ieee="${device.ieee_address}">
+                const lqiColor = lqi > 150 ? '#2e7d32' : (lqi > 50 ? '#f57c00' : '#d32f2f');
+                const battColor = parseInt(battery) > 50 ? '#2e7d32' : (parseInt(battery) > 20 ? '#f57c00' : '#d32f2f');
+                
+                $('#devices-table tbody').append(`
+                    <tr class="z2m-device-row" data-ieee="${device.ieee_address}" data-full-path="${fullPath}">
                         <td class="status-col">${statusIcon}</td>
                         <td>${input}</td>
-                        <td>${info}</td>
-                        <td>${modelCell}</td>
+                        <td><small>${model}</small></td>
+                        <td style="color:${lqiColor}; font-weight:bold;">${lqi}</td>
+                        <td style="color:${battColor}; font-weight:bold;">${battery}</td>
+                        <td><small>${lastSeen}</small></td>
                         <td>${saveBtn}</td>
                         <td>${removeBtn}</td>
-                    </tr>`
-                );
+                    </tr>
+                `);
             });
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASSO 4: ATUALIZAR HEADER DE ORDENAÇÃO
+            // ═══════════════════════════════════════════════════════════════════════
             
             $('#devices-table th.sortable').removeClass('sorted-asc sorted-desc');
             $(`#devices-table th[data-sort="${sortKey}"]`).addClass(sortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc');
             
             $('#devices-table').show();
             
+            // ═══════════════════════════════════════════════════════════════════════
+            // EVENT HANDLERS
+            // ═══════════════════════════════════════════════════════════════════════
+            
+            // ✅ FOLDER COLLAPSE/EXPAND
+            $('#devices-table').off('click', '.z2m-group-header-row').on('click', '.z2m-group-header-row', function() {
+                const $clickedHeader = $(this);
+                const normalizedPath = $clickedHeader.data('path');
+                
+                // Toggle collapsed state
+                $clickedHeader.toggleClass('collapsed');
+                
+                // Toggle icons
+                $clickedHeader.find('i.fa-chevron-down, i.fa-chevron-right').toggleClass('fa-chevron-down fa-chevron-right');
+                $clickedHeader.find('i.fa-folder-open-o, i.fa-folder-o').toggleClass('fa-folder-open-o fa-folder-o');
+                
+                // Update visibility of all rows
+                updateRowVisibility();
+            });
+            
+            function updateRowVisibility() {
+                // First, hide/show sub-folders based on parent state
+                $('#devices-table .z2m-group-header-row').each(function() {
+                    const $header = $(this);
+                    const headerPath = $header.data('path');
+                    const headerLevel = $header.data('level');
+                    
+                    // Check if any parent is collapsed
+                    let shouldBeVisible = true;
+                    
+                    for (let level = 0; level < headerLevel; level++) {
+                        const pathParts = headerPath.split('/');
+                        const parentPath = pathParts.slice(0, level + 1).join('/');
+                        const $parentHeader = $(`#devices-table .z2m-group-header-row[data-path="${parentPath}"]`);
+                        
+                        if ($parentHeader.hasClass('collapsed')) {
+                            shouldBeVisible = false;
+                            break;
+                        }
+                    }
+                    
+                    $header.toggle(shouldBeVisible);
+                });
+                
+                // Then, hide/show devices based on their folder state
+                $('#devices-table .z2m-device-row').each(function() {
+                    const $row = $(this);
+                    const devicePath = $row.data('full-path');
+                    if (!devicePath) return;
+                    
+                    const normalizedDevicePath = devicePath.toLowerCase();
+                    const pathSegments = normalizedDevicePath.split(/[\/\\]/);
+                    pathSegments.pop(); // Remove device name
+                    
+                    let shouldBeVisible = true;
+                    
+                    // Check if any parent folder is collapsed
+                    for (let i = 1; i <= pathSegments.length; i++) {
+                        const parentPath = pathSegments.slice(0, i).join('/');
+                        const $parentHeader = $(`#devices-table .z2m-group-header-row[data-path="${parentPath}"]`);
+                        
+                        if ($parentHeader.hasClass('collapsed')) {
+                            shouldBeVisible = false;
+                            break;
+                        }
+                    }
+                    
+                    $row.toggle(shouldBeVisible);
+                });
+            }
+            
             // DEVICE SAVE BUTTON
             $('.device-save-btn').off('click').on('click', function(e) {
                 e.preventDefault();
                 const ieee = $(this).data('ieee');
-                const newName = $(this).closest('tr').find('.node-input-devices-friendly_name').val();
+                const $input = $(this).closest('tr').find('.node-input-devices-friendly_name');
+                const oldFullName = $input.data('full-name');
+                const editedLeaf = $input.val();
+                
+                const nameParts = oldFullName.split(/[\/\\]/);
+                nameParts[nameParts.length - 1] = editedLeaf;
+                const finalNewName = nameParts.join('/');
                 
                 $.getJSON('zigbee2mqtt/renameDevice', {
                     controllerID: currentServer,
                     ieee_address: ieee,
-                    newName: newName
+                    newName: finalNewName
                 }).done(function(data) {
                     if ("error" in data) {
                         alert(data.description);
@@ -1591,8 +1360,8 @@ RED.nodes.registerType('zigbee2mqtt-bridge', {
                 }
             });
         }
-        
-        $('#devices-table').off('click', 'th.sortable').on('click', 'th.sortable', function() {
+
+    $('#devices-table').off('click', 'th.sortable').on('click', 'th.sortable', function() {
             const sortKey = $(this).data('sort');
             const currentOrder = $(this).hasClass('sorted-asc') ? 'desc' : 'asc';
             loadDevices(sortKey, currentOrder);
@@ -1945,14 +1714,16 @@ RED.nodes.registerType('zigbee2mqtt-bridge', {
     // ═══════════════════════════════════════════════════════
     // oneditsave
     // ═══════════════════════════════════════════════════════
-    oneditsave: function() {
-        this.permitjoin_time = parseInt($('#node-input-permitjoin-time').val()) || 180;
+     oneditsave: function() {
+        const node = this;
+        const d = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Bridge') : console;
+ 
+        node.permitjoin_time = parseInt($('#node-input-permitjoin-time').val()) || 180;
         
-        // ✅ Parar monitoramento ao salvar
-        if (this._z2m_stateCheckInterval) {
-            console.log('[Z2M] 🛑 Cleanup: Stopping monitoring on SAVE');
-            clearInterval(this._z2m_stateCheckInterval);
-            this._z2m_stateCheckInterval = null;
+        if (node._z2m_stateCheckInterval) {
+            if (d && d.log) d.log('🛑 Cleanup: Stopping monitoring on SAVE');
+            clearInterval(node._z2m_stateCheckInterval);
+            node._z2m_stateCheckInterval = null;
         }
     },
 
@@ -1960,11 +1731,21 @@ RED.nodes.registerType('zigbee2mqtt-bridge', {
     // oneditcancel
     // ═══════════════════════════════════════════════════════    
     oneditcancel: function() {
-        // ✅ Parar monitoramento ao cancelar
+        // LIMPEZA: Garantir que o intervalo é limpo e a referência removida
+        // para evitar chamadas API fantasma após fechar o editor.
+        var debug = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Bridge') : console;
+ 
         if (this._z2m_stateCheckInterval) {
-            console.log('[Z2M] 🛑 Cleanup: Stopping monitoring on CANCEL');
+            debug.log('🛑 Cleanup: Stopping monitoring on CANCEL');
             clearInterval(this._z2m_stateCheckInterval);
             this._z2m_stateCheckInterval = null;
+        }
+        // Limpar também quaisquer timeouts pendentes de permitJoin se existirem
+        // Also clear permitJoinTimeout which was defined globally in oneditprepare scope
+        // Note: This requires permitJoinTimeout to be accessible here, or attached to 'this'
+        if (this._permitJoinTimeout) {
+            clearTimeout(this._permitJoinTimeout);
+            this._permitJoinTimeout = null;
         }
     }
 });

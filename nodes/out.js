@@ -11,14 +11,13 @@ module.exports = function(RED) {
             node.server = RED.nodes.getNode(node.config.server);
 
             if (node.server) {
-                // ✅ SUBSCREVER EVENTOS DO SERVIDOR (como no in.js)
+                // ✅ SUBSCREVER EVENTOS DO SERVIDOR
                 node.listener_onMQTTConnect = function() { node.onMQTTConnect(); }
                 node.server.on('onMQTTConnect', node.listener_onMQTTConnect);
 
                 node.listener_onConnectError = function() { node.onConnectError(); }
                 node.server.on('onConnectError', node.listener_onConnectError);
 
-                // ✅ CRÍTICO: Listener para o estado da bridge (como no in.js linha 26-27)
                 node.listener_onMQTTBridgeState = function(data) { node.onMQTTBridgeState(data); }
                 node.server.on('onMQTTBridgeState', node.listener_onMQTTBridgeState);
 
@@ -42,7 +41,7 @@ module.exports = function(RED) {
                 node.on('input', function(message) {
                     clearTimeout(node.cleanTimer);
 
-                    // ✅ VALIDAR CONEXÃO (como no bridge.js linha 36-38)
+                    // ✅ VALIDAR CONEXÃO
                     if (!node.server || !node.server.mqtt || !node.server.connection) {
                         node.status({
                             fill: "red",
@@ -64,6 +63,7 @@ module.exports = function(RED) {
                         let payload;
                         let options = {};
                         
+                        // 1. PROCESSAR PAYLOAD
                         switch (node.config.payloadType) {
                             case '':
                             case null:
@@ -84,6 +84,7 @@ module.exports = function(RED) {
                             }
                             
                             case 'z2m_payload':
+                                // Lógica para valor manual vinda do slider ou input numérico
                                 if (node.config.payload === '__manual__' && node.config.manualPayloadValue) {
                                     payload = node.config.manualPayloadValue;
                                 } else {
@@ -92,7 +93,7 @@ module.exports = function(RED) {
                                 break;
 
                             case 'num': {
-                                payload = parseInt(node.config.payload);
+                                payload = parseFloat(node.config.payload);
                                 break;
                             }
 
@@ -102,18 +103,27 @@ module.exports = function(RED) {
                             }
 
                             case 'json': {
-                                if (Zigbee2mqttHelper.isJson(node.config.payload)) {
-                                    payload = JSON.parse(node.config.payload);
-                                } else {
-                                    node.warn('Incorrect payload. Waiting for valid JSON');
+                                try {
+                                        const rawPayload = node.config.payload;
+                                        if (typeof rawPayload === 'object' && rawPayload !== null) {
+                                            payload = rawPayload;
+                                        } else if (typeof rawPayload === 'string' && rawPayload.trim() !== '') {
+                                            payload = JSON.parse(rawPayload);
+                                        } else {
+                                             // Handle numbers/booleans gracefully if passed as config
+                                            payload = rawPayload;
+                                        }
+                                } catch (e) {
+                                    node.warn('Incorrect payload. Waiting for valid JSON: ' + e.message);
                                     node.status({
                                         fill: "red",
                                         shape: "dot",
-                                        text: "no payload"
+                                        text: "invalid json"
                                     });
                                     node.cleanTimer = setTimeout(function(){
-                                        node.status({}); // clean
+                                        node.status({}); 
                                     }, 3000);
+                                    return;
                                 }
                                 break;
                             }
@@ -125,6 +135,7 @@ module.exports = function(RED) {
                             }
                         }
 
+                        // 2. PROCESSAR COMANDO
                         let command;
                         switch (node.config.commandType) {
                             case '':
@@ -141,44 +152,91 @@ module.exports = function(RED) {
                             case 'z2m_cmd':
                                 command = node.config.command;
                                 
-                                // ✅ Detectar comandos state_lX (state_l1, state_l2, etc.)
+                                // Detetar comandos state_lX
                                 if (command && command.match(/^state_l\d+$/)) {
-                                    // É um canal específico (state_l1, state_l2, etc.)
                                     if (payload === 'TOGGLE' || payload === 'toggle') {
-                                        // Verificar estado atual do canal
                                         if (device.current_values && command in device.current_values) {
                                             const currentState = device.current_values[command];
                                             payload = (currentState === 'ON' || currentState === 'on') ? 'OFF' : 'ON';
                                         } else {
-                                            // Se não tem estado atual, usar OFF como fallback
                                             payload = 'OFF';
                                         }
                                     }
                                 } 
                                 else {
-                                    // Comandos normais (state, brightness, etc.)
                                     switch (command) {
+                                        case 'color_rgb':
+                                            if (typeof payload === 'string' && payload.includes(',')) {
+                                                const p = payload.split(',');
+                                                payload = { color: { r: parseInt(p[0]), g: parseInt(p[1]), b: parseInt(p[2]) } };
+                                                command = null; // Envia payload direto
+                                            } else {
+                                                payload = {"color": {"rgb": payload}};
+                                                command = null;
+                                            }
+                                            break;
+                                            
+                                        case 'color_xy':
+                                            if (typeof payload === 'string' && payload.includes(',')) {
+                                                const p = payload.split(',');
+                                                payload = { color: { x: parseFloat(p[0]), y: parseFloat(p[1]) } };
+                                                command = null;
+                                            } else {
+                                                payload = {"color": {"x": payload}};
+                                                command = null;
+                                            }
+                                            break;
+
+                                        case 'color_hsb':
+                                            if (typeof payload === 'string' && payload.includes(',')) {
+                                                const p = payload.split(',');
+                                                payload = { color: { h: parseInt(p[0]), s: parseInt(p[1]), b: parseInt(p[2]) } };
+                                                command = null;
+                                            } else {
+                                                payload = {"color": {"hsb": payload}};
+                                                command = null;
+                                            }
+                                            break;
+                                            
+                                        case 'color_hex':
+                                            payload = {"color": {"hex": payload}};
+                                            command = null;
+                                            break;
+                                            
+                                        case 'color_hue':
+                                            payload = {"color": {"hue": parseInt(payload)}};
+                                            command = null;
+                                            break;
+                                            
+                                        case 'color_saturation':
+                                            payload = {"color": {"saturation": parseInt(payload)}};
+                                            command = null;
+                                            break;
                                         case 'state':
                                             if (payload === 'toggle' || payload === 'TOGGLE') {
-                                                // Toggle para "state" genérico
                                                 if (device.current_values && 'position' in device.current_values) {
                                                     payload = device.current_values.position > 0 ? 'close' : 'open';
                                                 } else if (device.current_values && 'state' in device.current_values) {
                                                     const currentState = device.current_values.state;
                                                     payload = (currentState === 'ON' || currentState === 'on') ? 'OFF' : 'ON';
                                                 } else {
-                                                    payload = 'ON'; // Fallback
+                                                    payload = 'ON';
                                                 }
                                             }
                                             break;
                                             
                                         case 'brightness':
                                             payload = parseInt(payload);
+                                            if (isNaN(payload)) {
+                                                node.warn("Invalid brightness value received: " + message.payload);
+                                                return;
+                                            }
                                             options["state"] = payload > 0 ? "on" : "Off";
                                             break;
 
                                         case 'position':
                                             payload = parseInt(payload);
+                                            if (isNaN(payload)) return;
                                             break;
                                         
                                         case 'scene':
@@ -202,41 +260,39 @@ module.exports = function(RED) {
                                             break;
 
                                         case 'color':
-                                            payload = {"color": payload};
-                                            break;
+//                                            payload = {"color": payload};
+//                                            break;
                                             
                                         case 'color_rgb':
-                                            payload = {"color": {"rgb": payload}};
-                                            break;
+//                                            payload = {"color": {"rgb": payload}};
+//                                            break;
                                             
                                         case 'color_hex':
-                                            command = "color";
-                                            payload = {"color": {"hex": payload}};
-                                            break;
+//                                            command = "color";
+//                                            payload = {"color": {"hex": payload}};
+//                                            break;
                                             
                                         case 'color_hsb':
-                                            command = "color";
-                                            payload = {"color": {"hsb": payload}};
-                                            break;
+//                                            command = "color";
+//                                            payload = {"color": {"hsb": payload}};
+//                                            break;
                                             
                                         case 'color_hsv':
-                                            command = "color";
-                                            payload = {"color": {"hsv": payload}};
-                                            break;
+//                                            command = "color";
+//                                            payload = {"color": {"hsv": payload}};
+//                                            break;
                                             
                                         case 'color_hue':
-                                            command = "color";
-                                            payload = {"color": {"hue": payload}};
-                                            break;
+//                                            command = "color";
+//                                            payload = {"color": {"hue": payload}};
+//                                            break;
                                             
                                         case 'color_saturation':
-                                            command = "color";
-                                            payload = {"color": {"saturation": payload}};
-                                            break;
+//                                            command = "color";
+//                                            payload = {"color": {"saturation": payload}};
+//                                            break;
 
                                         case 'color_temp':
-                                            break;
-
                                         case 'brightness_move':
                                         case 'brightness_step':
                                         case 'alert':
@@ -260,6 +316,7 @@ module.exports = function(RED) {
                             }
                         }
 
+                        // 3. PROCESSAR OPÇÕES
                         let optionsToSend = {};
                         switch (node.config.optionsType) {
                             case '':
@@ -288,87 +345,82 @@ module.exports = function(RED) {
                                 break;
                         }
 
-                        // Apply options
                         if (Object.keys(optionsToSend).length) {
                             node.server.setDeviceOptions(device.friendly_name, optionsToSend);
                         }
 
-                        // Empty payload, stop
-                        if (payload === null) {
-                            return false;
-                        }
-
-                        if (payload !== undefined) {
+                         // 4. ENVIAR COMANDO
+                        if (payload !== undefined && payload !== null) {
                             let toSend = {};
                             let statusText = '';
-                            
-                            if (typeof(payload) == 'object') {
-                                toSend = payload;
-                                statusText = JSON.stringify(payload);
-                            } else {
-                                toSend[command] = payload;
-                                statusText = String(payload); // ✅ APENAS PAYLOAD
-                            }
+                            let topic = node.server.getTopic('/' + device.friendly_name + '/set');
 
-                            node.log('Published to mqtt topic: ' + node.server.getTopic('/' + device.friendly_name + '/set') + ' : ' + JSON.stringify(toSend));
-                            
-                            // ✅ PUBLICAR COM CALLBACK DE ERRO (como no bridge.js linha 57-67)
-                            node.server.mqtt.publish(
-                                node.server.getTopic('/' + device.friendly_name + '/set'), 
-                                JSON.stringify(toSend),
-                                {'qos': parseInt(node.server.config.mqtt_qos || 0)},
-                                function(err) {
-                                    if (err) {
-                                        node.status({
-                                            fill: "red",
-                                            shape: "dot",
-                                            text: "publish failed"
-                                        });
-                                        node.error("MQTT publish error: " + err.message);
-                                        
-                                        // Restaurar status após 5 segundos
-                                        setTimeout(() => {
-                                            node.updateStatus();
-                                        }, 5000);
-                                    }
+                            try {
+                                // Lógica de construção do objeto (Cores vs Simples)
+                                if (command === null) {
+                                    toSend = payload;
+                                    statusText = JSON.stringify(payload);
                                 }
-                            );
+                                else if (typeof(payload) === 'object') {
+                                    toSend = payload;
+                                    statusText = JSON.stringify(payload);
+                                } 
+                                else {
+                                    toSend[command] = payload;
+                                    statusText = String(payload);
+                                }
 
-                            let fill = node.server.getDeviceAvailabilityColor(node.server.getTopic('/' + device.friendly_name));
-                            
-                            // ✅ MOSTRAR STATUS IMEDIATAMENTE
-                            node.status({
-                                fill: fill,
-                                shape: "dot",
-                                text: statusText
-                            });
-                            
-                            // ✅ APÓS 3 SEGUNDOS, MUDAR PARA "RING" COM TIMESTAMP
-                            let time = Zigbee2mqttHelper.statusUpdatedAt();
-                            node.cleanTimer = setTimeout(function(){
-                                node.status({
-                                    fill: fill,
-                                    shape: "ring",
-                                    text: statusText + ' ' + time
-                                });
-                            }, 3000);
-                            
+                                const payloadStr = JSON.stringify(toSend);
+                                
+                                if (RED.settings.verbose) {
+                                    node.log('Published to mqtt topic: ' + topic + ' : ' + payloadStr);
+                                }
+                                
+                                node.server.mqtt.publish(
+                                    topic, 
+                                    payloadStr,
+                                    {'qos': parseInt(node.server.config.mqtt_qos || 0)},
+                                    function(err) {
+                                        if (err) {
+                                            node.status({fill: "red", shape: "dot", text: "publish failed"});
+                                            node.error("MQTT publish error: " + err.message);
+                                        }
+                                    }
+                                );
+
+                                // Atualizar Status Visual
+                                let fill = node.server.getDeviceAvailabilityColor(node.server.getTopic('/' + device.friendly_name));
+                                node.status({ fill: fill, shape: "dot", text: statusText });
+                                
+                                node.cleanTimer = setTimeout(function(){
+                                    node.status({ fill: fill, shape: "ring", text: statusText });
+                                }, 3000);
+
+                            } catch (e) {
+                                node.error("Serialization error: " + e.message, message);
+                                node.status({fill: "red", shape: "dot", text: "error"});
+                            }
                         } else {
+                            // Else do payload válido
                             node.status({
                                 fill: "red",
                                 shape: "dot",
                                 text: "no payload"
                             });
                         }
-                    } else {
+                    
+                    } else { 
+                        // ✅ FECHEI O IF (DEVICE) AQUI
+                        // Else do device encontrado
                         node.status({
                             fill: "red",
                             shape: "dot",
-                            text: "no device"
+                            text: "device not found"
                         });
+                        node.error(`Device not found for key: ${key}`);
                     }
                 });
-
+ 
             } else {
                 node.status({
                     fill: "red",
@@ -377,11 +429,10 @@ module.exports = function(RED) {
                 });
             }
         }
-
-        // ✅ MÉTODO PARA ATUALIZAR STATUS (como no bridge.js)
+ 
+           
         updateStatus() {
             let node = this;
-            
             if (!node.server || !node.server.mqtt || !node.server.connection) {
                 node.status({
                     fill: "red",
@@ -397,7 +448,6 @@ module.exports = function(RED) {
             }
         }
 
-        // ✅ CALLBACK QUANDO MQTT CONECTA (como no bridge.js linha 102)
         onMQTTConnect() {
             let node = this;
             node.status({
@@ -405,8 +455,6 @@ module.exports = function(RED) {
                 shape: "ring",
                 text: "MQTT connected"
             });
-            
-            // Após 3 segundos, mudar para "ready"
             clearTimeout(node.cleanTimer);
             node.cleanTimer = setTimeout(function() {
                 node.status({
@@ -417,7 +465,6 @@ module.exports = function(RED) {
             }, 3000);
         }
 
-        // ✅ CALLBACK QUANDO MQTT DESCONECTA (como no in.js)
         onConnectError() {
             let node = this;
             node.status({
@@ -427,38 +474,39 @@ module.exports = function(RED) {
             });
         }
 
-        // ✅ CRÍTICO: Callback para estado da bridge (como no in.js linha 75-81)
         onMQTTBridgeState(data) {
             let node = this;
             if (data.payload) {
-                // Bridge está online - restaurar para ready
                 node.status({
                     fill: "green",
                     shape: "ring",
                     text: "ready"
                 });
             } else {
-                // Bridge está offline
                 node.onConnectError();
             }
         }
 
-        // ✅ LIMPAR LISTENERS AO FECHAR (como no in.js linha 93-107)
         onClose() {
             let node = this;
-            
-            if (node.listener_onMQTTConnect) {
-                node.server.removeListener('onMQTTConnect', node.listener_onMQTTConnect);
-            }
-            if (node.listener_onConnectError) {
-                node.server.removeListener('onConnectError', node.listener_onConnectError);
-            }
-            if (node.listener_onMQTTBridgeState) {
-                node.server.removeListener('onMQTTBridgeState', node.listener_onMQTTBridgeState);
+            if (node.server) {
+                if (node.listener_onMQTTConnect) {
+                    node.server.removeListener('onMQTTConnect', node.listener_onMQTTConnect);
+                }
+                if (node.listener_onConnectError) {
+                    node.server.removeListener('onConnectError', node.listener_onConnectError);
+                }
+                if (node.listener_onMQTTBridgeState) {
+                    node.server.removeListener('onMQTTBridgeState', node.listener_onMQTTBridgeState);
+                }
             }
         }
 
         fromHomeKitFormat(message, device) {
+            // Validação defensiva
+            if (!message || !message.payload) 
+                return null;
+            
             if ("hap" in message && message.hap.context === undefined) {
                 return null;
             }

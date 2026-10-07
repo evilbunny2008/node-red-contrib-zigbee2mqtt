@@ -1,16 +1,7 @@
-<script type="text/javascript">
-// ✅ Usar Z2MDebug do contexto global (já carregado pelo api.html)
-(function(win) {
-    if (!win.Z2MDebug && win.parent && win.parent.Z2MDebug) {
-        win.Z2MDebug = win.parent.Z2MDebug;
-    }
-})(window);
-</script>
-
 <script type='text/javascript'>
     $.getScript('resources/node-red-contrib-zigbee2mqtt/tokeninput/jquery.tokeninput.js');
 </script>
- <script type="text/x-red" data-template-name="zigbee2mqtt-out">
+<script type="text/x-red" data-template-name="zigbee2mqtt-out">
         <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
         <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
 
@@ -18,27 +9,26 @@
             <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
             <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
         </div>
+        <!-- Node Name Input -->        
        <div class="form-row" style="display:none;">
             <label for="node-input-friendly_name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.friendly_name"></span></label>
             <input type="text" id="node-input-friendly_name" data-i18n="[placeholder]placeholder.friendly_name">
         </div>
+        <!-- Server Input -->
         <div class="form-row">
             <label for="node-input-server" class="l-width"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
             <input type="text" id="node-input-server">
         </div>
+        <!-- Device Input -->
         <div class="form-row">
             <label for="node-input-device_id" class="l-width"><i class="fa fa-crosshairs"></i> <span data-i18n="label.topic"></span></label>
             <select id="node-input-device_id" class="s-width" ></select>
         </div>
-    <!--    <div class="form-row">-->
-    <!--        <label for='node-input-enableMultiple' class="l-width"></label>-->
-    <!--        <input type="checkbox" id="node-input-enableMultiple" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="node-red-contrib-spruthub/server:label.enable_multiple"></span></input>-->
-    <!--    </div>-->
+        <!-- Refresh Device Button -->        
         <div class="form-row">
             <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
             <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
         </div>
-        
         <!-- Command Input -->
         <div class="form-row">
             <label for="node-input-command" class="l-width"><i class="fa fa-tasks"></i> <span data-i18n="label.command"></span></label>
@@ -49,108 +39,50 @@
             <input type="hidden" id="node-input-commandType">
         </div>
         
-        <!-- Payload Input -->
-        <div class="form-row">
-            <label for="node-input-payload" class="l-width"><i class="fa fa-envelope"></i> <span data-i18n="label.payload"></span></label>
-            <input type="text" id="node-input-payload" style="width:70%">
-            <input type="hidden" id="node-input-payloadType">
-        </div>
-
-        <!-- NOVO: Campo Manual para Payload -->
-
-        <!-- NOVO: Slider para Payload Manual -->
-        <div class="form-row" id="manual-payload-row" style="display:none; padding: 10px 0;">
-            <label for="node-input-manualPayloadValue" class="l-width">
-                <i class="fa fa-clock-o"></i> <span id="manual-label">Manual Value</span>
+         <!-- ============================================================================ -->
+        <!-- 🎨 LAYOUT INLINE - Checkbox ao lado direito do Payload                        -->
+        <!-- ============================================================================ -->
+        
+        <!-- ============================================================================ -->
+        <!-- 🎨 LAYOUT: Payload + Manual Controls Container                               -->
+        <!-- ============================================================================ -->
+        <!-- 1. Row do Payload + Checkbox -->
+        <div class="form-row" id="payload-row">
+            <label for="node-input-payload" class="l-width">
+                <i class="fa fa-envelope"></i> <span data-i18n="label.payload"></span>
             </label>
-            <div style="display: inline-block; width: 70%; vertical-align: middle;">
-                <!-- Campo de input VISIVEL e editável -->
-                <input type="number" 
-                       id="node-input-manualPayloadValue" 
-                       value="0" 
-                       min="0"
-                       max="43200"
-                       step="60"
-                       placeholder="Enter value..."
-                       style="width: 100px; margin-bottom: 10px; display: inline-block;">
-                <span id="slider-value-display" style="margin-left: 10px; font-weight: bold; color: #2196F3;">0s</span>
+            
+            <div style="display: inline-flex; align-items: center; width: 70%; gap: 5px;">
+                <div style="flex: 1; min-width: 0;">
+                    <input type="text" id="node-input-payload" style="width: 100%;">
+                    <input type="hidden" id="node-input-payloadType">
+                </div>
                 
-                <!-- Slider -->
-                <input type="range" 
-                       id="node-input-manualPayloadSlider" 
-                       min="0" 
-                       max="43200" 
-                       value="0" 
-                       step="60"
-                       style="width: 100%; margin-top: 5px;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #666; margin-top: 2px;">
-                    <span id="slider-min-label">0s</span>
-                    <span id="slider-max-label">12h</span>
+                <div id="slider-visibility-inline" style="display: none; flex-shrink: 0; margin-left: 5px;" title="Show Manual Controls">
+                    <label style="margin: 0; cursor: pointer; width: auto;">
+                        <input type="checkbox" 
+                               id="node-input-manualPayloadSliderVisible" 
+                               style="vertical-align: middle; margin: 0 4px 0 0; width: auto;">
+                        <i class="fa fa-sliders" style="color: #555; font-size: 14px; vertical-align: middle;"></i>
+                    </label>
                 </div>
             </div>
         </div>
 
-        <style>
-        /* Estilo do slider inspirado no exemplo */
-        #node-input-manualPayloadSlider {
-            -webkit-appearance: none;
-            appearance: none;
-            height: 8px;
-            border-radius: 5px;
-            background: linear-gradient(to right, #4CAF50 0%, #FFC107 50%, #F44336 100%);
-            outline: none;
-            opacity: 0.9;
-            transition: opacity 0.2s;
-        }
-
-        #node-input-manualPayloadSlider:hover {
-            opacity: 1;
-        }
-
-        #node-input-manualPayloadSlider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #fff;
-            border: 3px solid #2196F3;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-
-        #node-input-manualPayloadSlider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-        }
-
-        #node-input-manualPayloadSlider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #fff;
-            border: 3px solid #2196F3;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-
-        #node-input-manualPayloadSlider::-moz-range-thumb:hover {
-            transform: scale(1.2);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-        }
-
-        #manual-payload-row {
-            background: #f9f9f9;
-            border-left: 4px solid #2196F3;
-            margin: 10px 0;
-            padding: 15px 10px !important;
-            border-radius: 4px;
-        }
-        </style>
-        
-        
+        <!-- 2. Contentor Principal dos Controlos Manuais -->
+        <div id="z2m-manual-controls-container" style="display:none;">
+            
+            <!-- WRAPPER 1: Caixas de Valor (Inputs) -->
+             <div id="z2m-inputs-wrapper" class="form-row">
+                 <!-- Injetado via JS -->
+            </div>
+ 
+            <!-- WRAPPER 2: Sliders (Ranges) -->
+             <div id="z2m-sliders-wrapper">
+                 <!-- Injetado via JS -->
+            </div>
+        </div>
+   
         <!-- Homekit help -->
         <div class="form-row help_block help_block__homekit_homekit">
             <div class="form-tips">
@@ -220,16 +152,15 @@
                 payloadType: {
                     value: 'msg',
                 },
-                manualPayloadValue: {
-                    value: '',
-                },
                 optionsValue: {
                     value: null,
                 },
                 optionsType: {
                     value: null,
                 },
-
+                manualPayloadSliderVisible: {
+                    value: true,
+                }
             },
             inputLabels: "value",
             paletteLabel: 'out',
@@ -248,369 +179,83 @@
                 }
                 return label;
             },
-                                    
-            oneditprepare: async function() {
+            oneditprepare: function() {
                 let node = this;
-            
-            // ✅ Criar debugger específico - SEM LOG AQUI
-            var debug = Z2MDebug.create('Z2M Out');
-    
-            // Função para mostrar/esconder blocos de ajuda
+                const d = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Out') : console;
+                node.z2mDebug = d;
+                
+                d.log('🚀 oneditprepare STARTING (v3.7 Safe Entry)');
+                
                 function showHelpBlock() {
                     var $inputCommand = $('#node-input-command');
                     var command = $inputCommand.val();
                     var commandType = $('#node-input-commandType').val();
-                    if (command === '{}') command = 'json';
-                    if (commandType === 'str') command = 'custom';
+                    var cmd = (command === '{}') ? 'json' : command;
+                    var type = (commandType === 'str') ? 'custom' : commandType;
                     $('.help_block').hide();
-                    $('.help_block__' + commandType + '_' + command).show();
+                    $('.help_block__' + type + '_' + cmd).show();
                 }
+ 
+                node.z2mEditor = new Zigbee2MqttEditor(node, { 'allow_empty': false, 'mode': 'out' });
                 
-                // Função para mostrar/esconder blocos de ajuda
-                function setupSlider() {
-                    const $slider = $('#node-input-manualPayloadSlider');
-                    const $input = $('#node-input-manualPayloadValue');
-                    const $display = $('#slider-value-display');
-                    const $label = $('#manual-label');
-                    const $minLabel = $('#slider-min-label');
-                    const $maxLabel = $('#slider-max-label');
-                    
-                    // Função para formatar tempo
-                    function formatTime(seconds) {
-                        const hours = Math.floor(seconds / 3600);
-                        const minutes = Math.floor((seconds % 3600) / 60);
-                        const secs = seconds % 60;
-                        
-                        let parts = [];
-                        if (hours > 0) parts.push(hours + 'h');
-                        if (minutes > 0) parts.push(minutes + 'm');
-                        if (secs > 0 || parts.length === 0) parts.push(secs + 's');
-                        
-                        return parts.join(' ');
-                    }
-                    
-                    // Atualizar display
-                    function updateDisplay(value) {
-                        const max = parseInt($slider.attr('max'));
-                        const min = parseInt($slider.attr('min'));
-                        
-                        if (max > 1000) {
-                            $display.text(value + 's (' + formatTime(value) + ')');
-                        } else if (min >= 150) {
-                            $display.text(value + 'K');
-                        } else {
-                            $display.text(value);
-                        }
-                    }
-                    
-                    // Detectar tipo de comando para ajustar range
-                    function adjustSliderForCommand() {
-                        const $cmd = $('#node-input-command');
-                        if ($cmd.data('typedInput')) {
-                            try {
-                                const cmd = $cmd.typedInput('value');
-                                
-                                // Countdown: até 12 horas (43200s)
-                                if (cmd && cmd.toLowerCase().includes('countdown')) {
-                                    $slider.attr('min', 0);
-                                    $slider.attr('max', 43200);
-                                    $slider.attr('step', 60);
-                                    $input.attr('min', 0);
-                                    $input.attr('max', 43200);
-                                    $input.attr('step', 60);
-                                    $label.text('Countdown Duration');
-                                    $minLabel.text('0s');
-                                    $maxLabel.text('12h');
-                                }
-                                // Brightness: 0-255
-                                else if (cmd && cmd.toLowerCase().includes('brightness')) {
-                                    $slider.attr('min', 0);
-                                    $slider.attr('max', 255);
-                                    $slider.attr('step', 1);
-                                    $input.attr('min', 0);
-                                    $input.attr('max', 255);
-                                    $input.attr('step', 1);
-                                    $label.text('Brightness Level');
-                                    $minLabel.text('0');
-                                    $maxLabel.text('255');
-                                }
-                                // Temperatura de cor: 150-500
-                                else if (cmd && cmd.toLowerCase().includes('color_temp')) {
-                                    $slider.attr('min', 150);
-                                    $slider.attr('max', 500);
-                                    $slider.attr('step', 10);
-                                    $input.attr('min', 150);
-                                    $input.attr('max', 500);
-                                    $input.attr('step', 10);
-                                    $label.text('Color Temperature');
-                                    $minLabel.text('150K');
-                                    $maxLabel.text('500K');
-                                }
-                                // Default: 0-100
-                                else {
-                                    $slider.attr('min', 0);
-                                    $slider.attr('max', 100);
-                                    $slider.attr('step', 1);
-                                    $input.attr('min', 0);
-                                    $input.attr('max', 100);
-                                    $input.attr('step', 1);
-                                    $label.text('Manual Value');
-                                    $minLabel.text('0');
-                                    $maxLabel.text('100');
-                                }
-                                
-                                // Resetar para valor minimo quando muda comando
-                                const minVal = parseInt($slider.attr('min'));
-                                $slider.val(minVal);
-                                $input.val(minVal);
-                                updateDisplay(minVal);
-                                
-                            } catch(e) {
-                                // Silenciar erro
-                            }
-                        }
-                    }
-                    
-                    // Listener do SLIDER - atualiza o input
-                    $slider.on('input', function() {
-                        const value = parseInt($(this).val());
-                        $input.val(value);
-                        updateDisplay(value);
-                    });
-                    
-                    // Listener do INPUT - atualiza o slider
-                    $input.on('input change', function() {
-                        const value = parseInt($(this).val()) || 0;
-                        const min = parseInt($slider.attr('min'));
-                        const max = parseInt($slider.attr('max'));
-                        
-                        // Validar limites
-                        const validValue = Math.max(min, Math.min(max, value));
-                        
-                        $slider.val(validValue);
-                        $(this).val(validValue);
-                        updateDisplay(validValue);
-                    });
-                    
-                    // Carregar valor inicial
-                    const initialValue = node.manualPayloadValue || 0;
-                    $slider.val(initialValue);
-                    $input.val(initialValue);
-                    updateDisplay(initialValue);
-                    
-                    // Se o payload atual é __manual__, mostrar o slider
-                    if (node.payload === '__manual__' || (node.manualPayloadValue && node.manualPayloadValue !== '0')) {
-                        $('#manual-payload-row').show();
-                    }
-                    
-                    return adjustSliderForCommand;
-                }
-
-                // Inicializar após pequeno delay
                 setTimeout(() => {
-                    // Criar editor com helper
-                    let helper = new Zigbee2MqttEditor(node, { 
-                        'allow_empty': true,
-                        'mode': 'out'
-                    });
-                    
-                    helper.build().then(() => {
-                        // Setup slider DEPOIS do build
-                        const adjustSliderForCommand = setupSlider();
-                        
-                        // Quando comando muda, ajustar slider
-                        $('#node-input-command').on('change', function(event, type, value) {
-                            setTimeout(() => {
-                                adjustSliderForCommand();
-                            }, 100);
-                        });
-                        
-                        // Mostrar help block inicial
+                    node.z2mEditor.build().then(() => {
+                        d.log('✅ Editor build complete');
                         showHelpBlock();
-                        
-                        // Disparar evento inicial
-                        setTimeout(() => {
-                            const $cmd = $('#node-input-command');
-                            if ($cmd.data('typedInput')) {
-                                const currentType = $cmd.typedInput('type');
-                                const currentValue = $cmd.typedInput('value');
-                                $cmd.trigger('change', [currentType, currentValue]);
-                            }
-                        }, 100);
                     });
                 }, 100);
-            },
-
-
-            // ============================================================================
-            // PARTE 5: oneditsave - LER DO TYPEDINPUT
-            // ============================================================================  
+            },            
             oneditsave: function() {
-                // ✅ NOVA VALIDAÇÃO: Verificar se device tem comandos
+                let node = this;
+                const d = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Save') : console;
+                if (node.z2mEditor) 
+                    { node.z2mEditor.initializing = false; }
+    
+                // 1. Device ID e Topic
+                const device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
+                node.device_id = device_id && device_id.length ? device_id[0] : null;
+                const selected = $('#node-input-device_id option:selected');
+                node.topic = (selected && selected.length) ? selected.map(function(){return $(this).val();}).get() : null;
+                node.friendly_name = selected.first().data('friendly_name') || null;
+ 
+                // 2. Command TypedInput
                 const $cmd = $('#node-input-command');
-                let hasCommands = true;
-                
-                if ($cmd.data('typedInput')) {
+                if ($cmd.data('typedInput') || $cmd.parent().hasClass('red-ui-typedInput-container')) {
                     try {
-                        const cmdType = $cmd.typedInput('type');
-                        const cmdValue = $cmd.typedInput('value');
-                        
-                        if (cmdType === 'nothing' || !cmdValue || cmdValue === '') {
-                            hasCommands = false;
-                        }
-                    } catch(e) {
-                        // Silenciar erro
-                    }
+                        node.commandType = $cmd.typedInput('type');
+                        const v = $cmd.typedInput('value');
+                        node.command = (v && typeof v === 'object') ? v.value : v;
+                    } catch(e) { console.error('Save Cmd Err:', e); }
                 }
-                
-                // ✅ Se não tem comandos, BLOQUEAR gravação
-                if (!hasCommands) {
-                    RED.notify(
-                        RED._("node-red-contrib-zigbee2mqtt/server:editor.error_no_commands") || 
-                        "This device has no output commands available. Please select a device with controllable features.",
-                        "error"
-                    );
-                    return false;
-                }
-                
-                // Device ID
-                let device_id = $('#node-input-device_id').multipleSelect('getSelects', 'value');
-                this.device_id = device_id && device_id.length ? device_id[0] : null;
-
-                // Topic
-                let selectedOptions = $('#node-input-device_id option:selected');
-                if (selectedOptions && selectedOptions.length) {
-                    this.topic = selectedOptions.map(function() {
-                        return $(this).val();
-                    }).get();
-                } else {
-                    this.topic = null;
-                }
-
-                // Friendly name
-                const selectedOpt = $('#node-input-device_id option:selected').first();
-                this.friendly_name = selectedOpt.data('friendly_name') || null;
-
-                // ✅ Command - ler do typedInput
-                if ($cmd.data('typedInput')) {
+ 
+                // 3. Payload TypedInput
+                const $pay = $('#node-input-payload');
+                if ($pay.data('typedInput') || $pay.parent().hasClass('red-ui-typedInput-container')) {
                     try {
-                        this.commandType = $cmd.typedInput('type');
-                        let cmdValue = $cmd.typedInput('value');
-                        
-                        // ✅ Se é objeto, extrair o .value
-                        if (cmdValue && typeof cmdValue === 'object' && cmdValue.value !== undefined) {
-                            cmdValue = cmdValue.value;
-                        }
-                        
-                        this.command = cmdValue || '';
-                        
-                        console.log('[OUT SAVE] Command saved:', this.commandType, '/', this.command);
-                    } catch(err) {
-                        console.error('[OUT SAVE] Error reading command:', err);
-                        this.command = '';
-                        this.commandType = 'z2m_cmd';
-                    }
-                } else {
-                    console.warn('[OUT SAVE] Command typedInput not initialized');
-                    this.command = '';
-                    this.commandType = 'z2m_cmd';
+                        node.payloadType = $pay.typedInput('type');
+                        let pVal = $pay.typedInput('value');
+                        // Extrair valor de objectos de opção do TypedInput
+                         if (pVal === null || pVal === undefined) pVal = $pay.val();
+                        node.payload = (pVal && typeof pVal === 'object' && pVal.value !== undefined) ? pVal.value : pVal;
+                    } catch(e) { console.error('Save Pay Err:', e); }
                 }
-                
-                // ✅ Payload - ler do typedInput COM VALIDAÇÃO
-                const $payload = $('#node-input-payload');
-                if ($payload.data('typedInput')) {
+ 
+                // 4. Options TypedInput
+                const $opt = $('#node-input-optionsValue');
+                if ($opt.data('typedInput') || $opt.parent().hasClass('red-ui-typedInput-container')) {
                     try {
-                        const payloadType = $payload.typedInput('type');
-                        let payloadValue = $payload.typedInput('value');
-                        
-                        console.log('[OUT SAVE] Payload read from typedInput:', payloadType, '/', payloadValue);
-                        
-                        // ✅ Caso especial: Manual input
-                        if (payloadValue === '__manual__') {
-                            const manualValue = $('#node-input-manualPayloadValue').val();
-                            this.payload = '__manual__';
-                            this.payloadType = 'z2m_payload';
-                            this.manualPayloadValue = manualValue || '0';
-                            
-                            console.log('[OUT SAVE] Manual payload saved:', this.manualPayloadValue);
-                        } 
-                        // ✅ Tipos msg/flow/global - GARANTIR que tem valor
-                        else if (['msg', 'flow', 'global'].includes(payloadType)) {
-                            // Se não tem valor, usar 'payload' como padrão
-                            if (!payloadValue || payloadValue === '') {
-                                payloadValue = 'payload';
-                                console.log('[OUT SAVE] Empty value for', payloadType, '- using default "payload"');
-                            }
-                            
-                            this.payload = payloadValue;
-                            this.payloadType = payloadType;
-                            this.manualPayloadValue = '';
-                            
-                            console.log('[OUT SAVE] Payload saved:', this.payloadType, '/', this.payload);
-                        }
-                        // ✅ Outros tipos (z2m_payload, str, num, json)
-                        else {
-                            this.payload = payloadValue;
-                            this.payloadType = payloadType;
-                            this.manualPayloadValue = '';
-                            
-                            console.log('[OUT SAVE] Payload saved:', this.payloadType, '/', this.payload);
-                        }
-                    } catch(err) {
-                        console.error('[OUT SAVE] Error reading payload:', err);
-                        // ✅ Fallback seguro
-                        this.payload = 'payload';
-                        this.payloadType = 'msg';
-                        this.manualPayloadValue = '';
-                    }
-                } else {
-                    console.warn('[OUT SAVE] Payload typedInput not initialized');
-                    // ✅ Se não existe typedInput mas node tem valores, manter
-                    if (!this.payload) {
-                        this.payload = 'payload';
-                        this.payloadType = 'msg';
-                        this.manualPayloadValue = '';
-                    }
-                }
-
-                // ✅ Options - ler do typedInput
-                const $options = $('#node-input-optionsValue');
-                if ($options.data('typedInput')) {
-                    try {
-                        if (!hasCommands) {
-                            this.optionsType = 'nothing';
-                            this.optionsValue = '';
-                        } else {
-                            this.optionsType = $options.typedInput('type');
-                            this.optionsValue = $options.typedInput('value');
-                        }
-                        
-                        console.log('[OUT SAVE] Options saved:', this.optionsType, '/', this.optionsValue);
-                    } catch(err) {
-                        console.error('[OUT SAVE] Error reading options:', err);
-                        this.optionsType = 'nothing';
-                        this.optionsValue = '';
-                    }
-                } else {
-                    console.warn('[OUT SAVE] Options typedInput not initialized');
-                    this.optionsType = 'nothing';
-                    this.optionsValue = '';
+                        node.optionsType = $opt.typedInput('type');
+                        node.optionsValue = $opt.typedInput('value');
+                    } catch(e) { console.error('Save Opt Err:', e); }
                 }
                 
-                // ✅ Log final para debug
-                console.log('═══════════════════════════════════════════════════════');
-                console.log('[OUT SAVE] FINAL VALUES:');
-                console.log('  - device_id:', this.device_id);
-                console.log('  - commandType:', this.commandType);
-                console.log('  - command:', this.command);
-                console.log('  - payloadType:', this.payloadType);
-                console.log('  - payload:', this.payload);
-                console.log('  - manualPayloadValue:', this.manualPayloadValue);
-                console.log('  - optionsType:', this.optionsType);
-                console.log('  - optionsValue:', this.optionsValue);
-                console.log('═══════════════════════════════════════════════════════');
+                // 5. Checkbox Manual Slider
+                node.manualPayloadSliderVisible = $('#node-input-manualPayloadSliderVisible').is(':checked');
                 
+                if (d && d.log) 
+                    d.log('Saved Node State:', node.command, node.payload);
                 return true;
             }
+
     });
     </script>

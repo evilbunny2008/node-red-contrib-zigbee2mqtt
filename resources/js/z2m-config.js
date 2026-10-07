@@ -16,6 +16,9 @@
 
 (function(window) {
     'use strict';
+    // Cache para regex compilados
+    const REGEX_CACHE = {};
+ 
     // ============================================================================
     // 🔢 NUMERIC PATTERNS - Comandos que aceitam input numérico (e Sliders)
     // ============================================================================
@@ -24,6 +27,12 @@
         'min_brightness',
         'max_brightness',
         'color_temp',
+        'color_rgb',
+        'color',
+        'color_hex',
+        'color_xy',
+        'color_hsb',
+        'color_hsv',
         'color_hue',
         'color_saturation',
         'position',
@@ -32,12 +41,14 @@
         'x',
         'y',
         'countdown',
+        'inching_time',
         'transition',
-        '{any}_detection_min',    // move_detection_min, breath_detection_min, etc.
+        '{any}_detection_min',
         '{any}_detection_max',
-        '{any}_sensitivity',       // move_sensitivity, breath_sensitivity, etc.
+        '{any}_sensitivity',
         '{any}_delay', 
-        '{any}_timeout'
+        '{any}_timeout',
+        "none_delay_time"
     ];
     // ============================================================================
     // 📦 COMPOSITE EXPANSIONS - Expandir comandos compostos (ex: color)
@@ -664,13 +675,31 @@
      * @returns {RegExp}
      */
     function patternToRegex(pattern) {              // Converte pattern string para regex
+        if (REGEX_CACHE[pattern]) 
+            return REGEX_CACHE[pattern];
+        
+        // Otimização: Evitar replace em cadeia se não houver placeholders
+        if (!pattern.includes('{')) {
+             const regex = new RegExp(`^${pattern}$`, 'i');
+             REGEX_CACHE[pattern] = regex;
+             return regex;
+        }
+        
         let regexStr = pattern
-            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')  // Escapar especiais
-            .replace(/\\\{n\\\}/g, '\\d+')            // {n} → \d+
-            .replace(/\\\{any\\\}/g, '.+')            // {any} → .+
-            .replace(/\\\{side\\\}/g, '(left|right|center)');  // {side} → (left|right|center)
-
-        return new RegExp(`^${regexStr}$`, 'i');
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            .replace(/\\\{n\\\}/g, '\\d+')
+            .replace(/\\\{any\\\}/g, '.+')
+            .replace(/\\\{side\\\}/g, '(left|right|center)');
+ 
+        // Add start/end anchors only if not present to avoid double anchoring
+        if (!regexStr.startsWith('^')) 
+            regexStr = '^' + regexStr;
+        if (!regexStr.endsWith('$')) 
+            regexStr = regexStr + '$';
+ 
+        const regex = new RegExp(regexStr, 'i');
+        REGEX_CACHE[pattern] = regex;
+        return regex;
     }
     /**
      * Verifica se comando match um pattern
@@ -714,13 +743,16 @@
      */
     function isNumericCommand(command) {            // Verifica se um comando aceita valores numéricos
         if (!command) return false;
-
+        const cmdLower = command.toLowerCase();
+        // Limpa apenas os sufixos de instância (_l1, _1, _left) para a comparação base
+        const baseName = cmdLower.replace(/(_l\d+|_?\d+|_(left|right|center|top|bottom))$/, '');
+ 
         for (let pattern of NUMERIC_COMMAND_PATTERNS) {
-            if (matchesPattern(command, pattern)) {
+            // Verifica match total (ex: move_detection_min) OU match na raiz (ex: countdown_l1 -> countdown)
+            if (matchesPattern(cmdLower, pattern) || matchesPattern(baseName, pattern)) {
                 return true;
             }
         }
-
         return false;
     }
     /**
@@ -858,36 +890,36 @@
     function getComplexInputConfig(command) {
             if (!command) return null;
             const cmdLower = command.toLowerCase();
+            const baseName = cmdLower.replace(/(_l\d+|_?\d+|_(left|right|center|top|bottom))$/, '');
             
-            // 1. Match Exato (Prioritário)
-            if (COMPLEX_INPUTS[cmdLower]) {
-                return JSON.parse(JSON.stringify(COMPLEX_INPUTS[cmdLower]));
+            // 1. Validar se deve ter UI (Numérico ou Config Direta como color_hex)
+            const hasDirectConfig = !!(COMPLEX_INPUTS[cmdLower] || COMPLEX_INPUTS[baseName]);
+            if (!isNumericCommand(command) && !hasDirectConfig) return null;
+ 
+            // 2. Procura Directa com Proteção contra campos inexistentes (Fix color_hex)
+            const visualKey = COMPLEX_INPUTS[cmdLower] ? cmdLower : (COMPLEX_INPUTS[baseName] ? baseName : null);
+            if (visualKey) {
+                const cfg = JSON.parse(JSON.stringify(COMPLEX_INPUTS[visualKey]));
+                if (cfg.parts && cfg.parts[0]) cfg.parts[0].label = command;
+                else cfg.label = command;
+                return cfg;
             }
-
-            // 2. Match por Padrão
-            if (/_detection_(min|max)$/i.test(cmdLower)) {
-                const config = JSON.parse(JSON.stringify(COMPLEX_INPUTS['_tpl_detection']));
-                config.parts[0].label = command;
-                return config;
+ 
+            // 3. Resolvedor por Palavras-Chave (Suporta prefixos e sufixos)
+            if (/detection/i.test(cmdLower)) return getTpl('_tpl_detection', command);
+            if (/sensitivity/i.test(cmdLower)) return getTpl('_tpl_sensitivity', command);
+            if (/time|delay|timeout|countdown/i.test(cmdLower)) return getTpl('countdown', command);
+ 
+            return getTpl('_tpl_generic', command);
+ 
+            function getTpl(id, label) {
+                const tpl = JSON.parse(JSON.stringify(COMPLEX_INPUTS[id]));
+                if (tpl.parts && tpl.parts[0]) tpl.parts[0].label = label;
+                else tpl.label = label;
+                return tpl;
             }
-
-            if (/_sensitivity$/i.test(cmdLower)) {
-                const config = JSON.parse(JSON.stringify(COMPLEX_INPUTS['_tpl_sensitivity']));
-                config.parts[0].label = command;
-                return config;
-            }
-
-            // 3. Fallback Genérico para Numéricos
-            // Se o comando for reconhecido como numérico mas não tiver config específica, 
-            // devolve o template genérico (0-100) para não deixar o utilizador sem slider.
-            if (isNumericCommand(command)) {
-                const config = JSON.parse(JSON.stringify(COMPLEX_INPUTS['_tpl_generic']));
-                config.parts[0].label = command;
-                return config;
-            }
-            
-            return null;
         }
+        
     // ============================================================================
     // 🌍 EXPORTS
     // ============================================================================

@@ -35,6 +35,17 @@ module.exports = function(RED) {
 
             if (node.server) {
                 node.on('input', function (message_in) {
+                    // Validação robusta de entrada
+                    if (!message_in || typeof message_in !== 'object') {
+                         node.warn("Ignored invalid input message (not an object)");
+                         return;
+                    }
+                    // CORREÇÃO: Tratar payload undefined explicitamente para evitar erros silenciosos
+                    if (message_in.payload === undefined && node.config.payloadType === 'msg') {
+                        node.warn("Message payload is undefined but required by configuration");
+                        return;
+                    }
+                    
                     if (!node.server || !node.server.mqtt || !node.server.connection) {
                         node.status({
                             fill: "red",
@@ -100,19 +111,33 @@ module.exports = function(RED) {
 
         onClose() {
             let node = this;
-            node.setNodeStatus();
+            if (node.server) {
+                // REFATORADO: Desregistar cliente
+                if (typeof node.server.unregisterClient === 'function') {
+                    node.server.unregisterClient(node);
+                }
 
-            if (node.listener_onMQTTConnect) {
-                node.server.removeListener('onMQTTConnect', node.listener_onMQTTConnect);
-            }
-            if (node.listener_onMQTTMessageBridge) {
-                node.server.removeListener("onMQTTMessageBridge", node.listener_onMQTTMessageBridge);
+                if (node.listener_onMQTTConnect) {
+                    node.server.removeListener('onMQTTConnect', node.listener_onMQTTConnect);
+                }
+                if (node.listener_onMQTTMessageBridge) {
+                    node.server.removeListener("onMQTTMessageBridge", node.listener_onMQTTMessageBridge);
+                }
             }
         }
 
         onMQTTConnect() {
             let node = this;
             node.setNodeStatus();
+        }
+
+        onConnectError() {
+            let node = this;
+            node.status({
+                fill: "red",
+                shape: "dot",
+                text: RED._("node-red-contrib-zigbee2mqtt/bridge:status.offline")
+            });
         }
 
         setNodeStatus() {
@@ -143,8 +168,22 @@ module.exports = function(RED) {
         
         onMQTTMessageBridge(data) {
             let node = this;
-            let payload = Zigbee2mqttHelper.isJson(data.payload)?JSON.parse(data.payload):data.payload;
-
+             // Proteção contra payload nulo ou indefinido
+            if (!data || !Object.prototype.hasOwnProperty.call(data, 'payload'))
+                return;
+            
+            let payload;
+            try {
+                const strPayload = (typeof data.payload === 'object' && data.payload !== null) 
+                    ? data.payload.toString() 
+                    : String(data.payload);
+                    
+                payload = Zigbee2mqttHelper.isJson(strPayload) ? JSON.parse(strPayload) : strPayload;
+            } catch (e) {
+                node.warn("Failed to parse bridge message: " + e.message);
+                payload = data.payload;
+            }
+            
             if (node.server.getTopic('/bridge/state') === data.topic) {
                 node.setNodeStatus();
             } else if (node.server.getTopic('/bridge/info') === data.topic) {
@@ -152,17 +191,29 @@ module.exports = function(RED) {
                     node.setNodeStatus();
                 }
             } else if (node.server.getTopic('/bridge/event') === data.topic) {
-                node.status({
-                    fill: "yellow",
-                    shape: "ring",
-                    text: payload.type
-                });
-                clearTimeout(node.cleanTimer);
-                node.cleanTimer = setTimeout(function(){
+                if (!payload) 
+                    return;
+                // Throttle visual: Atualizar no máximo a cada 1s para evitar sobrecarga do editor
+                const now = Date.now();
+                if (node._lastStatusUpdate === undefined) 
+                    node._lastStatusUpdate = 0;
+                
+                if (now - node._lastStatusUpdate > 1000) {
+                    node.status({
+                        fill: "yellow",
+                        shape: "ring",
+                        text: payload.type || 'event'
+                    });
+                    node._lastStatusUpdate = now;
+                }
+                
+                // Debounce do reset de status
+                if (node.cleanTimer) clearTimeout(node.cleanTimer);
+                node.cleanTimer = setTimeout(() => {
                     node.setNodeStatus();
-                }, 10000);
+                }, 2000); // 2s é suficiente para ler o evento
             }
-
+ 
             node.send({
                 payload: payload,
                 topic: data.topic
