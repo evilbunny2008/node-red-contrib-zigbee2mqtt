@@ -77,7 +77,11 @@ module.exports = function(RED) {
                 port: port,
                 username: user,
                 password: pass,
-                clientId: clientId || ('NodeRed-Z2M-' + node.id.replace('.', '')),
+                // Readable prefix for broker logs, plus a random suffix so the ID is unique per
+                // connection: brokers drop an existing client when another connects with the
+                // same ID (e.g. the same flows running on two Node-RED instances, or the
+                // temporary map-refresh client).
+                clientId: 'NodeRed-Z2M-' + node.id.replace(/\./g, '') + '-' + (clientId ? clientId + '-' : '') + Math.random().toString(36).substring(2, 8),
                 clean: true,
                 keepalive: 30, // Ainda mais reduzido para detecção rápida em redes instáveis
                 reconnectPeriod: 5000,
