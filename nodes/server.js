@@ -3,7 +3,10 @@ var mqtt = require('mqtt');
 var Viz = require('@viz-js/viz');
 var vizInstancePromise = Viz.instance();
 
+
 module.exports = function(RED) {
+    "use strict";
+
     class ServerNode {
         constructor(n) {
             RED.nodes.createNode(this, n);
@@ -13,36 +16,124 @@ module.exports = function(RED) {
             node.items = undefined;
             node.groups = undefined;
             node.devices = undefined;
-            node.devices_values = {};
-            node.avaialability = {};
+            node.devices_values = new Map();
+            node.availability = {};
             node.bridge_info = null;
             node.bridge_state = null;
             node.map = null;
-            node.on('close', () => this.onClose());
-            node.setMaxListeners(0);
-
+            // ✅ Tentar recuperar cache persistente no arranque
+            node.devices = node.context().global.get('z2m_devices_' + node.id) || null;
+            node.groups = node.context().global.get('z2m_groups_' + node.id) || null;
+            
+            node.on('close', (removed, done) => this.onClose(removed, done));
+            node.setMaxListeners(50);
+            
+            // Rastrear nós clientes para limpeza
+            node.clientNodes = new Set();
+            
+            node.registerClient = (clientNode) => node.clientNodes.add(clientNode);
+            node.unregisterClient = (clientNode) => node.clientNodes.delete(clientNode);
+            
             //mqtt
             node.mqtt = node.connectMQTT();
-            node.mqtt.on('connect', () => this.onMQTTConnect());
-            node.mqtt.on('message', (topic, message) => this.onMQTTMessage(topic, message));
+            if (node.mqtt) {
+                node.mqtt.on('connect', () => this.onMQTTConnect());
+                node.mqtt.on('message', (topic, message) => this.onMQTTMessage(topic, message));
+ 
+                node.mqtt.on('close', () => this.onMQTTClose());
+                node.mqtt.on('end', () => this.onMQTTEnd());
+                node.mqtt.on('reconnect', () => this.onMQTTReconnect());
+                node.mqtt.on('offline', () => this.onMQTTOffline());
+                node.mqtt.on('disconnect', (error) => this.onMQTTDisconnect(error));
+                node.mqtt.on('error', (error) => this.onMQTTError(error));
+            }
 
-            node.mqtt.on('close', () => this.onMQTTClose());
-            node.mqtt.on('end', () => this.onMQTTEnd());
-            node.mqtt.on('reconnect', () => this.onMQTTReconnect());
-            node.mqtt.on('offline', () => this.onMQTTOffline());
-            node.mqtt.on('disconnect', (error) => this.onMQTTDisconnect(error));
-            node.mqtt.on('error', (error) => this.onMQTTError(error));
-
-            // console.log(node.config._users);
+             //console.log(node.config._users);
         }
+        
+        connectMQTT(clientId = null) {
+            var node = this;
+            
+            // 1. Recuperar Credenciais (Prioridade: Credentials > Config)
+            let user = null;
+            let pass = null;
 
+            if (node.credentials) {
+                user = node.credentials.mqtt_user;
+                pass = node.credentials.mqtt_pass;
+            }
+
+            // Fallback for configs saved by older versions, which stored the login
+            // as plaintext node properties. Migrated to credentials when next edited.
+            if (!user) user = node.config.mqtt_username || null;
+            if (!pass) pass = node.config.mqtt_password || null;
+
+            // 2. Configurar Opções de Conexão
+            let port = parseInt(node.config.mqtt_port);
+            if (isNaN(port) || port < 1 || port > 65535)
+                port = 1883;
+            
+            var options = {
+                port: port,
+                username: user,
+                password: pass,
+                // Readable prefix for broker logs, plus a random suffix so the ID is unique per
+                // connection: brokers drop an existing client when another connects with the
+                // same ID (e.g. the same flows running on two Node-RED instances, or the
+                // temporary map-refresh client).
+                clientId: 'NodeRed-Z2M-' + node.id.replace(/\./g, '') + '-' + (clientId ? clientId + '-' : '') + Math.random().toString(36).substring(2, 8),
+                clean: true,
+                keepalive: 30, // Ainda mais reduzido para detecção rápida em redes instáveis
+                reconnectPeriod: 5000,
+                connectTimeout: 15000, // Timeout reduzido para falhar rápido e tentar reconectar
+                resubscribe: true
+            };
+
+            // Last Will: the broker publishes this if the main connection drops without a
+            // clean disconnect (Node-RED crash, network loss). Only for the main connection,
+            // not the temporary map-refresh client. See publishStatus() for the rest.
+            if (!clientId) {
+                options.will = {
+                    topic: node.getStatusTopic(),
+                    payload: JSON.stringify({state: 'offline'}),
+                    qos: 1,
+                    retain: true
+                };
+            }
+
+            // 3. Configurar Protocolo e TLS
+            let baseUrl = 'mqtt://';
+            var tlsNode = RED.nodes.getNode(node.config.tls);
+            
+            if (node.config.usetls && tlsNode) {
+                tlsNode.addTLSOptions(options);
+                baseUrl = 'mqtts://';
+                // REFATORADO: Permitir certificados auto-assinados se configurado (comum em IoT local)
+                if (options.rejectUnauthorized === undefined) {
+                    options.rejectUnauthorized = true; // Ou ler de config
+                }
+            }
+
+            // 4. Validar Host
+            if (!node.config.host || typeof node.config.host !== 'string' || node.config.host.trim() === '') {
+                node.error("MQTT Host not defined or invalid");
+                return null;
+            }
+
+            // 5. Iniciar Conexão
+             // Remover espaços acidentais que utilizadores possam colar
+            const cleanHost = node.config.host.trim();
+            const fullUrl = baseUrl + cleanHost;
+            return mqtt.connect(fullUrl, options);
+        }
+/*
         connectMQTT(clientId = null) {
             var node = this;
             var options = {
                 port: node.config.mqtt_port || 1883,
                 username: node.config.mqtt_username || null,
                 password: node.config.mqtt_password || null,
-                clientId: 'NodeRed-' + node.id + '-' + (clientId ? clientId : (Math.random() + 1).toString(36).substring(7)),
+                clientId: clientId || ('NodeRed-Z2M-' + node.id.replace('.', '')),
             };
 
             let baseUrl = 'mqtt://';
@@ -55,7 +146,7 @@ module.exports = function(RED) {
 
             return mqtt.connect(baseUrl + node.config.host, options);
         }
-
+*/
         subscribeMQTT() {
             var node = this;
             node.mqtt.subscribe(node.getTopic('/#'), {'qos':parseInt(node.config.mqtt_qos||0)}, function(err) {
@@ -71,8 +162,15 @@ module.exports = function(RED) {
         unsubscribeMQTT() {
             var node = this;
             node.log('MQTT Unsubscribe from mqtt topic: ' + node.getTopic('/#'));
-            node.mqtt.unsubscribe(node.getTopic('/#'), function(err) {});
-            node.devices_values = {};
+            if (node.mqtt) {
+                node.mqtt.unsubscribe(node.getTopic('/#'), function(err) {});
+            }
+            // Clear Map instead of assigning new object
+            if (node.devices_values instanceof Map) {
+                node.devices_values.clear();
+            } else {
+                node.devices_values = new Map();
+            }
         }
 
         getDevices(callback, withGroups = false) {
@@ -80,65 +178,146 @@ module.exports = function(RED) {
                 return
             }
             let node = this;
+
+            // ✅ NOVA LÓGICA: Juntar os dados estáticos com os valores em cache
+            const mergeValues = (devicesList) => {
+                return devicesList.map(device => {
+                    let topic = node.getTopic('/' + (device.friendly_name || device.ieee_address));
+                    
+                    // Check if Map has the topic
+                    if (node.devices_values instanceof Map && node.devices_values.has(topic)) {
+                        let d = { ...device };
+                        d.current_values = node.devices_values.get(topic);
+                        return d;
+                    }
+                    // Fallback for legacy Object structure (safety)
+                    else if (!(node.devices_values instanceof Map) && node.devices_values && node.devices_values[topic]) {
+                         let d = { ...device };
+                         d.current_values = node.devices_values[topic];
+                         return d;
+                    }
+                    return device;
+                });
+            };
+
             if (node.devices && (!withGroups || node.groups)) {
-                node.log('Using cached devices')
-                callback(withGroups ? [node.devices, node.groups] : node.devices);
+                node.log('Using cached devices');
+                
+                // ✅ APLICAR O MERGE ANTES DE ENVIAR PARA O EDITOR
+                let devicesWithValues = mergeValues(node.devices);
+                callback(withGroups ? [devicesWithValues, node.groups] : devicesWithValues);
             } else {
                 node.log('Waiting for device list')
                 let timeout = null
                 let checkAvailability = null
-                new Promise(function(resolve) {
+                
+                if (!node.devices) {
+                     node.mqtt.publish(node.getTopic('/bridge/request/devices/get'), '');
+                     node.mqtt.publish(node.getTopic('/bridge/request/groups/get'), '');
+                }
+
+                new Promise(function(resolve, reject) {
                     timeout = setTimeout(function() {
-                        resolve()
-                    }, 60_000);
-                    checkAvailability = function() {
+                        if (checkAvailability) node.removeListener('onMQTTMessageBridge', checkAvailability);
+                        resolve(false); 
+                    }, 5000); 
+
+                    checkAvailability = function(topic) {
                         if (node.devices && (!withGroups || node.groups)) {
-                            resolve()
+                             clearTimeout(timeout);
+                             resolve(true);
                         }
                     }
-                    node.on('onMQTTMessageBridge', checkAvailability)
+                    node.on('onMQTTMessageBridge', checkAvailability);
                 }).then(function() {
                     clearTimeout(timeout)
-                    node.removeListener('onMQTTMessageBridge', checkAvailability);
+                    if (checkAvailability) node.removeListener('onMQTTMessageBridge', checkAvailability);
+                    
                     if (node.devices && (!withGroups || node.groups)) {
-                        callback(withGroups ? [node.devices, node.groups] : node.devices);
+                        // ✅ APLICAR O MERGE TAMBÉM AQUI
+                        let devicesWithValues = mergeValues(node.devices);
+                        callback(withGroups ? [devicesWithValues, node.groups] : devicesWithValues);
                     } else {
                         node.error('Error: getDevices timeout')
-                        callback(null)
+                        callback(withGroups ? [[], []] : []);
                     }
                 })
             }
         }
 
+        rebuildLookupMap(varName) {
+            var node = this;
+            if (!node[varName]) return;
+
+            // Drop old entries of this type
+            for (let key of node.lookupMap.keys()) {
+                if (key.startsWith(varName + ':')) node.lookupMap.delete(key);
+            }
+
+            // Index every key the original linear search matched: friendly_name,
+            // ieee_address / group id, their full MQTT topics (used by incoming device
+            // and availability messages), and the generated selector form of the topic.
+            const add = (k, item) => {
+                if (k !== undefined && k !== null && k !== '' && !node.lookupMap.has(`${varName}:${k}`)) {
+                    node.lookupMap.set(`${varName}:${k}`, item);
+                }
+            };
+            node[varName].forEach(item => {
+                const names = [];
+                if (item.friendly_name) names.push(item.friendly_name);
+                if (varName === 'devices' && item.ieee_address) names.push(item.ieee_address);
+                names.forEach(name => {
+                    add(name, item);
+                    const topic = node.getTopic('/' + name);
+                    add(topic, item);
+                    if (name === item.friendly_name) add(Zigbee2mqttHelper.generateSelector(topic), item);
+                });
+                if (varName === 'groups' && item.id !== undefined) add(String(item.id), item);
+            });
+            // remember which list the map was built from; node.devices/node.groups are
+            // replaced with a new array on every bridge update (including renames)
+            node.lookupMap.set(varName + '_source', node[varName]);
+        }
 
         _getItemByKey(key, varName) {
             var node = this;
-            var result = null;
-            for (var i in node[varName]) {
-                if (key === node.getTopic('/' + node[varName][i]['friendly_name'])
-                    || key === node.getTopic('/' + node[varName][i]['ieee_address'])
-                    || key === node[varName][i]['friendly_name']
-                    || key === node[varName][i]['ieee_address']
-                    || ('id' in node[varName][i] && parseInt(key) === parseInt(node[varName][i]['id']))
-                    || key === Zigbee2mqttHelper.generateSelector(node.getTopic('/' + node[varName][i]['friendly_name']))
-                ) {
-                    result = node[varName][i];
-                    result['current_values'] = null;
-                    result['homekit'] = null;
-                    result['format'] = null;
+            if (!node[varName]) return null;
 
-                    let topic = node.getTopic('/' + (node[varName][i]['friendly_name'] ? node[varName][i]['friendly_name'] : node[varName][i]['ieee_address']));
-                    if (topic in node.devices_values) {
-                        result['current_values'] = node.devices_values[topic];
-                        result['homekit'] = Zigbee2mqttHelper.payload2homekit(node.devices_values[topic]);
-                        result['format'] = Zigbee2mqttHelper.formatPayload(node.devices_values[topic], node[varName][i]);
-                    }
-                    break;
+            if (!node.lookupMap) node.lookupMap = new Map();
+
+            if (node.lookupMap.get(varName + '_source') !== node[varName]) {
+                node.rebuildLookupMap(varName);
+            }
+
+            // group ids may arrive as numbers or numeric strings
+            const cacheKey = `${varName}:${(varName === 'groups' && typeof key === 'number') ? String(key) : key}`;
+            let result = node.lookupMap.get(cacheKey);
+ 
+            if (result) {
+                // Clone para evitar mutar a referência original
+                result = { ...result }; 
+                result['current_values'] = null;
+                result['homekit'] = null;
+                result['format'] = null;
+
+                let topic = node.getTopic('/' + (result.friendly_name ? result.friendly_name : result.ieee_address));
+                
+                // Verificar se temos valores em cache para este tópico (Map support)
+                let values = null;
+                if (node.devices_values instanceof Map) {
+                    values = node.devices_values.get(topic);
+                } else if (node.devices_values) {
+                    values = node.devices_values[topic];
+                }
+ 
+                if (values) {
+                    result['current_values'] = values;
+                    result['homekit'] = Zigbee2mqttHelper.payload2homekit(values);
+                    result['format'] = Zigbee2mqttHelper.formatPayload(values, result);
                 }
             }
             return result;
         }
-
         getDeviceOrGroupByKey(key) {
             let device = this.getDeviceByKey(key);
             if (device) {
@@ -162,18 +341,48 @@ module.exports = function(RED) {
 
         getDeviceAvailabilityColor(topic) {
             let color = 'blue';
-            if (topic in this.avaialability) {
-                color = this.avaialability[topic]?'green':'red';
+            if (topic in this.availability) {
+                color = this.availability[topic]?'green':'red';
             }
             return color;
         }
 
         getBaseTopic() {
-            return this.config.base_topic;
+            // Garantir que não termina em barra para evitar //
+            let topic = this.config.base_topic || 'zigbee2mqtt';
+            if (topic.endsWith('/')) 
+                topic = topic.slice(0, -1);
+            return topic;
+        }
+ 
+        getTopic(path) {
+            // Garantir que path começa com barra
+            if (path && !path.startsWith('/')) 
+                path = '/' + path;
+            return this.getBaseTopic() + path;
         }
 
-        getTopic(path) {
-            return this.getBaseTopic() + path;
+        /**
+         * Retained Node-RED connection status for this server node, in the same format as
+         * zigbee2mqtt's own bridge/state: {"state":"online"} / {"state":"offline"}.
+         * Published online on connect, offline on clean shutdown, and offline by the
+         * broker (Last Will) if the connection is lost.
+         */
+        getStatusTopic() {
+            return 'node-red/zigbee2mqtt/' + this.id + '/state';
+        }
+
+        publishStatus(state, callback) {
+            let node = this;
+            if (!node.mqtt || !node.connection) {
+                if (callback) callback();
+                return;
+            }
+            // state === null clears the retained message (used when the server node is deleted)
+            let payload = state === null ? '' : JSON.stringify({state: state});
+            node.mqtt.publish(node.getStatusTopic(), payload, {qos: 1, retain: true}, function () {
+                if (callback) callback();
+            });
         }
 
         restart() {
@@ -196,17 +405,76 @@ module.exports = function(RED) {
             node.log('Log Level was set to: ' + val);
         }
 
-        setPermitJoin(val) {
-            let node = this;
-            let payload = {
-                'options': {
-                    'permit_join': val,
-                },
+// FIX para Issue #146
+    setPermitJoin(val, customTime) {
+        let node = this;
+        
+        // ✅ VALIDAR CONEXÃO MQTT
+        if (!node.mqtt || !node.connection) {
+            node.warn('Cannot set permit_join: MQTT not connected');
+            return {'error': true, 'description': 'MQTT not connected'};
+        }
+        
+        // ✅ DETERMINAR TEMPO
+        // Aceita: setPermitJoin(true, 300) ou setPermitJoin(true) [default 180s]
+        let time = 180; // Default: 3 minutos
+        
+        if (customTime !== undefined && customTime !== null) {
+            const parsed = parseInt(customTime);
+            if (!isNaN(parsed) && parsed > 0) {
+                time = parsed;
+            }
+            else {
+                node.warn('Invalid permit join time, using default'); 
+            }
+        }
+        
+        // ✅ PREPARAR PAYLOAD (novo formato Zigbee2MQTT)
+        let payload;
+        
+        if (val === true || val === 'true' || parseInt(val) > 0) {
+            // Ativar pairing mode
+            payload = {
+                'value': true,
+                'time': time
             };
-            node.mqtt.publish(node.getTopic('/bridge/request/options'), JSON.stringify(payload));
-            node.log('Permit Join was set to: ' + val);
+            
+            const minutes = Math.floor(time / 60);
+            const seconds = time % 60;
+            const timeStr = minutes > 0 ? 
+                `${minutes}m ${seconds}s` : 
+                `${seconds}s`;
+            
+            node.log(`Permit Join ENABLED for ${timeStr} (${time} seconds)`);
+            
+        } else {
+            // Desativar pairing mode
+            payload = {
+                'value': false
+            };
+            node.log('Permit Join DISABLED');
         }
 
+        // PUBLICAR NO TÓPICO CORRETO
+        // Zigbee2MQTT v1.x usa 'value', versões mais recentes podem aceitar boolean direto ou payload diferente.
+        // O formato {"value": true, "time": 180} é o padrão atual para /bridge/request/permit_join
+        node.mqtt.publish(
+            node.getTopic('/bridge/request/permit_join'),
+            JSON.stringify(payload),
+            { qos: parseInt(node.config.mqtt_qos || 0) },
+            (err) => {
+                if (err) {
+                    node.error('Failed to set permit_join: ' + err.message);
+                }
+            }
+        );
+        
+        return {
+            'success': true, 
+            'description': 'command sent', 
+            'time': time
+        };
+    }
         renameDevice(ieee_address, newName) {
             let node = this;
 
@@ -378,9 +646,9 @@ module.exports = function(RED) {
 
                                 node.log('Refreshing map and waiting...');
                             } else {
-                                RED.log.error('zigbee2mqtt: error code #0023: ' + err);
+                                RED.log.error('zigbee2mqtt: Map subscribe error: ' + err);
                                 client.end(true);
-                                reject({'success': false, 'description': 'zigbee2mqtt: error code #0023'});
+                                reject({'success': false, 'description': 'Subscribe failed'});
                             }
                         });
                     });
@@ -511,20 +779,28 @@ module.exports = function(RED) {
                 payload = payload_all;
             }
 
+            // Convert object text to string for status display (prevents [object Object])
+            if (typeof text === 'object' && text !== null) {
+                try {
+                    text = JSON.stringify(text);
+                } catch(e) { text = 'Object'; }
+            }
 
             //add unit
             if (useProperty) {
                 try {
-                    for (let ind in item.definition.exposes) {
-                        if ('features' in item.definition.exposes) { //why did they add it... what a crap!?
-                            for (let featureInd in item.definition.exposes.features) {
-                                if (item.definition.exposes[ind]['features'][featureInd]['property'] == useProperty && 'unit' in item.definition.exposes[ind]['features'][featureInd]) {
+                    if (item.definition && item.definition.exposes) {
+                        for (let ind in item.definition.exposes) {
+                            if ('features' in item.definition.exposes[ind]) {
+                                for (let featureInd in item.definition.exposes[ind].features) {
+                                    if (item.definition.exposes[ind]['features'][featureInd]['property'] == useProperty && 'unit' in item.definition.exposes[ind]['features'][featureInd]) {
+                                        text += ' ' + item.definition.exposes[ind]['features'][featureInd]['unit'];
+                                    }
+                                }
+                            } else {
+                                if (item.definition.exposes[ind]['property'] == useProperty && 'unit' in item.definition.exposes[ind]) {
                                     text += ' ' + item.definition.exposes[ind]['unit'];
                                 }
-                            }
-                        } else {
-                            if (item.definition.exposes[ind]['property'] == useProperty && 'unit' in item.definition.exposes[ind]) {
-                                text += ' ' + item.definition.exposes[ind]['unit'];
                             }
                         }
                     }
@@ -542,9 +818,18 @@ module.exports = function(RED) {
             }
 
             if (opts.filter) {
-                if (opts.node_send && JSON.stringify(node.last_value) === JSON.stringify(payload)) {
-                    // console.log('Filtered the same value');
-                    return;
+                // OTIMIZAÇÃO: Comparação rápida antes de serializar
+                if (opts.node_send) {
+                    // Se forem primitivos iguais, retorna já
+                    if (node.last_value === payload) return;
+                    
+                    // Se um for null/undefined e o outro não, são diferentes
+                    if (!node.last_value || !payload) { /* prossegue */ }
+                    
+                    // Apenas usa JSON.stringify se ambos forem objetos/arrays
+                    else if (typeof node.last_value === 'object' && typeof payload === 'object') {
+                        if (JSON.stringify(node.last_value) === JSON.stringify(payload)) return;
+                    }
                 }
             }
 
@@ -689,94 +974,100 @@ module.exports = function(RED) {
             }, 3000);
         }
 
-
         onMQTTConnect() {
             var node = this;
-            node.connection = true;
+            node.connection = true;  // ✅ Marca como conectado
             node.log('MQTT Connected');
+            node.publishStatus('online');
             node.emit('onMQTTConnect');
             node.subscribeMQTT();
-
         }
 
         onMQTTDisconnect(error) {
             var node = this;
-            // node.connection = true;
+            node.connection = false;  // ✅ CORRIGIDO: Marca como desconectado
             node.log('MQTT Disconnected');
-            console.log(error);
-
+            node.emit('onConnectError', error);  // ✅ CORRIGIDO: Notifica os nós
+            if (error) {
+                node.warn('MQTT disconnect: ' + (error && error.message ? error.message : error));
+            }
         }
 
         onMQTTError(error) {
             var node = this;
-            // node.connection = true;
+            node.connection = false;  // ✅ CORRIGIDO: Marca como desconectado
             node.log('MQTT Error');
-            console.log(error);
-
+            node.emit('onConnectError', error);  // ✅ CORRIGIDO: Notifica os nós
+            if (error) {
+                node.warn('MQTT error: ' + (error && error.message ? error.message : error));
+            }
         }
 
         onMQTTOffline() {
             let node = this;
-            // node.connection = true;
+            node.connection = false;  // ✅ CORRIGIDO: Marca como desconectado
             node.warn('MQTT Offline');
+            node.emit('onConnectError');  // ✅ CORRIGIDO: Notifica os nós
         }
 
         onMQTTEnd() {
             var node = this;
-            // node.connection = true;
+            node.connection = false;  // ✅ CORRIGIDO: Marca como desconectado
             node.log('MQTT End');
-            // console.log();
-
         }
 
         onMQTTReconnect() {
             var node = this;
-            // node.connection = true;
-            node.log('MQTT Reconnect');
-            // console.log();
-
+            // Mantém connection = false até receber onMQTTConnect
+            node.log('MQTT Reconnect attempt...');
         }
 
         onMQTTClose() {
             var node = this;
-            // node.connection = true;
+            node.connection = false;  // ✅ CORRIGIDO: Marca como desconectado
             node.log('MQTT Close');
-            // console.log(node.connection);
-
         }
 
         onMQTTMessage(topic, message) {
             var node = this;
             var messageString = message.toString();
-            // console.log(topic);
-            // console.log(messageString);
+            
             //bridge
             if (topic.includes('/bridge/')) {
                 if (node.getTopic('/bridge/devices') === topic) {
                     if (Zigbee2mqttHelper.isJson(messageString)) {
-                        node.devices = JSON.parse(messageString);
+                        try {
+                            const devices = JSON.parse(messageString);
+                            node.devices = devices;
+                            node.context().global.set('z2m_devices_' + node.id, devices);
+                        } catch (e) {
+                            node.warn('Failed to parse devices JSON: ' + e.message);
+                        }
+                    }
+                } else if (node.getTopic('/bridge/groups') === topic) {
+                    if (Zigbee2mqttHelper.isJson(messageString)) {
+                        try {
+                            const groups = JSON.parse(messageString);
+                            node.groups = groups;
+                            node.context().global.set('z2m_groups_' + node.id, groups);
+                        } catch (e) {
+                            node.warn('Failed to parse groups JSON: ' + e.message);
+                        }
+                    }
+                    if (node.devices) {
                         for (let ind in node.devices) {
-                            let topic = node.getTopic('/' + (node.devices[ind]['friendly_name'] ? node.devices[ind]['friendly_name'] : node.devices[ind]['ieee_address']));
-                            if (topic in node.devices_values) {
-                                // getDeviceOrGroupByKey will add up-to-date information from node.device_values
-                            } else {
-                                // force get data
-                                // definition.exposes[].access has to be 0b1xx to support get
-                                // special devices, like "Coordinator", don't have a definition
-                                // Zigbee2MQTT seems to answer with the full state, not just the ones marked with gettable (but if we just send an empty/dummy payload, there won't be an answer)
-                                if (node.devices[ind].definition) {
-                                    let getPayload = {}
-                                    let isEmpty = true
-                                    for (let exp of node.devices[ind].definition.exposes) {
-                                        if (exp.access && (exp.access & 0b100)) {
-                                            getPayload[exp.name] = ""
-                                            isEmpty = false
-                                        }
-                                    }
-                                    if (!isEmpty) {
-                                        node.mqtt.publish(topic + '/get', JSON.stringify(getPayload))
+                            let dTopic = node.getTopic('/' + (node.devices[ind]['friendly_name'] ? node.devices[ind]['friendly_name'] : node.devices[ind]['ieee_address']));
+                            const hasValue = (node.devices_values instanceof Map) ? node.devices_values.has(dTopic) : (dTopic in node.devices_values);
+                            if (!hasValue && node.devices[ind].definition) {
+                                let getPayload = {};
+                                let isEmpty = true;
+                                for (let exp of node.devices[ind].definition.exposes) {
+                                    if (exp.access && (exp.access & 0b100)) {
+                                        getPayload[exp.name] = "";
+                                        isEmpty = false;
                                     }
                                 }
+                                if (!isEmpty) node.mqtt.publish(dTopic + '/get', JSON.stringify(getPayload));
                             }
                         }
                     }
@@ -786,18 +1077,28 @@ module.exports = function(RED) {
                     }
                 } else if (node.getTopic('/bridge/state') === topic) {
                     let availabilityStatus = false;
+                    
                     if (Zigbee2mqttHelper.isJson(messageString)) {
                         let availabilityStatusObject = JSON.parse(messageString);
                         availabilityStatus = 'state' in availabilityStatusObject && availabilityStatusObject.state === 'online';
                     } else {
                         availabilityStatus = messageString === 'online';
                     }
+                    
+                    node.bridge_state = availabilityStatus ? 'online' : 'offline';
+                    
                     node.emit('onMQTTBridgeState', {
                         topic: topic,
                         payload: availabilityStatus,
                     });
                     if (node.bridge_state !== null || !availabilityStatus) {
-                        node.warn(`Bridge ${availabilityStatus ? 'online' : 'offline'}`)
+                        if (!availabilityStatus) {
+                            node.warn(`Bridge offline`)
+                        }
+                        // ✅ Log silencioso quando fica online (apenas em debug)
+                        else if (typeof Z2MDebug !== 'undefined' && Z2MDebug.isEnabled()) {
+                            node.log(`Bridge online`)
+                        }
                     }
                     node.bridge_state = availabilityStatus
                 } else if (node.getTopic('/bridge/info') === topic) {
@@ -815,13 +1116,13 @@ module.exports = function(RED) {
                 });
 
             } else {
-                //ignore set topics
-                if (topic.substring(topic.length - 4, topic.length) === '/set') {
+                // REFATORADO: Verificação mais robusta de sufixos
+                if (topic.endsWith('/set') || topic.endsWith('/get')) {
                     return;
                 }
 
                 //availability
-                if (topic.substring(topic.length - 13, topic.length) === '/availability') {
+                if (topic.endsWith('/availability')) {
 
                     let availabilityStatus = null;
                     if (Zigbee2mqttHelper.isJson(messageString)) {
@@ -832,7 +1133,7 @@ module.exports = function(RED) {
                         availabilityStatus = messageString === 'online';
                     }
 
-                    node.avaialability[topic.split('/availability').join('')] = availabilityStatus;
+                    node.availability[topic.split('/availability').join('')] = availabilityStatus;
 
                     node.emit('onMQTTAvailability', {
                         topic: topic,
@@ -843,23 +1144,46 @@ module.exports = function(RED) {
                 }
 
                 let payload = null;
-                if (Zigbee2mqttHelper.isJson(messageString)) {
-                    payload = {};
-                    Object.assign(payload, JSON.parse(messageString)); //clone object for payload output
-                } else {
+                try {
+                    const parsed = JSON.parse(messageString);
+                    
+                    // Verifica se o resultado é um objeto válido e não null
+                    if (parsed && typeof parsed === 'object') {
+                        payload = {};
+                        Object.assign(payload, parsed); // Mantém o comportamento original de clonagem
+                    } else {
+                        // Se for JSON válido mas não um objeto (ex: número solto), trata como string
+                        // para manter consistência com a lógica de Object.assign
+                        payload = messageString;
+                    }
+                } catch (e) {
+                    // Se ocorrer erro no JSON.parse, é uma string normal
                     payload = messageString;
                 }
-
-// console.log('==========MQTT START')
-// console.log(topic);
-// console.log(payload_json);
-// console.log('==========MQTT END')
-                node.devices_values[topic] = payload;
-                // node.devices_values[topic] = {
-                //     'old':topic in node.devices_values?node.devices_values[topic].new:null,
-                //     'new':payload,
-                //     'timestamp': new Date().getTime()
-                // };
+                
+                // Use Map instead of Object for devices_values to maintain insertion order and avoid expensive Object.keys() calls.
+                const MAX_CACHE_SIZE = 2000;
+                
+                // Map.size is O(1)
+                if (node.devices_values.size > MAX_CACHE_SIZE) {
+                    const oldestKey = node.devices_values.keys().next().value;
+                    node.devices_values.delete(oldestKey);
+                }
+ 
+                const currentVal = node.devices_values.get(topic);
+                if (currentVal && typeof currentVal === 'object' && typeof payload === 'object') {
+                    // Merge new payload into existing object
+                    Object.assign(currentVal, payload);
+                    // 🔥 FIX: Delete and Set to update insertion order (True LRU)
+                    node.devices_values.delete(topic);
+                    // Re-set to update order (LRU behavior) if desired, or just leave modified object
+                    node.devices_values.set(topic, currentVal);
+                } else {
+                    //Delete and Set to update insertion order
+                    node.devices_values.delete(topic);
+                    node.devices_values.set(topic, payload);
+                }
+                
                 node.emit('onMQTTMessage', {
                     topic: topic,
                     payload: payload,
@@ -869,16 +1193,62 @@ module.exports = function(RED) {
             }
         }
 
-        onClose() {
+        onClose(removed, done) {
             var node = this;
-            node.unsubscribeMQTT();
-            node.mqtt.end();
-            node.connection = false;
-            node.emit('onClose');
-            node.log('MQTT connection closed');
+
+            // Notificar clientes registados que o servidor vai fechar
+            if (node.clientNodes) {
+                node.clientNodes.forEach(client => {
+                    if (client.status) client.status({fill: "red", shape: "ring", text: "server stopping"});
+                });
+                node.clientNodes.clear();
+                node.clientNodes = null;
+            }
+
+            // Remover todos os listeners internos do EventEmitter do Node
+            node.removeAllListeners();
+
+            const client = node.mqtt;
+            let finished = false;
+            const finish = () => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(guard);
+                if (client) {
+                    try {
+                        client.removeAllListeners();
+                        // clean disconnect, so the broker doesn't also fire the Last Will
+                        client.end(false, {}, () => {});
+                    } catch (e) {
+                        node.warn("Error closing MQTT client: " + e.message);
+                    }
+                }
+                node.mqtt = null; // Libertar referência para GC
+                node.connection = false;
+                node.log('MQTT connection closed and resources freed');
+                if (done) done();
+            };
+            // don't hold up a deploy if the broker doesn't acknowledge in time
+            const guard = setTimeout(() => {
+                if (client) { try { client.end(true); } catch (e) {} }
+                finish();
+            }, 2000);
+
+            if (client && node.connection) {
+                if (client.unsubscribe) client.unsubscribe(node.getTopic('/#'), function () {});
+                // deleted server node: clear its retained status; otherwise mark it offline
+                node.publishStatus(removed ? null : 'offline', finish);
+            } else {
+                finish();
+            }
+            if (node.devices_values instanceof Map) node.devices_values.clear();
         }
     }
 
-    RED.nodes.registerType('zigbee2mqtt-eb-server', ServerNode, {});
+    RED.nodes.registerType('zigbee2mqtt-eb-server', ServerNode, {
+        credentials: {
+            mqtt_user: { type: "text" },
+            mqtt_pass: { type: "password" }
+        }
+    });
 };
-
