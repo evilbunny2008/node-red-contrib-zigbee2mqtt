@@ -320,8 +320,38 @@ module.exports = function(RED) {
                                 payload = node.fromHomeKitFormat(message, device);
                                 break;
 
-                            case 'json':
+                            case 'json': {
+                                // JSON command: the object typed in the command field is sent as-is,
+                                // with an object payload (if any) merged over it. An empty {} (the
+                                // original meaning) just sends the payload object unchanged.
+                                let commandObject = {};
+                                const rawCommand = node.config.command;
+                                if (rawCommand && typeof rawCommand === 'object') {
+                                    commandObject = rawCommand;
+                                } else if (typeof rawCommand === 'string' && rawCommand.trim() !== '') {
+                                    try {
+                                        commandObject = JSON.parse(rawCommand);
+                                    } catch (e) {
+                                        node.warn('Command is not valid JSON: ' + e.message);
+                                        node.status({fill: "red", shape: "dot", text: "invalid JSON command"});
+                                        sendResult(false);
+                                        return;
+                                    }
+                                }
+                                if (!commandObject || typeof commandObject !== 'object' || Array.isArray(commandObject)) {
+                                    node.warn('JSON command must be an object, e.g. {"state":"ON"}');
+                                    node.status({fill: "red", shape: "dot", text: "invalid JSON command"});
+                                    sendResult(false);
+                                    return;
+                                }
+                                if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+                                    payload = Object.assign({}, commandObject, payload);
+                                } else if (Object.keys(commandObject).length) {
+                                    payload = commandObject;
+                                }
+                                command = null;
                                 break;
+                            }
 
                             case 'str':
                             default: {

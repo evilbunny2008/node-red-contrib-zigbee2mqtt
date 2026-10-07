@@ -194,7 +194,9 @@
                     var cmd = (command === '{}') ? 'json' : command;
                     var type = (commandType === 'str') ? 'custom' : commandType;
                     $('.help_block').hide();
-                    $('.help_block__' + type + '_' + cmd).show();
+                    if (/^[\w-]+$/.test(String(type) + '_' + String(cmd))) {
+                        $('.help_block__' + type + '_' + cmd).show();
+                    }
                 }
  
                 node.z2mEditor = new Zigbee2MqttEditor(node, { 'allow_empty': false, 'mode': 'out' });
@@ -221,7 +223,7 @@
  
                 // 2. Command TypedInput
                 const $cmd = $('#node-input-command');
-                if ($cmd.data('typedInput') || $cmd.parent().hasClass('red-ui-typedInput-container')) {
+                if (window.Z2MHasTypedInput($cmd)) {
                     try {
                         node.commandType = $cmd.typedInput('type');
                         const v = $cmd.typedInput('value');
@@ -231,7 +233,7 @@
  
                 // 3. Payload TypedInput
                 const $pay = $('#node-input-payload');
-                if ($pay.data('typedInput') || $pay.parent().hasClass('red-ui-typedInput-container')) {
+                if (window.Z2MHasTypedInput($pay)) {
                     try {
                         node.payloadType = $pay.typedInput('type');
                         let pVal = $pay.typedInput('value');
@@ -243,7 +245,7 @@
  
                 // 4. Options TypedInput
                 const $opt = $('#node-input-optionsValue');
-                if ($opt.data('typedInput') || $opt.parent().hasClass('red-ui-typedInput-container')) {
+                if (window.Z2MHasTypedInput($opt)) {
                     try {
                         node.optionsType = $opt.typedInput('type');
                         node.optionsValue = $opt.typedInput('value');
