@@ -938,9 +938,11 @@ class Zigbee2MqttEditor {
                         const alreadyAdded = expansions && expansions.some(e => e.value === expose.property);
 
                         if (!alreadyAdded) {
+                            // label by property, not name: multi-gang devices expose several
+                            // features all named "state" (state_l1, state_l2, ...)
                             $('<option/>', {
                                 value: expose.property,
-                                text: expose.name || expose.property
+                                text: expose.property || expose.name
                             }).appendTo($commandList);
                             commandsCount++;
                         }
@@ -1235,8 +1237,39 @@ class Zigbee2MqttEditor {
         
         if (currentCommandType === 'z2m_cmd' && currentCommand) {
             const droplistFromConfig = config?.getPayloadDroplist(currentCommand);
-            
-            if (config?.isToggleable(currentCommand) || config?.matchesPattern(currentCommand, 'state')) {
+
+            // Prefer the values the device itself declares for this property (binary
+            // on/off/toggle, or enum values such as OPEN/CLOSE/STOP for covers or
+            // LOCK/UNLOCK for locks); only fall back to the generic lists below if it doesn't.
+            const findExposeByProperty = (exposes) => {
+                for (let expose of exposes || []) {
+                    if (expose.property === currentCommand) return expose;
+                    if (expose.features) {
+                        const found = findExposeByProperty(expose.features);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+            const deviceExpose = findExposeByProperty(device?.definition?.exposes);
+            const deviceValues = [];
+            if (deviceExpose && Array.isArray(deviceExpose.values) && deviceExpose.values.length) {
+                deviceExpose.values.forEach(value => deviceValues.push({ value: String(value), label: String(value).toUpperCase() }));
+            } else if (deviceExpose && deviceExpose.type === 'binary') {
+                [deviceExpose.value_on, deviceExpose.value_off, deviceExpose.value_toggle].forEach(value => {
+                    if (value !== undefined && value !== null && (typeof value === 'string' || typeof value === 'number')) {
+                        deviceValues.push({ value: String(value), label: String(value).toUpperCase() });
+                    }
+                });
+                if (deviceExpose.value_toggle === undefined && config?.isToggleable(currentCommand)) {
+                    deviceValues.push({ value: 'TOGGLE', label: 'TOGGLE' });
+                }
+            }
+
+            if (deviceValues.length) {
+                z2mPayloadOptions = deviceValues;
+            }
+            else if (config?.isToggleable(currentCommand) || config?.matchesPattern(currentCommand, 'state')) {
                 z2mPayloadOptions = [
                     { value: 'ON', label: 'ON' },
                     { value: 'OFF', label: 'OFF' }
