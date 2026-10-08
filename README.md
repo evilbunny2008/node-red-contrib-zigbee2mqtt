@@ -21,8 +21,10 @@ I've made other improvements, such as more state options to support ZigBee devic
 
 Node-Red Nodes for Zigbee2mqtt connectivity.
 
-# Install
-You can install this by going to the hamburger menu in Node Red, then go to "Manage palette". Click on the "Palette" tab on the left side, then click on the "Install" tab then search for "@evilbunny/node-red-contrib-zigbee2mqtt" then click "install"
+# Install Options
+1. You can install this by going to the hamburger menu in Node Red, then go to "Manage palette". Click on the "Palette" tab on the left side, then click on the "Install" tab then search for "@evilbunny/node-red-contrib-zigbee2mqtt" then click "install"
+2. [Package on NPMJS.com](https://www.npmjs.com/package/@evilbunny/node-red-contrib-zigbee2mqtt)
+3. [Node-Red Search](https://flows.nodered.org/node/@evilbunny/node-red-contrib-zigbee2mqtt)
 
 # Available nodes
 * zigbee2mqtt-eb-in: listen to device
