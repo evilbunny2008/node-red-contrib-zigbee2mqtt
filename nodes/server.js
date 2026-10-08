@@ -38,7 +38,7 @@ module.exports = function(RED) {
             node.mqtt = node.connectMQTT();
             if (node.mqtt) {
                 node.mqtt.on('connect', () => this.onMQTTConnect());
-                node.mqtt.on('message', (topic, message) => this.onMQTTMessage(topic, message, packet));
+                node.mqtt.on('message', (topic, message, packet) => this.onMQTTMessage(topic, message, packet));
  
                 node.mqtt.on('close', () => this.onMQTTClose());
                 node.mqtt.on('end', () => this.onMQTTEnd());
