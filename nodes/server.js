@@ -317,7 +317,11 @@ module.exports = function(RED) {
             Promise.all(devices.map((device) => this.requestDeviceState(node, device)))
                 .then((received) => {
                     if (node._deviceStateRequestClosed) return;
-                    if (received.every(Boolean)) {
+                    // with several properties selected, send what is cached rather than nothing
+                    const partial = [].concat(node.config.state).length > 1 && devices.every((device) => {
+                        return hasRequestedState(node, this.getDeviceByKey(device.friendly_name || device.ieee_address));
+                    });
+                    if (received.every(Boolean) || partial) {
                         this.nodeSend(node, opts);
                     } else {
                         node.logger.warning('Zigbee2MQTT did not return a readable device state; no output was sent.');

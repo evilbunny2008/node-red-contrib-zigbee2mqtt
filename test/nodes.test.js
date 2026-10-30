@@ -221,6 +221,34 @@ test('get node with several properties finishes waiting once any of them is repo
     assert.deepEqual(node.messages[0].payload, { state: 'ON' });
 });
 
+test('get node with several properties sends what is cached when the device does not answer', async (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const { node: server, client } = createServer();
+    server.devices = [{
+        id: 1,
+        friendly_name: 'lamp',
+        ieee_address: '0x001',
+        definition: { exposes: [{ name: 'state', access: 5 }] }
+    }];
+    server.devices_values = { 'zigbee2mqtt/lamp': { state: 'ON' } };
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        server: 'server', device_id: 'lamp', state: ['state', 'action']
+    }, server);
+    t.after(() => {
+        node.emit('close');
+        clearTimeout(node.cleanTimer);
+    });
+
+    node.emit('input', {});
+    assert.equal(client.publications.length, 1);
+    assert.equal(node.messages.length, 0);
+
+    t.mock.timers.tick(5_000);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.deepEqual(node.messages[0].payload, { state: 'ON' });
+});
+
 test('get node requests readable properties nested under light exposes', async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] });
     const { node: server, client } = createServer();
