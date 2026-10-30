@@ -119,6 +119,17 @@ test('single output collects several selected properties into one payload', (t) 
     assert.deepEqual(output.messages[0].payload, { state: 'ON', battery: 52 });
 });
 
+test('single output can send one selected property as an object', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON', brightness: 80 });
+    const output = createFlowNode({ device_id: 'lamp', state: ['brightness'], payloadAsObject: true });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { key: 'lamp' });
+
+    assert.deepEqual(output.messages[0].payload, { brightness: 80 });
+});
+
 test('single output filters by selected properties and keeps the full payload', (t) => {
     const { node: server } = createServer();
     addLamp(server, { state: 'ON', brightness: 80, linkquality: 20 });
