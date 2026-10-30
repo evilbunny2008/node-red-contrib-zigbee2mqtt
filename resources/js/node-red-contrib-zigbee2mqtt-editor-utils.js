@@ -105,6 +105,42 @@
             .map((value) => ({ value, label: value }));
     }
 
+    // Property a built-in Out command writes, e.g. brightness_move -> brightness
+    function getCommandProperty(command) {
+        if (/^brightness(_|$)/.test(command)) return 'brightness';
+        if (/^color_temp(_|$)/.test(command)) return 'color_temp';
+        if (/^color(_|$)/.test(command)) return 'color';
+        return command;
+    }
+
+    // Keep only the commands the device can use. Devices without exposes (and groups,
+    // which have no definition) and devices none of the commands apply to keep the full
+    // list; `keep` stays listed so a saved command isn't replaced when the editor opens.
+    function filterCommandOptions(commands, device, keep = null) {
+        const exposes = device && device.definition && device.definition.exposes;
+        if (!Array.isArray(exposes) || !exposes.length) return commands;
+
+        const writable = new Set();
+        const types = new Set();
+        function addExpose(expose) {
+            if (!expose || typeof expose !== 'object') return;
+            types.add(expose.type);
+            if (Array.isArray(expose.features)) expose.features.forEach(addExpose);
+            if (typeof expose.property === 'string' && (Number(expose.access) & 0b010)) {
+                writable.add(expose.property);
+            }
+        }
+        exposes.forEach(addExpose);
+
+        const supported = ({ value }) => {
+            if (value === 'lock') return types.has('lock');
+            if (value === 'scene' || value === 'alert') return types.has('light');
+            return writable.has(getCommandProperty(value));
+        };
+        if (!commands.some(supported)) return commands;
+        return commands.filter((command) => command.value === keep || supported(command));
+    }
+
     function getStateCommandOptions() {
         return stateCommands.map((command) => ({
             value: command,
@@ -177,6 +213,7 @@
         getComparePropertyOptions,
         getWritableExposeOptions,
         getWritableExposePayloadOptions,
+        filterCommandOptions,
         getStateCommandOptions,
         getStatePayloadOptions,
         getDefaultOutNodeLabel,
