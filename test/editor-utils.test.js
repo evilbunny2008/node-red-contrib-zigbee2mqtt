@@ -29,6 +29,31 @@ test('server flow labels are appended when configured and omitted when blank', (
     assert.equal(EditorUtils.appendServerFlowLabel('Desk lamp', null), 'Desk lamp');
 });
 
+test('Out commands are limited to what the selected device supports', () => {
+    const commands = ['state', 'state_l1', 'brightness', 'brightness_move', 'color', 'color_rgb',
+        'color_temp', 'color_temp_step', 'position', 'tilt', 'scene', 'lock', 'alert'].map((value) => ({ value, label: value }));
+    const values = (device, keep) => EditorUtils.filterCommandOptions(commands, device, keep).map(({ value }) => value);
+    const light = { definition: { exposes: [{ type: 'light', features: [
+        { property: 'state', access: 7 },
+        { property: 'brightness', access: 7 },
+        { property: 'color_temp', access: 7 }
+    ] }, { property: 'linkquality', access: 1 }] } };
+
+    assert.deepEqual(values(light), ['state', 'brightness', 'brightness_move', 'color_temp', 'color_temp_step', 'scene', 'alert']);
+    assert.deepEqual(values({ definition: { exposes: [{ type: 'light', features: [
+        { property: 'state', access: 7 },
+        { type: 'composite', property: 'color', access: 7, features: [{ property: 'x', access: 7 }] }
+    ] }] } }), ['state', 'color', 'color_rgb', 'scene', 'alert']);
+    assert.deepEqual(values({ definition: { exposes: [{ type: 'lock', features: [{ property: 'state', access: 7 }] }] } }), ['state', 'lock']);
+    assert.deepEqual(values({ definition: { exposes: [{ type: 'cover', features: [
+        { property: 'state', access: 7 }, { property: 'position', access: 7 }
+    ] }] } }), ['state', 'position']);
+    assert.deepEqual(values(light, 'tilt'), ['state', 'brightness', 'brightness_move', 'color_temp', 'color_temp_step', 'tilt', 'scene', 'alert']);
+    assert.deepEqual(values({ definition: { exposes: [{ property: 'temperature', access: 1 }] } }), commands.map(({ value }) => value));
+    assert.deepEqual(values(null), commands.map(({ value }) => value));
+    assert.deepEqual(values({ friendly_name: 'room' }), commands.map(({ value }) => value));
+});
+
 test('multi-endpoint state commands cover endpoints 1 through 9', () => {
     assert.deepEqual(
         EditorUtils.getStateCommandOptions().map(({ value }) => value),
