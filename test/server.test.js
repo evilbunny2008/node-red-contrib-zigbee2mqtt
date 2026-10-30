@@ -558,7 +558,9 @@ test('retained device states on MQTT reconnect prevent another initial request',
     publishDevices();
     t.mock.timers.tick(1000);
 
-    assert.deepEqual(client.publications.map(([topic]) => topic), ['zigbee2mqtt/lamp/get']);
+    // ignore the node-red/... online status published on connect
+    const deviceTopics = client.publications.map(([topic]) => topic).filter((topic) => topic.startsWith('zigbee2mqtt/'));
+    assert.deepEqual(deviceTopics, ['zigbee2mqtt/lamp/get']);
     assert.deepEqual(server.devices_values['zigbee2mqtt/lamp'], { state: 'ON' });
 });
 
