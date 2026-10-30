@@ -130,6 +130,20 @@ test('single output can send one selected property as an object', (t) => {
     assert.deepEqual(output.messages[0].payload, { brightness: 80 });
 });
 
+test('the server Object payload option is reversed by the node option', (t) => {
+    const { node: server } = createServer({ payload_as_object: true });
+    addLamp(server, { state: 'ON', brightness: 80 });
+    const byDefault = createFlowNode({ device_id: 'lamp', state: ['brightness'] });
+    const reversed = createFlowNode({ device_id: 'lamp', state: ['brightness'], payloadAsObject: true });
+    t.after(() => { clearTimeout(byDefault.cleanTimer); clearTimeout(reversed.cleanTimer); });
+
+    server.nodeSend(byDefault, { key: 'lamp' });
+    server.nodeSend(reversed, { key: 'lamp' });
+
+    assert.deepEqual(byDefault.messages[0].payload, { brightness: 80 });
+    assert.equal(reversed.messages[0].payload, 80);
+});
+
 test('single output filters by selected properties and keeps the full payload', (t) => {
     const { node: server } = createServer();
     addLamp(server, { state: 'ON', brightness: 80, linkquality: 20 });

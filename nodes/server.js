@@ -688,7 +688,9 @@ module.exports = function(RED) {
                     //payload: { action: 'single', last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
                     return;
                 }
-                if (states.length === 1 && !node.config.payloadAsObject) {
+                // the server's Object payload option is the default, a node's option reverses it
+                let asObject = !!node.config.payloadAsObject !== !!this.config.payload_as_object;
+                if (states.length === 1 && !asObject) {
                     payload = collected[states[0]];
                     if (!fromHomekit) text = payload;
                 } else {

@@ -11,7 +11,7 @@
         "enable_multiple": "Varios dispositivos",
         "enable_multiple_help": "Obtener los valores de uno o varios dispositivos seleccionados.",
         "payload_as_object": "Payload como objeto",
-        "payload_as_object_help": "Enviar {propiedad: valor} aunque solo se seleccione una propiedad"
+        "payload_as_object_help": "Enviar {propiedad: valor} aunque solo se seleccione una propiedad (invierte la opción Payload como objeto del servidor)"
     },
     "placeholder": {
         "name": "Nombre",
