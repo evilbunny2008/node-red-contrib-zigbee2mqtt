@@ -41,6 +41,11 @@ test('Out payload choices follow the values the device declares', () => {
         ['eco:eco', 'comfort:comfort']);
     assert.deepEqual(values(null, 'state').length, 7);
     assert.deepEqual(values(null, 'brightness'), []);
+
+    const socket = device({ type: 'binary', property: 'state', access: 7, value_on: 'ON', value_off: 'OFF', value_toggle: 'TOGGLE' });
+    assert.equal(EditorUtils.getStateCommandOptions(socket)[0].label, 'State (on|off|toggle)');
+    assert.equal(EditorUtils.getStateCommandOptions()[0].label, 'State (on|off|toggle|lock|unlock|open|close)');
+    assert.equal(EditorUtils.getStateCommandOptions()[1].label, 'State_l1 (on|off|toggle)');
 });
 
 test('Out commands are limited to what the selected device supports', () => {

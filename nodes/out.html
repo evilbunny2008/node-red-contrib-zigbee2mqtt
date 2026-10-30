@@ -214,7 +214,7 @@
 
             function getCommandTypes(device) {
                 const allCommands = [
-                    ...Zigbee2mqttEditorUtils.getStateCommandOptions(),
+                    ...Zigbee2mqttEditorUtils.getStateCommandOptions(device),
                     {'value':'brightness', 'label':'Brightness (0..255)'},
                     {'value':'brightness_move', 'label':'Brightness Move (-255...255|stop)'},
                     {'value':'brightness_move_onoff', 'label':'Brightness Move On/Off (-255...255|stop)'},

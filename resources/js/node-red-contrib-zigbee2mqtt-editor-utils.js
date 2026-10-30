@@ -153,13 +153,15 @@
         return options.map((option) => generic.find(({ value }) => value === option.value.toLowerCase()) || option);
     }
 
-    function getStateCommandOptions() {
-        return stateCommands.map((command) => ({
-            value: command,
-            label: command === 'state'
-                ? 'State (on|off|toggle|lock|unlock|open|close)'
-                : `State_${command.slice('state_'.length)} (on|off|toggle)`
-        }));
+    // With a device, the labels list only the state values it declares
+    function getStateCommandOptions(device = null) {
+        return stateCommands.map((command) => {
+            const name = command === 'state' ? 'State' : `State_${command.slice('state_'.length)}`;
+            const values = getWritableExposePayloadOptions(device, command).length
+                ? getPayloadOptions(device, command).map(({ value }) => value)
+                : getStatePayloadOptions(command).map(({ value }) => value);
+            return { value: command, label: `${name} (${values.join('|')})` };
+        });
     }
 
     function isStateCommand(command) {
