@@ -11,7 +11,7 @@
         "enable_multiple": "Mehrere Geräte",
         "enable_multiple_help": "Werte für ein oder mehrere ausgewählte Geräte abrufen.",
         "payload_as_object": "Objekt-Payload",
-        "payload_as_object_help": "{Eigenschaft: Wert} ausgeben, auch wenn nur eine Eigenschaft ausgewählt ist"
+        "payload_as_object_help": "{Eigenschaft: Wert} ausgeben, auch wenn nur eine Eigenschaft ausgewählt ist (kehrt die Objekt-Payload-Option des Servers um)"
     },
     "placeholder": {
         "name": "Name",
