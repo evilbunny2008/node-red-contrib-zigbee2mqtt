@@ -108,6 +108,17 @@ test('single output reads the selected multi-endpoint state property', (t) => {
     assert.deepEqual(output.messages[0].payload_raw, { state_l1: 'ON', state_l2: 'OFF' });
 });
 
+test('single output collects several selected properties into one payload', (t) => {
+    const { node: server } = createServer();
+    addLamp(server, { state: 'ON', brightness: 80, battery: 52 });
+    const output = createFlowNode({ device_id: 'lamp', state: ['state', 'battery', 'missing'] });
+    t.after(() => clearTimeout(output.cleanTimer));
+
+    server.nodeSend(output, { key: 'lamp' });
+
+    assert.deepEqual(output.messages[0].payload, { state: 'ON', battery: 52 });
+});
+
 test('single output filters by selected properties and keeps the full payload', (t) => {
     const { node: server } = createServer();
     addLamp(server, { state: 'ON', brightness: 80, linkquality: 20 });
