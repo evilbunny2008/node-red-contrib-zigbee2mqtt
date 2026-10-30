@@ -69,7 +69,7 @@ class Zigbee2MqttEditor {
                 that.config.onBuild(that.getDevice());
             }
         } catch (err) {
-            console.error('Zigbee2MqttEditor build() failed', err);
+            RED.notify('Zigbee2MQTT: ' + (err && err.message ? err.message : err), 'error');
         } finally {
             // always (re)bind handlers, otherwise selecting a server does nothing
             // until the node is saved and reopened
