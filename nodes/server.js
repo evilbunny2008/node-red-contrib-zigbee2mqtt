@@ -688,11 +688,11 @@ module.exports = function(RED) {
                     //payload: { action: 'single', last_seen: '2022-07-27T15:25:22+03:00', linkquality: 36 }
                     return;
                 }
-                if (states.length === 1) {
+                if (states.length === 1 && !node.config.payloadAsObject) {
                     payload = collected[states[0]];
                     if (!fromHomekit) text = payload;
                 } else {
-                    // several properties: output an object with just those keys
+                    // several properties, or object output requested: an object with just those keys
                     payload = collected;
                     useProperty = null; // a unit suffix only makes sense for a single property
                 }

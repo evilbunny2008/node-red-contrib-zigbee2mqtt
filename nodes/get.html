@@ -23,6 +23,10 @@
         <select id="node-input-state" class="s-width" multiple="multiple" data-i18n="[placeholder]multiselect.complete_payload"></select>
     </div>
     <div class="form-row">
+        <label for='node-input-payloadAsObject' class="l-width"><i class='fa fa-code'></i> <span data-i18n="label.payload_as_object"></span></label>
+        <input type="checkbox" id="node-input-payloadAsObject" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.payload_as_object_help"></span>
+    </div>
+    <div class="form-row">
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
         <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
     </div>
@@ -61,6 +65,9 @@
             enableMultiple: {
                 value: false,
                 required: true
+            },
+            payloadAsObject: {
+                value: false
             }
         },
         inputs: 1,
