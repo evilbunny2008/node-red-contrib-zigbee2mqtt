@@ -13,11 +13,7 @@ function hasState(value) {
     return typeof value !== 'object' || Object.keys(value).length > 0;
 }
 
-function hasRequestedState(node, device) {
-    if (!device || !hasState(device.current_values)) return false;
-    const state = node.config.state;
-    if (!state || state === '0') return true;
-
+function hasProperty(device, state) {
     const property = state.split('homekit_').join('');
     if (state.startsWith('homekit_')) {
         return !!device.homekit && property in device.homekit
@@ -25,6 +21,14 @@ function hasRequestedState(node, device) {
     }
     return typeof device.current_values === 'object' && property in device.current_values
         && device.current_values[property] !== null && device.current_values[property] !== undefined;
+}
+
+function hasRequestedState(node, device) {
+    if (!device || !hasState(device.current_values)) return false;
+    // a single property (string, legacy) or several (array); the device answered if it
+    // reported any of them, as it may never report every selected property (e.g. action)
+    const states = [].concat(node.config.state).filter((state) => state && state !== '0');
+    return !states.length || states.some((state) => hasProperty(device, state));
 }
 
 function getDeviceGetPayload(device) {

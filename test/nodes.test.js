@@ -174,6 +174,53 @@ test('get node requests missing state once and sends each waiting message after 
     assert.equal(server.listenerCount('onMQTTMessage'), 0);
 });
 
+test('get node with several properties uses the cache only when all of them are present', () => {
+    const { node: server, client } = createServer();
+    server.devices = [{
+        id: 1,
+        friendly_name: 'lamp',
+        ieee_address: '0x001',
+        definition: { exposes: [{ name: 'state', access: 5 }, { name: 'brightness', access: 5 }] }
+    }];
+    server.devices_values = { 'zigbee2mqtt/lamp': { state: 'ON', brightness: 80 } };
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        server: 'server', device_id: 'lamp', state: ['state', 'brightness']
+    }, server);
+
+    node.emit('input', {});
+    clearTimeout(node.cleanTimer);
+
+    assert.equal(client.publications.length, 0);
+    assert.deepEqual(node.messages[0].payload, { state: 'ON', brightness: 80 });
+});
+
+test('get node with several properties finishes waiting once any of them is reported', async (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const { node: server, client } = createServer();
+    server.devices = [{
+        id: 1,
+        friendly_name: 'lamp',
+        ieee_address: '0x001',
+        definition: { exposes: [{ name: 'state', access: 5 }] }
+    }];
+    server.devices_values = {};
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        server: 'server', device_id: 'lamp', state: ['state', 'action']
+    }, server);
+    t.after(() => {
+        node.emit('close');
+        clearTimeout(node.cleanTimer);
+    });
+
+    node.emit('input', {});
+    assert.equal(client.publications.length, 1);
+
+    server.onMQTTMessage('zigbee2mqtt/lamp', Buffer.from('{"state":"ON"}'));
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.deepEqual(node.messages[0].payload, { state: 'ON' });
+});
+
 test('get node requests readable properties nested under light exposes', async (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] });
     const { node: server, client } = createServer();
