@@ -226,7 +226,9 @@ class Zigbee2MqttEditor {
             let selected = (Array.isArray(that.property) ? that.property : [that.property]).filter((value) => {
                 return value && value !== '0' && that.getDevicePropertyInput().find('option[value="' + value + '"]').length;
             });
-            that.getDevicePropertyInput().multipleSelect('setSelects', selected);
+            // set the <select> itself: the widget was initialised before these options
+            // existed, so setSelects() wouldn't find them; refresh() below picks this up
+            that.getDevicePropertyInput().val(selected);
         } else if (that.getDevicePropertyInput().find('option[value='+that.property+']').length) {
             that.getDevicePropertyInput().val(that.property);
         } else {
