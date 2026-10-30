@@ -271,9 +271,12 @@
 
             function getPayloadTypes(command, device) {
                 let types = ['msg', 'flow', 'global', 'str', 'num', 'json'];
-                let options = Zigbee2mqttEditorUtils.getStatePayloadOptions(command);
-                if (!options.length) {
-                    options = Zigbee2mqttEditorUtils.getWritableExposePayloadOptions(device, command);
+                // the device's own values where it declares them (e.g. no open/close for a socket)
+                let options = Zigbee2mqttEditorUtils.getPayloadOptions(device, command);
+                // keep a saved value the device doesn't list, so opening the editor doesn't change it
+                if (options.length && command === node.command && node.payloadType === 'z2m_payload' && node.payload
+                    && !options.some(({value}) => value === node.payload)) {
+                    options = [...options, {value: node.payload, label: node.payload}];
                 }
                 if (!options.length && 'color_temp' === command) {
                     options = [

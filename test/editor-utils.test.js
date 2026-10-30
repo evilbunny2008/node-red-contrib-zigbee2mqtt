@@ -29,6 +29,20 @@ test('server flow labels are appended when configured and omitted when blank', (
     assert.equal(EditorUtils.appendServerFlowLabel('Desk lamp', null), 'Desk lamp');
 });
 
+test('Out payload choices follow the values the device declares', () => {
+    const values = (device, command) => EditorUtils.getPayloadOptions(device, command).map(({ value, label }) => `${value}:${label}`);
+    const device = (expose) => ({ definition: { exposes: [expose] } });
+
+    assert.deepEqual(values(device({ type: 'binary', property: 'state', access: 7, value_on: 'ON', value_off: 'OFF', value_toggle: 'TOGGLE' }), 'state'),
+        ['on:On', 'off:Off', 'toggle:Toggle']);
+    assert.deepEqual(values(device({ type: 'enum', property: 'state', access: 7, values: ['OPEN', 'CLOSE', 'STOP'] }), 'state'),
+        ['open:Open', 'close:Close', 'STOP:STOP']);
+    assert.deepEqual(values(device({ type: 'enum', property: 'mode', access: 7, values: ['eco', 'comfort'] }), 'mode'),
+        ['eco:eco', 'comfort:comfort']);
+    assert.deepEqual(values(null, 'state').length, 7);
+    assert.deepEqual(values(null, 'brightness'), []);
+});
+
 test('Out commands are limited to what the selected device supports', () => {
     const commands = ['state', 'state_l1', 'brightness', 'brightness_move', 'color', 'color_rgb',
         'color_temp', 'color_temp_step', 'position', 'tilt', 'scene', 'lock', 'alert'].map((value) => ({ value, label: value }));
@@ -179,5 +193,8 @@ test('writable expose options include settable parameters and their selectable v
         { value: 'OFF', label: 'OFF' }
     ]);
     assert.deepEqual(EditorUtils.getWritableExposePayloadOptions(device, 'battery'), []);
+    assert.deepEqual(EditorUtils.getWritableExposePayloadOptions({ definition: { exposes: [{
+        type: 'binary', property: 'state', access: 7, value_on: 'ON', value_off: 'OFF', value_toggle: 'TOGGLE'
+    }] } }, 'state').map(({ value }) => value), ['ON', 'OFF', 'TOGGLE']);
     assert.deepEqual(EditorUtils.getWritableExposeOptions(null), []);
 });

@@ -98,6 +98,7 @@
             values = expose.values;
         } else if (expose.type === 'binary' && 'value_on' in expose && 'value_off' in expose) {
             values = [expose.value_on, expose.value_off];
+            if ('value_toggle' in expose) values.push(expose.value_toggle);
         }
 
         return [...new Set(values)]
@@ -139,6 +140,17 @@
         };
         if (!commands.some(supported)) return commands;
         return commands.filter((command) => command.value === keep || supported(command));
+    }
+
+    // Payload choices for an Out command: the values the device declares, falling back to
+    // the generic state values. State values that match a generic one (ON -> on) use it,
+    // so the labels stay the same and saved nodes keep their value.
+    function getPayloadOptions(device, command) {
+        const generic = getStatePayloadOptions(command);
+        const options = getWritableExposePayloadOptions(device, command);
+        if (!options.length) return generic;
+
+        return options.map((option) => generic.find(({ value }) => value === option.value.toLowerCase()) || option);
     }
 
     function getStateCommandOptions() {
@@ -214,6 +226,7 @@
         getWritableExposeOptions,
         getWritableExposePayloadOptions,
         filterCommandOptions,
+        getPayloadOptions,
         getStateCommandOptions,
         getStatePayloadOptions,
         getDefaultOutNodeLabel,
