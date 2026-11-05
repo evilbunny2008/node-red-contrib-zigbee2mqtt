@@ -634,7 +634,7 @@
                     node.status({
                         fill: "blue",
                         shape: "ring",
-                        text: "waiting for Home Assistant"
+                        text: "@evilbunny/node-red-contrib-zigbee2mqtt/in:status.waiting_ha"
                     });
                 }
                 return true;
@@ -706,7 +706,7 @@
                 node.status({
                     fill: "grey",
                     shape: "ring",
-                    text: "disabled (Home Assistant)"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/in:status.disabled_ha"
                 });
             }
         }
