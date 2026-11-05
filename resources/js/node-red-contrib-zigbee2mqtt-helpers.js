@@ -1,3 +1,31 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// Z2MI18n - ponto ÚNICO de tradução do editor (RED._ + fallback + interpolação __var__)
+//   Z2MI18n.t('server:editor.nothing')
+//   Z2MI18n.t('bridge:notifications.log_level_set', {level: 'debug'})   // "...__level__"
+//   Z2MI18n.t('server:editor.manual_value', {value: 5}, 'Manual (5)')   // 3º arg = fallback
+// Os textos vivem em nodes/locales/<idioma>/<nó>.json (namespace = nome do ficheiro .json).
+// ═══════════════════════════════════════════════════════════════════════════
+if (typeof window !== 'undefined' && typeof window.Z2MI18n === 'undefined') {
+    (function () {
+        const MODULE = '@evilbunny/node-red-contrib-zigbee2mqtt/';
+        function t(key, vars, fallback) {
+            if (typeof key !== 'string') return (fallback !== undefined) ? fallback : '';
+            const full = MODULE + key;
+            let out;
+            try {
+                out = (typeof RED !== 'undefined' && RED._) ? RED._(full, vars || {}) : full;
+            } catch (e) {
+                out = full;
+            }
+            // RED._ devolve a própria chave quando falta a tradução
+            if (!out || out === full || out === key) {
+                return (fallback !== undefined) ? fallback : key.replace(/^[^:]*:/, '');
+            }
+            return out;
+        }
+        window.Z2MI18n = { t: t, MODULE: MODULE };
+    })();
+}
 // Fallback in case this file is evaluated before debug.js (api.html loads debug.js
 // first, but don't let load order break the editor): a silent logger with the same API.
 if (typeof window !== 'undefined' && typeof window.Z2MDebug === 'undefined') {
@@ -552,9 +580,10 @@ class Zigbee2MqttEditor {
                         const uiConfig = window.Z2MConfig?.getComplexInputConfig(currentCmd);
                         if (uiConfig) {
                             // 1. Limpar labels manuais se o valor for padrão
+                            //    (a opção manual é identificada pela flag "manual", não pelo texto: o texto é traduzido)
                             let z2mType = that.currentPayloadTypes?.find(t => t.value === 'z2m_payload');
                             if (z2mType && z2mType.options) {
-                                const standardOptions = z2mType.options.filter(opt => !String(opt.label).startsWith('Manual ('));
+                                const standardOptions = z2mType.options.filter(opt => !opt.manual);
                                 const isStandard = standardOptions.some(opt => String(opt.value) === String(value));
                                 if (isStandard) {
                                     z2mType.options = standardOptions;
@@ -651,10 +680,10 @@ class Zigbee2MqttEditor {
             dropWidth: 320,
             width: 320,
             filter: true,
-            formatAllSelected:function(){return RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.select_device")}
+            formatAllSelected:function(){return Z2MI18n.t('server:editor.select_device')}
         };
         if (that.config.allow_empty && !that.isMultiple()) {
-            params.formatAllSelected = function(){return RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.msg_topic")};
+            params.formatAllSelected = function(){return Z2MI18n.t('server:editor.msg_topic')};
         }
 
         that.getDeviceIdInput().children().remove();
@@ -675,7 +704,7 @@ class Zigbee2MqttEditor {
             return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
         });
         if (groups.length) {
-            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.groups")});
+            html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.groups')});
             html.appendTo(that.getDeviceIdInput());
             $.each(groups, function(index, value) {
                 let text = '';
@@ -693,7 +722,7 @@ class Zigbee2MqttEditor {
             return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
         });
         if (devices.length) {
-            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.devices")});
+            html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.devices')});
             html.appendTo(that.getDeviceIdInput());
 			
             // ✅ Filtrar baseado no MODE
@@ -768,14 +797,14 @@ class Zigbee2MqttEditor {
             dropWidth: 320,
             width: 320,
             single: false, // always allow selecting multiple attributes; no selection = complete payload
-            placeholder: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.complete_payload")
+            placeholder: Z2MI18n.t('server:editor.complete_payload')
         }).multipleSelect('disable');
 
         let html = '';
         let device = that.getDevice();
 
         if (device && 'definition' in device && device.definition && 'exposes' in device.definition) {
-            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.zigbee2mqtt")});
+            html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.zigbee2mqtt')});
             html.appendTo(that.getDevicePropertyInput());
 
             $.each(device.definition.exposes, function(index, value) {
@@ -802,7 +831,7 @@ class Zigbee2MqttEditor {
                 return !that.getDevicePropertyInput().find('option[value="' + c[0] + '"]').length;
             });
             if (common.length) {
-                html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.common")});
+                html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.common')});
                 html.appendTo(that.getDevicePropertyInput());
                 common.forEach(function(c) {
                     $('<option value="' + c[0] + '">' + c[1] + '</option>').appendTo(html);
@@ -811,7 +840,7 @@ class Zigbee2MqttEditor {
         }
 
         if (device && 'homekit' in device && device.homekit && Object.keys(device.homekit).length) {
-            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.homekit")});
+            html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.homekit')});
             html.appendTo(that.getDevicePropertyInput());
 
             $.each(device.homekit, function (index, value) {
@@ -913,7 +942,7 @@ class Zigbee2MqttEditor {
             width: 320,
             filter: true,
             single: false, // sempre múltiplo; nenhuma seleção = payload completo
-            placeholder: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/in:multiselect.all_properties")
+            placeholder: Z2MI18n.t('in:multiselect.all_properties')
         }).multipleSelect('disable');
 
         const seen = {};
@@ -925,7 +954,7 @@ class Zigbee2MqttEditor {
 
         const devices = that.getSelectedDevicesForFilter();
         if (devices.length) {
-            const $exposed = $('<optgroup/>', { label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.zigbee2mqtt") });
+            const $exposed = $('<optgroup/>', { label: Z2MI18n.t('server:editor.zigbee2mqtt') });
             $exposed.appendTo($filter);
             devices.forEach(function (device) {
                 Zigbee2MqttEditorUtils.getReadableExposes(device).forEach(function (expose) {
@@ -935,7 +964,7 @@ class Zigbee2MqttEditor {
             });
 
             // atributos comuns que o z2m acrescenta à maioria dos devices
-            const $common = $('<optgroup/>', { label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.common") });
+            const $common = $('<optgroup/>', { label: Z2MI18n.t('server:editor.common') });
             $common.appendTo($filter);
             addOption($common, 'last_seen', 'last_seen');
             addOption($common, 'linkquality', 'linkquality, lqi');
@@ -947,7 +976,7 @@ class Zigbee2MqttEditor {
             if (!seen[value]) {
                 let $orphans = $filter.find('optgroup.z2m-filter-orphans');
                 if (!$orphans.length) {
-                    $orphans = $('<optgroup/>', { 'class': 'z2m-filter-orphans', label: '⚠' }).appendTo($filter);
+                    $orphans = $('<optgroup/>', { 'class': 'z2m-filter-orphans', label: Z2MI18n.t('server:editor.orphan_properties', null, '⚠') }).appendTo($filter);
                 }
                 addOption($orphans, value, value);
             }
@@ -1027,7 +1056,7 @@ class Zigbee2MqttEditor {
             $cmd.typedInput('types', [
                 {
                     value: 'nothing',
-                    label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"),
+                    label: Z2MI18n.t('server:editor.nothing'),
                     options: ['']
                 }
             ]);
@@ -1200,19 +1229,19 @@ class Zigbee2MqttEditor {
         const commandTypes = [
             {
                 value: 'z2m_cmd',
-                label: 'zigbee2mqtt',
+                label: Z2MI18n.t('server:editor.zigbee2mqtt'),
                 icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png',
                 options: z2mOptions
             },
             {
                 value: 'homekit',
-                label: 'homekit',
+                label: Z2MI18n.t('server:editor.homekit'),
                 icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/homekit-logo.png',
-                options: [{ value: 'homekit', label: 'Apple Homekit data format' }]
+                options: [{ value: 'homekit', label: Z2MI18n.t('server:editor.homekit_data_format') }]
             },
             {
                 value: 'nothing',
-                label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"),
+                label: Z2MI18n.t('server:editor.nothing'),
                 options: ['']
             },
             'str',
@@ -1446,7 +1475,7 @@ class Zigbee2MqttEditor {
                         );
                         
                         if (config?.isToggleable(currentCommand)) {
-                            z2mPayloadOptions.push({ value: 'TOGGLE', label: 'Toggle' });
+                            z2mPayloadOptions.push({ value: 'TOGGLE', label: Z2MI18n.t('server:editor.toggle', null, 'Toggle') });
                         }
                     }
                     else if ('value_min' in foundExpose && 'value_max' in foundExpose) {
@@ -1551,15 +1580,16 @@ class Zigbee2MqttEditor {
         } 
         else if (z2mPayloadOptions.length > 0) {
             // ✅ Injetar label manual se o valor inicial (cache/node) não estiver na lista
+            //    (a opção é marcada com "manual: true": o texto é traduzido, por isso não serve de identificador)
             if (currentValue !== null && currentType === 'z2m_payload') {
                 const exists = z2mPayloadOptions.some(opt => String(opt.value) === String(currentValue));
                  if (!exists && currentValue !== '') {
-                    z2mPayloadOptions.unshift({ value: String(currentValue), label: `Manual (${currentValue})` });
+                    z2mPayloadOptions.unshift({ value: String(currentValue), label: Z2MI18n.t('server:editor.manual_value', {value: currentValue}, 'Manual (' + currentValue + ')'), manual: true });
                 }
             }
             payloadTypes.push({
                 value: 'z2m_payload',
-                label: 'zigbee2mqtt',
+                label: Z2MI18n.t('server:editor.zigbee2mqtt'),
                 icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png',
                 options: z2mPayloadOptions
             });
@@ -1567,7 +1597,7 @@ class Zigbee2MqttEditor {
         else if (isComplexUI || isNumeric) {
             payloadTypes.push({
                 value: 'z2m_payload',
-                label: 'zigbee2mqtt',
+                label: Z2MI18n.t('server:editor.zigbee2mqtt'),
                 icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png'
             });
         }
@@ -1686,7 +1716,7 @@ class Zigbee2MqttEditor {
                 that.getDeviceOptionsInput().typedInput('types', [
                     {
                         value: 'nothing',
-                        label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"),
+                        label: Z2MI18n.t('server:editor.nothing'),
                         options: ['']
                     }
                 ]);
@@ -1704,7 +1734,7 @@ class Zigbee2MqttEditor {
         
         let device = that.getDevice();
         let options = [];
-        options.push({'value': 'nothing', 'label': RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"), options:['']});
+        options.push({'value': 'nothing', 'label': Z2MI18n.t('server:editor.nothing'), options:['']});
         options.push('msg');
         options.push('json');
         
@@ -1838,7 +1868,7 @@ class Zigbee2MqttEditor {
         // Validar
         if (isMin && pairValue !== null && value >= pairValue) {
             RED.notify(
-                'Min ' + pairInfo.unit + ' must be less than max ' + pairInfo.unit + ' (' + pairValue + ')',
+                Z2MI18n.t('server:editor.min_max_min', {unit: pairInfo.unit, value: pairValue}, 'Min ' + pairInfo.unit + ' must be less than max ' + pairInfo.unit + ' (' + pairValue + ')'),
                 'warning'
             );
             return false;
@@ -1846,7 +1876,7 @@ class Zigbee2MqttEditor {
         
         if (!isMin && pairValue !== null && value <= pairValue) {
             RED.notify(
-                'Max ' + pairInfo.unit + ' must be greater than min ' + pairInfo.unit + ' (' + pairValue + ')',
+                Z2MI18n.t('server:editor.min_max_max', {unit: pairInfo.unit, value: pairValue}, 'Max ' + pairInfo.unit + ' must be greater than min ' + pairInfo.unit + ' (' + pairValue + ')'),
                 'warning'
             );
             return false;
@@ -2132,7 +2162,7 @@ class Zigbee2MqttEditor {
         });
 
         // Montar a estrutura form-row correta (Label à esquerda, Inputs à direita)
-        const mainLabel = config.parts.length === 1 ? config.parts[0].label : 'Manual Adjust';
+        const mainLabel = config.parts.length === 1 ? config.parts[0].label : Z2MI18n.t('out:label.manual_adjust', null, 'Manual Adjust');
         const finalInputsHtml = `
             <label class="l-width"><i class="fa fa-sliders"></i> ${mainLabel}</label>
             <div style="display: inline-flex; width: 70%; align-items: center; flex-wrap: wrap;">
@@ -2208,13 +2238,14 @@ class Zigbee2MqttEditor {
             if (that.currentPayloadTypes) {
                 let z2mType = that.currentPayloadTypes.find(t => t.value === 'z2m_payload');
                 if (z2mType && z2mType.options) {
-                    const standardOptions = z2mType.options.filter(opt => !String(opt.label).startsWith('Manual ('));
+                    // a opção manual é identificada pela flag "manual" (o texto é traduzido)
+                    const standardOptions = z2mType.options.filter(opt => !opt.manual);
                     // 🔥 FIX: Comparação case-insensitive para evitar adicionar múltiplos "Manual" da mesma cor
                     const isStandard = standardOptions.some(opt => String(opt.value).toUpperCase() === String(finalValue).toUpperCase());
-                    const currentManual = z2mType.options.find(opt => String(opt.label).startsWith('Manual ('));
+                    const currentManual = z2mType.options.find(opt => opt.manual);
                     
                     if (!isStandard && finalValue !== '' && (!currentManual || currentManual.value !== String(finalValue))) {
-                        z2mType.options = [{ value: String(finalValue), label: `Manual (${finalValue})` }, ...standardOptions];
+                        z2mType.options = [{ value: String(finalValue), label: Z2MI18n.t('server:editor.manual_value', {value: finalValue}, 'Manual (' + finalValue + ')'), manual: true }, ...standardOptions];
                         $payload.typedInput('types', that.currentPayloadTypes);
                         // 🔥 CRITICAL: Re-setar o valor após mudar os types para o widget aceitar a nova opção
                         $payload.typedInput('value', finalValue);
@@ -2455,7 +2486,7 @@ class Zigbee2MqttEditor {
 			if (!that.device_id) {
 				that.device_id = [];
 			}
-			that.getDeviceFriendlyNameInput().val(that.device_id.length + ' ' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.selected"));
+			that.getDeviceFriendlyNameInput().val(that.device_id.length + ' ' + Z2MI18n.t('server:editor.selected'));
 		} else if (that.device_id && that.device_id.length) {
 			if (typeof(that.device_id) == 'object') {
 				that.device_id = that.device_id[0];
@@ -2635,4 +2666,3 @@ bootLog.log('╔═════════════════════�
 bootLog.log('║ ✅ Z2M DEBUG TOOLS LOADED                                  ║');
 bootLog.log('╚═════════════════════════════════════════════════════════════╝');
 bootLog.log('Zigbee2MqttEditor class loaded ✔');
-
