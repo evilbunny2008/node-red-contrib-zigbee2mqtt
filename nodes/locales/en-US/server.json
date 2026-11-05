@@ -7,21 +7,49 @@
         "mqtt_username": "MQTT Username",
         "mqtt_password": "MQTT Password",
         "use-tls": "Use TLS",
-        "tls-config":"TLS configuration"
+        "tls-config": "TLS configuration",
+        "flow_label": "Flow Label",
+        "flow_icon": "Icon",
+        "log_node_red": "Log Node Red"
     },
     "placeholder": {
-        "name": "Name"
+        "name": "Name",
+        "flow_label": "e.g.: Living room"
     },
     "status": {
         "no_server": "no server",
         "no_device": "no device",
         "no_connection": "no connection",
         "no_value": "no value",
-        "received": "ok"
+        "received": "ok",
+        "server_stopping": "server stopping"
     },
     "tip": {
         "deploy": "<b>Important:</b> deploy server node to get devices list"
     },
+    "icons": {
+        "default": "(default)",
+        "lightbulb": "lightbulb",
+        "home": "home",
+        "bolt": "bolt",
+        "thermometer": "thermometer",
+        "plug": "plug",
+        "wifi": "wifi",
+        "microchip": "microchip"
+    },
+    "log_levels": {
+        "error": "Error",
+        "warn": "Warning",
+        "notice": "Notice",
+        "debug": "Debug"
+    },
+    "log_levels_hint": {
+        "error": "only failures",
+        "warn": "errors + warnings",
+        "notice": "errors + warnings + system events",
+        "debug": "everything, incl. diagnostic detail"
+    },
+    "log_running_hint": "running: __level__ - Deploy to apply",
     "editor": {
         "groups": "Groups",
         "devices": "Devices",
@@ -33,6 +61,116 @@
         "zigbee2mqtt": "zigbee2mqtt",
         "common": "Common",
         "homekit": "Apple Homekit",
+        "homekit_data_format": "Apple Homekit data format",
+        "manual_value": "Manual (__value__)",
+        "toggle": "Toggle",
+        "orphan_properties": "⚠ No longer available",
+        "min_max_min": "Min __unit__ must be less than max __unit__ (__value__)",
+        "min_max_max": "Max __unit__ must be greater than min __unit__ (__value__)",
         "error_no_commands": "This device has no output commands available. Please select a device with controllable features."
+    },
+    "config": {
+        "composite": {
+            "color": "color (JSON/xy)",
+            "color_rgb": "color_rgb (r,g,b)",
+            "color_hex": "color_hex (#RRGGBB)",
+            "color_xy": "color_xy (x,y)",
+            "color_hsb": "color_hsb (h,s,b)",
+            "color_hsv": "color_hsv (h,s,v)",
+            "color_hue": "color_hue (h)",
+            "color_saturation": "color_saturation (s)"
+        },
+        "colors": {
+            "red": "🔴 Red",
+            "green": "🟢 Green",
+            "blue": "🔵 Blue",
+            "yellow": "🟡 Yellow",
+            "orange": "🟠 Orange",
+            "purple": "🟣 Purple",
+            "white": "⚪ White",
+            "white_d65": "⚪ White (D65)"
+        },
+        "payload": {
+            "color_temp": {
+                "coolest": "Coolest (6535K)",
+                "cool": "Cool (4000K)",
+                "neutral": "Neutral (2857K)",
+                "warm": "Warm (2203K)",
+                "warmest": "Warmest (2000K)"
+            },
+            "brightness": {
+                "off": "Off (0%)",
+                "low": "Low (25%)",
+                "medium": "Medium (50%)",
+                "high": "High (75%)",
+                "max": "Max (100%)"
+            },
+            "position": {
+                "closed": "Closed (0%)",
+                "quarter": "Quarter (25%)",
+                "half": "Half (50%)",
+                "three_quarters": "Three Quarters (75%)",
+                "open": "Open (100%)"
+            },
+            "countdown": {
+                "m1": "1 minute",
+                "m5": "5 minutes",
+                "m10": "10 minutes",
+                "m30": "30 minutes",
+                "h1": "1 hour"
+            },
+            "sensitivity": {
+                "very_low": "Very Low (0)",
+                "low": "Low (3)",
+                "medium": "Medium (5)",
+                "high": "High (7)",
+                "very_high": "Very High (9)"
+            },
+            "color_hue": {
+                "red": "🔴 Red (0°)",
+                "green": "🟢 Green (120°)",
+                "blue": "🔵 Blue (240°)",
+                "yellow": "🟡 Yellow (60°)",
+                "magenta": "🟣 Magenta (300°)"
+            },
+            "color_saturation": {
+                "full": "🎨 Full Saturation (100%)",
+                "half": "🔉 Half Saturation (50%)",
+                "none": "⚪ No Saturation (White)"
+            }
+        },
+        "slider": {
+            "brightness": "Brightness",
+            "min_brightness": "Min Brightness",
+            "max_brightness": "Max Brightness",
+            "off": "Off",
+            "max": "Max",
+            "color_temp": "Color Temp",
+            "cool_150": "150 (Cool)",
+            "warm_500": "500 (Warm)",
+            "cie_x": "CIE X",
+            "cie_y": "CIE Y",
+            "position": "Position",
+            "closed": "Closed",
+            "open": "Open",
+            "tilt": "Tilt",
+            "timer": "Timer",
+            "transition": "Transition",
+            "hue": "Hue",
+            "saturation": "Saturation",
+            "value": "Value",
+            "white": "White",
+            "color": "Color",
+            "red": "Red",
+            "green": "Green",
+            "blue": "Blue",
+            "range": "Range",
+            "sensitivity": "Sensitivity",
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High",
+            "generic": "Value",
+            "pick_color": "Pick Color"
+        }
     }
 }
