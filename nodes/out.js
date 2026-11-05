@@ -249,13 +249,13 @@ module.exports = function(RED) {
                     node.status({
                         fill: "green",
                         shape: "ring",
-                        text: "ready"
+                        text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.ready"
                     });
                 } else {
                     node.status({
                         fill: "red",
                         shape: "dot",
-                        text: "MQTT disconnected"
+                        text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.mqtt_disconnected"
                     });
                 }
 
@@ -282,7 +282,7 @@ module.exports = function(RED) {
                         node.status({
                             fill: "red",
                             shape: "dot",
-                            text: "MQTT not connected"
+                            text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.mqtt_not_connected"
                         });
                         node.error("MQTT not connected - cannot publish message");
                         sendResult(false);
@@ -620,14 +620,14 @@ module.exports = function(RED) {
                                         commandObject = JSON.parse(rawCommand);
                                     } catch (e) {
                                         node.warn('Command is not valid JSON: ' + e.message);
-                                        node.status({fill: "red", shape: "dot", text: "invalid JSON command"});
+                                        node.status({fill: "red", shape: "dot", text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.invalid_json_command"});
                                         sendResult(false);
                                         return;
                                     }
                                 }
                                 if (!commandObject || typeof commandObject !== 'object' || Array.isArray(commandObject)) {
                                     node.warn('JSON command must be an object, e.g. {"state":"ON"}');
-                                    node.status({fill: "red", shape: "dot", text: "invalid JSON command"});
+                                    node.status({fill: "red", shape: "dot", text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.invalid_json_command"});
                                     sendResult(false);
                                     return;
                                 }
@@ -737,7 +737,7 @@ module.exports = function(RED) {
                                         if (err) {
                                             // falhou o envio -> nunca haverá resposta, não ficar à espera
                                             node.removePendingOutput(pendingEntry);
-                                            node.status({fill: "red", shape: "dot", text: "publish failed"});
+                                            node.status({fill: "red", shape: "dot", text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.publish_failed"});
                                             node.error("MQTT publish error: " + err.message, message);
                                         }
                                         sendResult(!err, err);
@@ -756,7 +756,7 @@ module.exports = function(RED) {
                             } catch (e) {
                                 node.removePendingOutput(pendingEntry);
                                 node.error("Serialization error: " + e.message, message);
-                                node.status({fill: "red", shape: "dot", text: "error"});
+                                node.status({fill: "red", shape: "dot", text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.error"});
                                 sendResult(false, e);
                             }
                         } else {
@@ -798,13 +798,13 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "MQTT disconnected"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.mqtt_disconnected"
                 });
             } else {
                 node.status({
                     fill: "green",
                     shape: "ring",
-                    text: "ready"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.ready"
                 });
             }
         }
@@ -942,14 +942,14 @@ module.exports = function(RED) {
             node.status({
                 fill: "green",
                 shape: "ring",
-                text: "MQTT connected"
+                text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.mqtt_connected"
             });
             clearTimeout(node.cleanTimer);
             node.cleanTimer = setTimeout(function() {
                 node.status({
                     fill: "green",
                     shape: "ring",
-                    text: "ready"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.ready"
                 });
             }, 3000);
         }
@@ -961,7 +961,7 @@ module.exports = function(RED) {
             node.status({
                 fill: "red",
                 shape: "dot",
-                text: "MQTT disconnected"
+                text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.mqtt_disconnected"
             });
         }
 
@@ -971,7 +971,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: "green",
                     shape: "ring",
-                    text: "ready"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/out:status.ready"
                 });
             } else {
                 node.onConnectError();
