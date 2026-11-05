@@ -31,7 +31,9 @@
         "no_device": "no device",
         "no_connection": "no connection",
         "connected": "connected",
-        "received": "ok"
+        "received": "ok",
+        "waiting_ha": "waiting for Home Assistant",
+        "disabled_ha": "disabled (Home Assistant)"
     },
     "multiselect": {
         "devices": "Devices",
