@@ -87,7 +87,7 @@ module.exports = function(RED) {
                     node.status({
                         fill: "blue",
                         shape: "ring",
-                        text: "publishing..."
+                        text: "@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.publishing"
                     });
 
                     node.server.mqtt.publish(
@@ -99,7 +99,7 @@ module.exports = function(RED) {
                                 node.status({
                                     fill: "red",
                                     shape: "dot",
-                                    text: "publish failed"
+                                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.publish_failed"
                                 });
                                 node.error("MQTT publish error: " + err.message);
                                 
