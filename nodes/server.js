@@ -510,7 +510,7 @@ module.exports = function(RED) {
             let node = this;
             if (!Z2MLogger.isValidLevel(level)) {
                 node.logger.warn('Ignored invalid logger level: ' + JSON.stringify(level));
-                return {'error': true, 'description': 'invalid level (use: ' + Object.keys(Z2MLogger.LEVELS).join(', ') + ')'};
+                return {'error': true, 'code': 'invalid_level', 'description': 'invalid level (use: ' + Object.keys(Z2MLogger.LEVELS).join(', ') + ')'};
             }
             const previous = node.debug_level;
             node.debug_level = level;
@@ -549,7 +549,7 @@ module.exports = function(RED) {
         // ✅ VALIDAR CONEXÃO MQTT
         if (!node.mqtt || !node.connection) {
             node.warn('Cannot set permit_join: MQTT not connected');
-            return {'error': true, 'description': 'MQTT not connected'};
+            return {'error': true, 'code': 'mqtt_not_connected', 'description': 'MQTT not connected'};
         }
         
         // ✅ DETERMINAR TEMPO
@@ -617,11 +617,11 @@ module.exports = function(RED) {
 
             let device = node.getDeviceByKey(ieee_address);
             if (!device) {
-                node.logger.warn('renameDevice: no such device "' + ieee_address + '"'); return {'error': true, 'description': 'no such device'};
+                node.logger.warn('renameDevice: no such device "' + ieee_address + '"'); return {'error': true, 'code': 'no_such_device', 'description': 'no such device'};
             }
 
             if (!newName.length) {
-                node.logger.warn('renameDevice: the new name for "' + ieee_address + '" is empty'); return {'error': true, 'description': 'can not be empty'};
+                node.logger.warn('renameDevice: the new name for "' + ieee_address + '" is empty'); return {'error': true, 'code': 'name_empty', 'description': 'can not be empty'};
             }
 
             let payload = {
@@ -639,7 +639,7 @@ module.exports = function(RED) {
 
             let device = node.getDeviceByKey(ieee_address);
             if (!device) {
-                node.logger.warn('removeDevice: no such device "' + ieee_address + '"'); return {'error': true, 'description': 'no such device'};
+                node.logger.warn('removeDevice: no such device "' + ieee_address + '"'); return {'error': true, 'code': 'no_such_device', 'description': 'no such device'};
             }
             let payload = {
                 'id': ieee_address,
@@ -656,7 +656,7 @@ module.exports = function(RED) {
             let node = this;
             let device = node.getDeviceByKey(ieee_address);
             if (!device) {
-                node.logger.warn('setDeviceOptions: no such device "' + ieee_address + '"'); return {'error': true, 'description': 'no such device'};
+                node.logger.warn('setDeviceOptions: no such device "' + ieee_address + '"'); return {'error': true, 'code': 'no_such_device', 'description': 'no such device'};
             }
 
             let payload = {
@@ -675,13 +675,13 @@ module.exports = function(RED) {
 
             let group = node.getGroupByKey(id);
             if (!group) {
-                node.logger.warn('renameGroup: no such group "' + id + '"'); return {'error': true, 'description': 'no such group'};
+                node.logger.warn('renameGroup: no such group "' + id + '"'); return {'error': true, 'code': 'no_such_group', 'description': 'no such group'};
             }
 
             const cleanName = node.normalizeGroupName(newName);
             if (!cleanName) {
                 node.warn('renameGroup aborted: new name is empty or invalid (received: ' + JSON.stringify(newName) + ')');
-                return {'error': true, 'description': 'can not be empty'};
+                return {'error': true, 'code': 'name_empty', 'description': 'can not be empty'};
             }
 
             // Nada a fazer se o nome (já normalizado) é igual ao atual
@@ -704,7 +704,7 @@ module.exports = function(RED) {
 
             let group = node.getGroupByKey(id);
             if (!group) {
-                node.logger.warn('removeGroup: no such group "' + id + '"'); return {'error': true, 'description': 'no such group'};
+                node.logger.warn('removeGroup: no such group "' + id + '"'); return {'error': true, 'code': 'no_such_group', 'description': 'no such group'};
             }
 
             let payload = {
@@ -723,14 +723,14 @@ module.exports = function(RED) {
             if (!cleanName) {
                 node.warn('addGroup aborted: group name is empty or invalid (received: ' + JSON.stringify(name) + ')');
                 // O bridge.html já faz alert(data.description) quando "error" in data
-                return {'error': true, 'description': 'group name can not be empty'};
+                return {'error': true, 'code': 'group_name_empty', 'description': 'group name can not be empty'};
             }
 
             // (acrescento meu, não pedido: evita TypeError se o MQTT estiver desligado;
             //  podes apagar este bloco se preferires manter só a validação do nome)
             if (!node.mqtt || !node.connection) {
                 node.warn('addGroup aborted: MQTT not connected');
-                return {'error': true, 'description': 'MQTT not connected'};
+                return {'error': true, 'code': 'mqtt_not_connected', 'description': 'MQTT not connected'};
             }
 
             let payload = {
@@ -752,7 +752,7 @@ module.exports = function(RED) {
 
             let group = node.getGroupByKey(groupId);
             if (!group) {
-                node.logger.warn('removeDeviceFromGroup: no such group "' + groupId + '"'); return {'error': true, 'description': 'no such group'};
+                node.logger.warn('removeDeviceFromGroup: no such group "' + groupId + '"'); return {'error': true, 'code': 'no_such_group', 'description': 'no such group'};
             }
             let payload = {
                 'group': groupId, 'device': deviceId,
@@ -768,12 +768,12 @@ module.exports = function(RED) {
 
             let device = node.getDeviceByKey(deviceId);
             if (!device) {
-                node.logger.warn('addDeviceToGroup: no such device "' + deviceId + '"'); return {'error': true, 'description': 'no such device'};
+                node.logger.warn('addDeviceToGroup: no such device "' + deviceId + '"'); return {'error': true, 'code': 'no_such_device', 'description': 'no such device'};
             }
 
             let group = node.getGroupByKey(groupId);
             if (!group) {
-                node.logger.warn('addDeviceToGroup: no such group "' + groupId + '"'); return {'error': true, 'description': 'no such group'};
+                node.logger.warn('addDeviceToGroup: no such group "' + groupId + '"'); return {'error': true, 'code': 'no_such_group', 'description': 'no such group'};
             }
             let payload = {
                 'group': groupId,
@@ -1668,7 +1668,7 @@ module.exports = function(RED) {
             // Notificar clientes registados que o servidor vai fechar
             if (node.clientNodes) {
                 node.clientNodes.forEach(client => {
-                    if (client.status) client.status({fill: "red", shape: "ring", text: "server stopping"});
+                    if (client.status) client.status({fill: "red", shape: "ring", text: "@evilbunny/node-red-contrib-zigbee2mqtt/server:status.server_stopping"});
                 });
                 node.clientNodes.clear();
                 node.clientNodes = null;
