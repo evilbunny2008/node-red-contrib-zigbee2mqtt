@@ -11,7 +11,10 @@
         "refresh": "Refresh",
         "refresh_devices_list": "Refresh Devices List",
         "output_enabled": "Output after state update",
-        "output_state": "updated state"
+        "output_state": "updated state",
+        "show_manual_controls": "Show Manual Controls",
+        "manual_adjust": "Manual Adjust",
+        "pick_color": "Pick Color"
     },
     "placeholder": {
         "name": "Name",
@@ -24,7 +27,22 @@
         "no_payload": "no payload",
         "no_connection": "no connection",
         "connected": "connected",
-        "received": "ok"        
+        "received": "ok",
+        "ready": "ready",
+        "mqtt_connected": "MQTT connected",
+        "mqtt_disconnected": "MQTT disconnected",
+        "mqtt_not_connected": "MQTT not connected",
+        "publish_failed": "publish failed",
+        "error": "error",
+        "invalid_json_command": "invalid JSON command"
+    },
+    "output_hint": {
+        "enabled": "Output port enabled (1 output: updated state).",
+        "none": "No output port (fire and forget).",
+        "removed": "Output port removed.",
+        "removed_wires": "Output port removed: __count__ wire(s) disconnected (Cancel restores them).",
+        "enabled_again": "Output port enabled again: __count__ wire(s) restored.",
+        "added": "Output port added: you can wire it now (Cancel reverts)."
     },
     "help": {
         "important": "IMPORTANT:",
