@@ -59,7 +59,7 @@
                     <input type="hidden" id="node-input-payloadType">
                 </div>
                 
-                <div id="slider-visibility-inline" style="display: none; flex-shrink: 0; margin-left: 5px;" title="Show Manual Controls">
+                <div id="slider-visibility-inline" style="display: none; flex-shrink: 0; margin-left: 5px;" title="Show Manual Controls" data-i18n="[title]label.show_manual_controls">
                     <label style="margin: 0; cursor: pointer; width: auto;">
                         <input type="checkbox" 
                                id="node-input-manualPayloadSliderVisible" 
@@ -256,6 +256,18 @@
                 //  - desligar-> node.outputs = 0 e os fios dessa porta são removidos (esperado)
                 //  - Cancel  -> repõe outputs/outputEnabled/estado "changed" e RESTAURA os fios removidos
                 // Nota: a alteração ao vivo não passa pelo histórico (undo) do Node-RED.
+                // i18n dos textos da porta de saída (fallback = inglês original)
+                const OUT_HINTS_EN = {
+                    enabled: 'Output port enabled (1 output: updated state).',
+                    none: 'No output port (fire and forget).',
+                    removed: 'Output port removed.',
+                    removed_wires: 'Output port removed: __count__ wire(s) disconnected (Cancel restores them).',
+                    enabled_again: 'Output port enabled again: __count__ wire(s) restored.',
+                    added: 'Output port added: you can wire it now (Cancel reverts).'
+                };
+                const OUT_T = function (k, v) {
+                    return Z2MI18n.t('out:output_hint.' + k, v, OUT_HINTS_EN[k].replace('__count__', v ? v.count : ''));
+                };
                 const liveOutput = (function () {
                     const snap = {
                         outputs: parseInt(node.outputs, 10) || 0,
@@ -269,7 +281,7 @@
                     const paint = function (text) { $('#z2m-output-hint').text(text); };
                     const redraw = function () { node.dirty = true; RED.view.redraw(true); };
 
-                    paint(snap.outputs > 0 ? 'Output port enabled (1 output: updated state).' : 'No output port (fire and forget).');
+                    paint(snap.outputs > 0 ? OUT_T('enabled') : OUT_T('none'));
 
                     return {
                         apply: function (enabled) {
@@ -283,17 +295,13 @@
                                     if (l.source === node && (parseInt(l.sourcePort, 10) || 0) >= wanted) doomed.push(l);
                                 });
                                 doomed.forEach(function (l) { RED.nodes.removeLink(l); snap.removedLinks.push(l); });
-                                paint(doomed.length
-                                    ? 'Output port removed: ' + doomed.length + ' wire(s) disconnected (Cancel restores them).'
-                                    : 'Output port removed.');
+                                paint(doomed.length ? OUT_T('removed_wires', {count: doomed.length}) : OUT_T('removed'));
                             } else {
                                 // se estes fios foram removidos nesta sessão (off -> on), voltam a ligar-se
                                 snap.removedLinks.forEach(function (l) { RED.nodes.addLink(l); });
                                 const restored = snap.removedLinks.length;
                                 snap.removedLinks = [];
-                                paint(restored
-                                    ? 'Output port enabled again: ' + restored + ' wire(s) restored.'
-                                    : 'Output port added: you can wire it now (Cancel reverts).');
+                                paint(restored ? OUT_T('enabled_again', {count: restored}) : OUT_T('added'));
                             }
 
                             node.outputs = wanted;
