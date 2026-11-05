@@ -27,20 +27,20 @@
     </div>
     <!-- Flow Label / Icon: usados pelos nós in/out/get que usam este servidor -->
     <div class="form-row">
-        <label for="node-config-input-flowLabel" class="l-width"><i class="fa fa-tag"></i> Flow Label</label>
-        <input type="text" id="node-config-input-flowLabel" placeholder="ex.: Sala">
+        <label for="node-config-input-flowLabel" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.flow_label"></span></label>
+        <input type="text" id="node-config-input-flowLabel" data-i18n="[placeholder]placeholder.flow_label">
     </div>
     <div class="form-row">
-        <label for="node-config-input-flowIcon" class="l-width"><i class="fa fa-picture-o"></i> Icon</label>
+        <label for="node-config-input-flowIcon" class="l-width"><i class="fa fa-picture-o"></i> <span data-i18n="label.flow_icon"></span></label>
         <select id="node-config-input-flowIcon" style="width:70%">
-            <option value="">(default)</option>
-            <option value="font-awesome/fa-lightbulb-o">lightbulb</option>
-            <option value="font-awesome/fa-home">home</option>
-            <option value="font-awesome/fa-bolt">bolt</option>
-            <option value="font-awesome/fa-thermometer-half">thermometer</option>
-            <option value="font-awesome/fa-plug">plug</option>
-            <option value="font-awesome/fa-wifi">wifi</option>
-            <option value="font-awesome/fa-microchip">microchip</option>
+            <option value="" data-i18n="icons.default"></option>
+            <option value="font-awesome/fa-lightbulb-o" data-i18n="icons.lightbulb"></option>
+            <option value="font-awesome/fa-home" data-i18n="icons.home"></option>
+            <option value="font-awesome/fa-bolt" data-i18n="icons.bolt"></option>
+            <option value="font-awesome/fa-thermometer-half" data-i18n="icons.thermometer"></option>
+            <option value="font-awesome/fa-plug" data-i18n="icons.plug"></option>
+            <option value="font-awesome/fa-wifi" data-i18n="icons.wifi"></option>
+            <option value="font-awesome/fa-microchip" data-i18n="icons.microchip"></option>
         </select>
     </div>
     <div class="form-row">
@@ -72,14 +72,14 @@
         </select>
     </div>
     <div class="form-row">
-        <label class="l-width"><i class="fa fa-file-text-o"></i> Log Node Red</label>
+        <label class="l-width"><i class="fa fa-file-text-o"></i> <span data-i18n="label.log_node_red"></span></label>
         <input type="hidden" id="node-config-input-debug_level" value="notice">
         <div class="z2m-nr-level-wrap">
             <div class="z2m-nr-level-group">
-                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-error"  data-level="error">Error</button>
-                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-warn"   data-level="warn">Warning</button>
-                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-notice" data-level="notice">Notice</button>
-                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-debug"  data-level="debug">Debug</button>
+                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-error"  data-level="error" data-i18n="log_levels.error"></button>
+                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-warn"   data-level="warn" data-i18n="log_levels.warn"></button>
+                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-notice" data-level="notice" data-i18n="log_levels.notice"></button>
+                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-debug"  data-level="debug" data-i18n="log_levels.debug"></button>
             </div>
             <div id="node-config-debug_level-hint" class="z2m-nr-level-hint"></div>
         </div>
@@ -171,6 +171,7 @@
            if (!node.debug_level) {
                $('#node-config-input-debug_level').val('notice');
            }
+           // (textos em inglês = fallback; a tradução vem de server.json -> log_levels_hint.*)
            var debugLevelHints = {
                error:  'only failures',
                warn:   'errors + warnings',
@@ -181,7 +182,7 @@
                var level = $('#node-config-input-debug_level').val();
                $('.z2m-nr-level-btn').removeClass('active')
                    .filter('[data-level="' + level + '"]').addClass('active');
-               $('#node-config-debug_level-hint').text(debugLevelHints[level] || '');
+               $('#node-config-debug_level-hint').text(Z2MI18n.t('server:log_levels_hint.' + level, null, debugLevelHints[level] || ''));
            };
            $('#node-config-input-debug_level').on('change', paintDebugLevel);
            $('.z2m-nr-level-btn').on('click', function () {
@@ -194,7 +195,7 @@
                $.getJSON('zigbee2mqtt-eb/serverState/' + node.id).done(function (state) {
                    var running = state && state.node_red && state.node_red.debug_level;
                    if (running && running !== $('#node-config-input-debug_level').val()) {
-                       $('#node-config-debug_level-hint').text('running: ' + running + ' - Deploy to apply');
+                       $('#node-config-debug_level-hint').text(Z2MI18n.t('server:log_running_hint', {level: running}, 'running: ' + running + ' - Deploy to apply'));
                    }
                });
            }
