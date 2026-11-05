@@ -21,6 +21,7 @@
 <!--   4️⃣ node-red-contrib-zigbee2mqtt-utils.js (funções utilitárias)      -->
 <!--   5️⃣ node-red-contrib-zigbee2mqtt-helpers.js      (Editor Class - depende   -->
 <!--        de debug.js, z2m-config.js e do editor-utils)                         -->
+<!--        (o helpers.js também define o Z2MI18n - tradução do editor)           -->
 <!-- ============================================================================ -->
 
 <!-- ============================================================================ -->
@@ -78,7 +79,8 @@
                 'jQuery.multipleSelect': !!($.fn && $.fn.multipleSelect),
                 'Zigbee2MqttEditorUtils': typeof Zigbee2MqttEditorUtils !== 'undefined',
                 // ⚠️ o nome da classe é Zigbee2MqttEditor (M maiúsculo)
-                'Zigbee2MqttEditor': typeof Zigbee2MqttEditor !== 'undefined'
+                'Zigbee2MqttEditor': typeof Zigbee2MqttEditor !== 'undefined',
+                'Z2MI18n': typeof Z2MI18n !== 'undefined'
             };
 
             let allOk = true;
