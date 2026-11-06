@@ -1,0 +1,25 @@
+{
+    "label": {
+        "name": "Имя",
+        "friendly_name": "Имя устройства",
+        "server": "Сервер",
+        "topic": "Устройство",
+        "state": "Вывод payload",
+        "refresh": "Обновить",
+        "legacy_api": "Legacy API",
+        "refresh_devices_list": "Обновить список устройств",
+        "enable_multiple": "Несколько входов",
+        "enable_multiple_help": "Слушать несколько устройств"
+    },
+    "placeholder": {
+        "name": "Имя",
+        "friendly_name": "Имя устройства"
+    },
+    "multiselect": {
+        "devices": "Устройства",
+        "filter_devices": "Фильтр устройств…",
+        "refresh": "Обновить список устройств",
+        "none_selected": "Ничего не выбрано",
+        "complete_payload": "Полный payload состояния"
+    }
+}

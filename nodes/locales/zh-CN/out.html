@@ -1,0 +1,33 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-out">
+    <p>向设备发送 MQTT 命令。</p>
+    <h3>配置</h3>
+    <dl class="message-properties">
+        <dt class="optional">名称 <span class="property-type">字符串</span></dt><dd>设置节点名称以便识别。</dd>
+        <dt>服务器 <span class="property-type">对象</span></dt><dd>选择要使用的 Zigbee2MQTT 服务器实例。</dd>
+        <dt>设备 <span class="property-type">字符串</span></dt><dd>选择设备。</dd>
+        <dt>命令 <span class="property-type">字符串</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> 预定义命令</li>
+                <li><b>homekit:</b> 数据来自 HomeKit 节点时选择</li>
+                <li><b>json:</b> 自定义 JSON 格式数据</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">字符串或对象</span></dt><dd>选择 Payload 数据来源。</dd>
+        <dt class="optional">状态更新后输出 <span class="property-type">布尔值</span></dt>
+        <dd>添加一个输出，在命令之后发出设备或群组的<b>更新后状态</b>。节点最多等待 30 秒，直到 Zigbee2MQTT 发布包含所发送属性（如 <code>state</code>、<code>brightness</code>）的状态；每个设备最多可有 20 条待处理命令。原始消息会继续传递，并带有：
+            <ul>
+                <li><code>payload</code> / <code>payload_raw</code>：设备的累计状态；</li>
+                <li><code>payload_in</code>：此节点收到的 payload；</li>
+                <li><code>topic</code>、<code>selector</code>、<code>item</code>、<code>homekit</code>、<code>format</code>。</li>
+            </ul>
+            不启用时，节点没有输出。该复选框会<b>立即</b>修改节点：启用会添加输出，禁用会移除输出<b>并断开其连线</b>。<i>取消</i>可同时恢复两者。
+        </dd>
+    </dl>
+
+<!--    <h3>选项</h3>-->
+<!--    <dl class="message-properties">-->
+<!--        <dt class="optional">过渡时间 <span class="property-type">int</span></dt><dd>适用于 brightness。</dd>-->
+<!--    </dl>-->
+</script>
+

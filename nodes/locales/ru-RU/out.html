@@ -1,0 +1,33 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-out">
+    <p>Отправляет MQTT-команду устройству.</p>
+    <h3>Настройка</h3>
+    <dl class="message-properties">
+        <dt class="optional">Имя <span class="property-type">строка</span></dt><dd>Задайте имя для узла.</dd>
+        <dt>Сервер <span class="property-type">объект</span></dt><dd>Выберите используемый сервер Zigbee2MQTT.</dd>
+        <dt>Устройство <span class="property-type">строка</span></dt><dd>Выберите устройство.</dd>
+        <dt>Команда <span class="property-type">строка</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> готовые команды</li>
+                <li><b>homekit:</b> выберите для данных из узла HomeKit</li>
+                <li><b>json:</b> произвольные данные в формате JSON</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">строка или объект</span></dt><dd>Выберите источник данных payload.</dd>
+        <dt class="optional">Вывод после обновления состояния <span class="property-type">логическое</span></dt>
+        <dd>Добавляет один выход, который после команды выдаёт <b>обновлённое состояние</b> устройства или группы. Узел ждёт до 30 с, пока Zigbee2MQTT опубликует состояние, содержащее отправленное свойство (например, <code>state</code>, <code>brightness</code>); для одного устройства допускается не более 20 ожидающих команд. Исходное сообщение передаётся дальше со следующими полями:
+            <ul>
+                <li><code>payload</code> / <code>payload_raw</code>: накопленное состояние устройства;</li>
+                <li><code>payload_in</code>: payload, полученный этим узлом;</li>
+                <li><code>topic</code>, <code>selector</code>, <code>item</code>, <code>homekit</code>, <code>format</code>.</li>
+            </ul>
+            Без этой опции у узла нет выходов. Флажок изменяет узел <b>сразу</b>: при включении выход добавляется, при отключении выход удаляется <b>вместе с его связями</b>. <i>Отмена</i> восстанавливает и то, и другое.
+        </dd>
+    </dl>
+
+<!--    <h3>Параметры</h3>-->
+<!--    <dl class="message-properties">-->
+<!--        <dt class="optional">Время перехода <span class="property-type">int</span></dt><dd>Работает с brightness.</dd>-->
+<!--    </dl>-->
+</script>
+

@@ -1,0 +1,176 @@
+{
+    "label": {
+        "base_topic": "Базовый топик",
+        "name": "Имя",
+        "host": "Хост MQTT",
+        "mqtt_port": "Порт MQTT",
+        "mqtt_username": "Имя пользователя MQTT",
+        "mqtt_password": "Пароль MQTT",
+        "use-tls": "Использовать TLS",
+        "tls-config": "Настройка TLS",
+        "flow_label": "Метка потока",
+        "flow_icon": "Значок",
+        "log_node_red": "Журнал Node-RED"
+    },
+    "placeholder": {
+        "name": "Имя",
+        "flow_label": "Например: Гостиная"
+    },
+    "status": {
+        "no_server": "нет серверного узла",
+        "no_device": "устройство не найдено",
+        "no_connection": "нет соединения",
+        "no_value": "нет значения",
+        "received": "ок",
+        "server_stopping": "сервер останавливается"
+    },
+    "tip": {
+        "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств"
+    },
+    "icons": {
+        "default": "(по умолчанию)",
+        "lightbulb": "лампочка",
+        "home": "дом",
+        "bolt": "молния",
+        "thermometer": "термометр",
+        "plug": "вилка",
+        "wifi": "wifi",
+        "microchip": "микросхема"
+    },
+    "log_levels": {
+        "error": "Ошибка",
+        "warn": "Предупреждение",
+        "notice": "Уведомление",
+        "debug": "Отладка"
+    },
+    "log_levels_hint": {
+        "error": "только сбои",
+        "warn": "ошибки и предупреждения",
+        "notice": "ошибки, предупреждения и системные события",
+        "debug": "всё, включая диагностические подробности"
+    },
+    "log_running_hint": "работает: __level__ — выполните Deploy, чтобы применить",
+    "editor": {
+        "groups": "Группы",
+        "devices": "Устройства",
+        "selected": "выбрано",
+        "nothing": "Нет",
+        "select_device": "Выберите устройство",
+        "msg_topic": "msg.topic",
+        "complete_payload": "Полный payload",
+        "zigbee2mqtt": "zigbee2mqtt",
+        "common": "Общие",
+        "homekit": "Apple HomeKit",
+        "homekit_data_format": "Формат данных Apple HomeKit",
+        "manual_value": "Вручную (__value__)",
+        "toggle": "Переключить",
+        "orphan_properties": "⚠ Больше недоступно",
+        "min_max_min": "Минимум __unit__ должен быть меньше максимума __unit__ (__value__)",
+        "min_max_max": "Максимум __unit__ должен быть больше минимума __unit__ (__value__)",
+        "error_no_commands": "У этого устройства нет доступных выходных команд. Выберите устройство с управляемыми функциями."
+    },
+    "config": {
+        "composite": {
+            "color": "color (JSON/xy)",
+            "color_rgb": "color_rgb (r,g,b)",
+            "color_hex": "color_hex (#RRGGBB)",
+            "color_xy": "color_xy (x,y)",
+            "color_hsb": "color_hsb (h,s,b)",
+            "color_hsv": "color_hsv (h,s,v)",
+            "color_hue": "color_hue (h)",
+            "color_saturation": "color_saturation (s)"
+        },
+        "colors": {
+            "red": "🔴 Красный",
+            "green": "🟢 Зелёный",
+            "blue": "🔵 Синий",
+            "yellow": "🟡 Жёлтый",
+            "orange": "🟠 Оранжевый",
+            "purple": "🟣 Фиолетовый",
+            "white": "⚪ Белый",
+            "white_d65": "⚪ Белый (D65)"
+        },
+        "payload": {
+            "color_temp": {
+                "coolest": "Самый холодный (6535K)",
+                "cool": "Холодный (4000K)",
+                "neutral": "Нейтральный (2857K)",
+                "warm": "Тёплый (2203K)",
+                "warmest": "Самый тёплый (2000K)"
+            },
+            "brightness": {
+                "off": "Выкл. (0%)",
+                "low": "Низкая (25%)",
+                "medium": "Средняя (50%)",
+                "high": "Высокая (75%)",
+                "max": "Максимум (100%)"
+            },
+            "position": {
+                "closed": "Закрыто (0%)",
+                "quarter": "Четверть (25%)",
+                "half": "Половина (50%)",
+                "three_quarters": "Три четверти (75%)",
+                "open": "Открыто (100%)"
+            },
+            "countdown": {
+                "m1": "1 минута",
+                "m5": "5 минут",
+                "m10": "10 минут",
+                "m30": "30 минут",
+                "h1": "1 час"
+            },
+            "sensitivity": {
+                "very_low": "Очень низкая (0)",
+                "low": "Низкая (3)",
+                "medium": "Средняя (5)",
+                "high": "Высокая (7)",
+                "very_high": "Очень высокая (9)"
+            },
+            "color_hue": {
+                "red": "🔴 Красный (0°)",
+                "green": "🟢 Зелёный (120°)",
+                "blue": "🔵 Синий (240°)",
+                "yellow": "🟡 Жёлтый (60°)",
+                "magenta": "🟣 Пурпурный (300°)"
+            },
+            "color_saturation": {
+                "full": "🎨 Полная насыщенность (100%)",
+                "half": "🔉 Половинная насыщенность (50%)",
+                "none": "⚪ Без насыщенности (белый)"
+            }
+        },
+        "slider": {
+            "brightness": "Яркость",
+            "min_brightness": "Мин. яркость",
+            "max_brightness": "Макс. яркость",
+            "off": "Выкл.",
+            "max": "Макс.",
+            "color_temp": "Цвет. температура",
+            "cool_150": "150 (холодный)",
+            "warm_500": "500 (тёплый)",
+            "cie_x": "CIE X",
+            "cie_y": "CIE Y",
+            "position": "Положение",
+            "closed": "Закрыто",
+            "open": "Открыто",
+            "tilt": "Наклон",
+            "timer": "Таймер",
+            "transition": "Переход",
+            "hue": "Оттенок",
+            "saturation": "Насыщенность",
+            "value": "Значение",
+            "white": "Белый",
+            "color": "Цвет",
+            "red": "Красный",
+            "green": "Зелёный",
+            "blue": "Синий",
+            "range": "Диапазон",
+            "sensitivity": "Чувствительность",
+            "low": "Низкая",
+            "medium": "Средняя",
+            "high": "Высокая",
+            "generic": "Значение",
+            "pick_color": "Выбрать цвет"
+        }
+    }
+}

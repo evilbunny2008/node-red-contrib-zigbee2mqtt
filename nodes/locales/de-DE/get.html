@@ -1,0 +1,19 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-get">
+    <p>Gibt den letzten Wert des Geräts zurück.</p>
+    <h3>Konfiguration</h3>
+    <dl class="message-properties">
+        <dt class="optional">Name <span class="property-type">Zeichenfolge</span></dt><dd>Wähle einen beliebigen Namen zur Identifizierung des Nodes.</dd>
+        <dt>Server <span class="property-type">Objekt</span></dt><dd>Wähle die zu verwendende Zigbee2MQTT-Serverinstanz.</dd>
+        <dt>Gerät <span class="property-type">Zeichenfolge</span></dt><dd>Wähle das Gerät aus, das abgefragt werden soll.</dd>
+    </dl>
+
+    <h3>Ausgaben</h3>
+    <h5>Ausgabe</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">Zeichenfolge</span></dt><dd>aktueller Wert</dd>
+        <dt>payload_in<span class="property-type">Objekt</span></dt><dd>eingehender Payload</dd>
+        <dt>payload_raw<span class="property-type">Objekt</span></dt><dd>vollständiger Payload</dd>
+        <dt>device<span class="property-type">Objekt</span></dt><dd>Geräteinformationen</dd>
+    </dl>
+</script>
+

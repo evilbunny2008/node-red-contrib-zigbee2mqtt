@@ -1,0 +1,35 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-in">
+    <p>此节点监听来自 Zigbee2MQTT 网桥的 MQTT 消息。</p>
+    <h3>配置</h3>
+    <dl class="message-properties">
+        <dt class="optional">名称 <span class="property-type">字符串</span></dt><dd>为节点设置任意名称。</dd>
+        <dt>服务器 <span class="property-type">对象</span></dt><dd>选择要使用的 Zigbee2MQTT 服务器实例。</dd>
+        <dt>设备 <span class="property-type">字符串</span></dt><dd>选择要监听的设备。</dd>
+        <dt class="optional">Payload 输出 <span class="property-type">字符串</span></dt><dd>选择要写入 payload 的内容。</dd>
+        <dt class="optional">多输入 <span class="property-type">布尔值</span></dt><dd>用一个节点监听多个设备或群组。<code>payload</code> 会变成以设备为键的对象（每个条目包含 <code>payload</code>、<code>item</code>、<code>topic</code>、<code>homekit</code>、<code>format</code>），<code>msg.math</code> 则包含数值的计数、最小值、最大值、平均值和总和。</dd>
+        <dt class="optional">筛选属性 <span class="property-type">列表</span></dt><dd>仅所选属性的变化才算变化（留空 = 完整 payload）。只会比较刚收到的 MQTT 消息中包含的属性，因此不相关的上报（<code>linkquality</code>、<code>last_seen</code> 等）不会触发输出。</dd>
+        <dt class="optional">启动时输出 <span class="property-type">布尔值</span></dt><dd>启动时输出当前状态。</dd>
+        <dt class="optional">筛选 <span class="property-type">布尔值</span></dt><dd>仅在数值变化时发送。按钮设备应取消勾选。<br>
+        <b><i>注意 1：</i></b>请在 Zigbee2MQTT 的 configuration.yaml 中为每个设备设置 <code>retain: true</code>（Z2M 插件会在添加设备时自动设置）。<br>
+        <b><i>注意 2：</i></b>使用“仅部署已修改的节点”时，只要当前节点没有变化，就不会输出。
+        </dd>
+        <dt class="optional">Home Assistant <span class="property-type">布尔值</span></dt>
+        <dd>通过 MQTT Discovery 向 Home Assistant 开放此节点（保留消息，前缀 <code>homeassistant</code>）：
+            <ul>
+                <li>每个设备一个 <b>sensor</b> 或 <b>binary_sensor</b>，其状态为 <i>Payload 输出</i> 中选中的第一个属性（否则为 <code>state</code>、第一个可读属性或 <code>linkquality</code>）。选中多个属性时，其余属性作为 attributes 开放；</li>
+                <li>一个 <b>enabled</b> 开关（<code>config</code> 类别），可在 Home Assistant 中开启或关闭该节点。状态主题：<code>node-red/&lt;基础主题&gt;/ha/&lt;节点 ID&gt;/enabled</code>；</li>
+                <li>可用性遵循 <code>node-red/&lt;基础主题&gt;/state</code>。</li>
+            </ul>
+            在开关状态未知期间（启动后最多 3 秒），收到的消息会进入队列（最多 20 条，且不超过 60 秒），并在节点启用后重放。开关为关闭时，消息会被丢弃，节点显示 <code>已禁用（Home Assistant）</code>。重命名的设备和新增群组会自动重新发布；删除节点时，相关实体也会从 Home Assistant 中移除。
+        </dd>
+    </dl>
+
+    <h3>输出</h3>
+    <h5>输出</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">字符串 | 对象</span></dt><dd>当前值取决于 Payload 输出的设置。</dd>
+        <dt>payload_raw <span class="property-type">对象</span></dt><dd>原始数据</dd>
+        <dt>device<span class="property-type">对象</span></dt><dd>设备信息</dd>
+    </dl>
+</script>
+

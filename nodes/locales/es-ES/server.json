@@ -1,0 +1,176 @@
+{
+    "label": {
+        "base_topic": "Tema base",
+        "name": "Nombre",
+        "host": "Host MQTT",
+        "mqtt_port": "Puerto MQTT",
+        "mqtt_username": "Usuario MQTT",
+        "mqtt_password": "Contraseña MQTT",
+        "use-tls": "Usar TLS",
+        "tls-config": "Configuración TLS",
+        "flow_label": "Etiqueta del flujo",
+        "flow_icon": "Icono",
+        "log_node_red": "Registro de Node-RED"
+    },
+    "placeholder": {
+        "name": "Nombre",
+        "flow_label": "p. ej., salón"
+    },
+    "status": {
+        "no_server": "no hay nodo servidor",
+        "no_device": "dispositivo no encontrado",
+        "no_connection": "sin conexión",
+        "no_value": "sin valor",
+        "received": "ok",
+        "server_stopping": "el servidor se está deteniendo"
+    },
+    "tip": {
+        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos"
+    },
+    "icons": {
+        "default": "(predeterminado)",
+        "lightbulb": "bombilla",
+        "home": "casa",
+        "bolt": "rayo",
+        "thermometer": "termómetro",
+        "plug": "enchufe",
+        "wifi": "wifi",
+        "microchip": "microchip"
+    },
+    "log_levels": {
+        "error": "Error",
+        "warn": "Advertencia",
+        "notice": "Aviso",
+        "debug": "Depuración"
+    },
+    "log_levels_hint": {
+        "error": "solo fallos",
+        "warn": "errores y advertencias",
+        "notice": "errores, advertencias y eventos del sistema",
+        "debug": "todo, incluidos los detalles de diagnóstico"
+    },
+    "log_running_hint": "en ejecución: __level__ – despliega para aplicar",
+    "editor": {
+        "groups": "Grupos",
+        "devices": "Dispositivos",
+        "selected": "seleccionados",
+        "nothing": "Ninguno",
+        "select_device": "Seleccionar dispositivo",
+        "msg_topic": "msg.topic",
+        "complete_payload": "Payload completo",
+        "zigbee2mqtt": "zigbee2mqtt",
+        "common": "Común",
+        "homekit": "Apple HomeKit",
+        "homekit_data_format": "Formato de datos de Apple HomeKit",
+        "manual_value": "Manual (__value__)",
+        "toggle": "Alternar",
+        "orphan_properties": "⚠ Ya no disponible",
+        "min_max_min": "El mínimo de __unit__ debe ser menor que el máximo de __unit__ (__value__)",
+        "min_max_max": "El máximo de __unit__ debe ser mayor que el mínimo de __unit__ (__value__)",
+        "error_no_commands": "Este dispositivo no tiene comandos de salida disponibles. Selecciona un dispositivo con funciones controlables."
+    },
+    "config": {
+        "composite": {
+            "color": "color (JSON/xy)",
+            "color_rgb": "color_rgb (r,g,b)",
+            "color_hex": "color_hex (#RRGGBB)",
+            "color_xy": "color_xy (x,y)",
+            "color_hsb": "color_hsb (h,s,b)",
+            "color_hsv": "color_hsv (h,s,v)",
+            "color_hue": "color_hue (h)",
+            "color_saturation": "color_saturation (s)"
+        },
+        "colors": {
+            "red": "🔴 Rojo",
+            "green": "🟢 Verde",
+            "blue": "🔵 Azul",
+            "yellow": "🟡 Amarillo",
+            "orange": "🟠 Naranja",
+            "purple": "🟣 Morado",
+            "white": "⚪ Blanco",
+            "white_d65": "⚪ Blanco (D65)"
+        },
+        "payload": {
+            "color_temp": {
+                "coolest": "Muy frío (6535K)",
+                "cool": "Frío (4000K)",
+                "neutral": "Neutro (2857K)",
+                "warm": "Cálido (2203K)",
+                "warmest": "Muy cálido (2000K)"
+            },
+            "brightness": {
+                "off": "Apagado (0%)",
+                "low": "Bajo (25%)",
+                "medium": "Medio (50%)",
+                "high": "Alto (75%)",
+                "max": "Máximo (100%)"
+            },
+            "position": {
+                "closed": "Cerrado (0%)",
+                "quarter": "Un cuarto (25%)",
+                "half": "Mitad (50%)",
+                "three_quarters": "Tres cuartos (75%)",
+                "open": "Abierto (100%)"
+            },
+            "countdown": {
+                "m1": "1 minuto",
+                "m5": "5 minutos",
+                "m10": "10 minutos",
+                "m30": "30 minutos",
+                "h1": "1 hora"
+            },
+            "sensitivity": {
+                "very_low": "Muy baja (0)",
+                "low": "Baja (3)",
+                "medium": "Media (5)",
+                "high": "Alta (7)",
+                "very_high": "Muy alta (9)"
+            },
+            "color_hue": {
+                "red": "🔴 Rojo (0°)",
+                "green": "🟢 Verde (120°)",
+                "blue": "🔵 Azul (240°)",
+                "yellow": "🟡 Amarillo (60°)",
+                "magenta": "🟣 Magenta (300°)"
+            },
+            "color_saturation": {
+                "full": "🎨 Saturación total (100%)",
+                "half": "🔉 Media saturación (50%)",
+                "none": "⚪ Sin saturación (blanco)"
+            }
+        },
+        "slider": {
+            "brightness": "Brillo",
+            "min_brightness": "Brillo mínimo",
+            "max_brightness": "Brillo máximo",
+            "off": "Apagado",
+            "max": "Máx.",
+            "color_temp": "Temp. de color",
+            "cool_150": "150 (frío)",
+            "warm_500": "500 (cálido)",
+            "cie_x": "CIE X",
+            "cie_y": "CIE Y",
+            "position": "Posición",
+            "closed": "Cerrado",
+            "open": "Abierto",
+            "tilt": "Inclinación",
+            "timer": "Temporizador",
+            "transition": "Transición",
+            "hue": "Tono",
+            "saturation": "Saturación",
+            "value": "Valor",
+            "white": "Blanco",
+            "color": "Color",
+            "red": "Rojo",
+            "green": "Verde",
+            "blue": "Azul",
+            "range": "Rango",
+            "sensitivity": "Sensibilidad",
+            "low": "Baja",
+            "medium": "Media",
+            "high": "Alta",
+            "generic": "Valor",
+            "pick_color": "Elegir color"
+        }
+    }
+}
