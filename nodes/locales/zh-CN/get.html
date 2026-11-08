@@ -1,0 +1,19 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-get">
+    <p>获取设备的最新值。</p>
+    <h3>配置</h3>
+    <dl class="message-properties">
+        <dt class="optional">名称 <span class="property-type">字符串</span></dt><dd>为节点设置任意名称。</dd>
+        <dt>服务器 <span class="property-type">对象</span></dt><dd>选择要使用的 Zigbee2MQTT 服务器实例。</dd>
+        <dt>设备 <span class="property-type">字符串</span></dt><dd>选择设备。</dd>
+    </dl>
+
+    <h3>输出</h3>
+    <h5>输出</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">字符串</span></dt><dd>当前值</dd>
+        <dt>payload_in<span class="property-type">对象</span></dt><dd>输入 payload</dd>
+        <dt>payload_raw<span class="property-type">对象</span></dt><dd>完整 payload</dd>
+        <dt>device<span class="property-type">对象</span></dt><dd>设备信息</dd>
+    </dl>
+</script>
+

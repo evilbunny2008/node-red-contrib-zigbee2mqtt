@@ -1,0 +1,35 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-in">
+    <p>Este nó escuta as mensagens MQTT enviadas pela sua bridge Zigbee2MQTT.</p>
+    <h3>Configuração</h3>
+    <dl class="message-properties">
+        <dt class="optional">Nome <span class="property-type">string</span></dt><dd>Escolha qualquer nome para identificar o seu nó</dd>
+        <dt>Servidor <span class="property-type">objeto</span></dt><dd>Escolha a instância do servidor zigbee2mqtt a ser usada</dd>
+        <dt>Dispositivo <span class="property-type">string</span></dt><dd>Selecione o dispositivo a ser escutado</dd>
+        <dt class="optional">Saída do payload <span class="property-type">string</span></dt><dd>Escolha a opção que deseja enviar no payload</dd>
+        <dt class="optional">Entrada múltipla <span class="property-type">booleano</span></dt><dd>Escuta vários dispositivos/grupos com um único nó. <code>payload</code> passa a ser um objeto indexado por dispositivo (cada entrada tem <code>payload</code>, <code>item</code>, <code>topic</code>, <code>homekit</code> e <code>format</code>) e <code>msg.math</code> contém contagem, mínimo, máximo, média e soma dos valores numéricos.</dd>
+        <dt class="optional">Filtrar propriedades <span class="property-type">lista</span></dt><dd>Somente mudanças nas propriedades selecionadas contam como mudança (vazio = payload completo). Apenas as propriedades presentes na mensagem MQTT que acabou de chegar são comparadas, portanto relatórios não relacionados (<code>linkquality</code>, <code>last_seen</code>…) não geram saída.</dd>
+        <dt class="optional">Enviar ao iniciar <span class="property-type">booleano</span></dt><dd>Envia o estado ao iniciar.</dd>
+        <dt class="optional">Filtrar <span class="property-type">booleano</span></dt><dd>Envia somente se o valor mudar. Desmarque para botões.<br>
+        <b><i>Aviso 1:</i></b> defina <code>retain: true</code> no configuration.yaml do Zigbee2MQTT para cada dispositivo (o plugin do Z2M define isso automaticamente ao adicionar um dispositivo).<br>
+        <b><i>Aviso 2:</i></b> não envia nada com “Deploy only modified nodes” enquanto não houver alterações no nó atual.
+        </dd>
+        <dt class="optional">Home Assistant <span class="property-type">booleano</span></dt>
+        <dd>Expõe este nó ao Home Assistant via MQTT Discovery (retido, prefixo <code>homeassistant</code>):
+            <ul>
+                <li>um <b>sensor</b> ou <b>binary_sensor</b> por dispositivo, cujo estado é a primeira propriedade selecionada em <i>Saída do payload</i> (caso contrário, <code>state</code>, a primeira propriedade legível ou <code>linkquality</code>). Várias propriedades são expostas como atributos;</li>
+                <li>um interruptor <b>enabled</b> (categoria <code>config</code>) que liga e desliga o nó a partir do Home Assistant. Tópico de estado: <code>node-red/&lt;tópico base&gt;/ha/&lt;id do nó&gt;/enabled</code>;</li>
+                <li>a disponibilidade segue <code>node-red/&lt;tópico base&gt;/state</code>.</li>
+            </ul>
+            Enquanto o estado do interruptor não é conhecido (até 3 s após o início), as mensagens recebidas ficam em fila (máx. 20, nenhuma com mais de 60 s) e são reproduzidas quando o nó é ativado. Com o interruptor DESLIGADO, as mensagens são descartadas e o nó exibe <code>desativado (Home Assistant)</code>. Dispositivos renomeados e novos grupos são anunciados de novo automaticamente; as entidades são removidas do Home Assistant quando o nó é excluído.
+        </dd>
+    </dl>
+
+    <h3>Saídas</h3>
+    <h5>Saída</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">string | objeto</span></dt><dd>o valor atual depende da configuração da saída do payload</dd>
+        <dt>payload_raw <span class="property-type">objeto</span></dt><dd>dados como recebidos</dd>
+        <dt>device<span class="property-type">objeto</span></dt><dd>informações do dispositivo</dd>
+    </dl>
+</script>
+

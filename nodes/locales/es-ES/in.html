@@ -1,0 +1,35 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-in">
+    <p>Este nodo escucha los mensajes MQTT enviados desde tu puente Zigbee2MQTT.</p>
+    <h3>Configuración</h3>
+    <dl class="message-properties">
+        <dt class="optional">Nombre <span class="property-type">cadena</span></dt><dd>Elige cualquier nombre para identificar el nodo.</dd>
+        <dt>Servidor <span class="property-type">objeto</span></dt><dd>Elige la instancia del servidor Zigbee2MQTT que se utilizará.</dd>
+        <dt>Dispositivo <span class="property-type">cadena</span></dt><dd>Selecciona el dispositivo que quieres escuchar.</dd>
+        <dt class="optional">Salida de payload <span class="property-type">cadena</span></dt><dd>Elige la opción que quieres enviar en el payload.</dd>
+        <dt class="optional">Entrada múltiple <span class="property-type">booleano</span></dt><dd>Escucha varios dispositivos o grupos con un solo nodo. <code>payload</code> pasa a ser un objeto indexado por dispositivo (cada entrada contiene <code>payload</code>, <code>item</code>, <code>topic</code>, <code>homekit</code> y <code>format</code>) y <code>msg.math</code> contiene el recuento, el mínimo, el máximo, la media y la suma de los valores numéricos.</dd>
+        <dt class="optional">Filtrar propiedades <span class="property-type">lista</span></dt><dd>Solo los cambios en las propiedades seleccionadas cuentan como cambio (vacío = payload completo). Solo se comparan las propiedades presentes en el mensaje MQTT que acaba de llegar, por lo que los informes no relacionados (<code>linkquality</code>, <code>last_seen</code>…) no provocan una salida.</dd>
+        <dt class="optional">Enviar al iniciar <span class="property-type">booleano</span></dt><dd>Envía el estado al iniciar.</dd>
+        <dt class="optional">Filtrar <span class="property-type">booleano</span></dt><dd>Envía solo si el valor cambia. Desactívalo para los botones.<br>
+        <b><i>Aviso 1:</i></b> activa <code>retain: true</code> en el configuration.yaml de Zigbee2MQTT para cada dispositivo (el plugin de Z2M lo hace automáticamente al añadir un dispositivo).<br>
+        <b><i>Aviso 2:</i></b> no envía nada con «Desplegar solo los nodos modificados» mientras no haya cambios en el nodo actual.
+        </dd>
+        <dt class="optional">Home Assistant <span class="property-type">booleano</span></dt>
+        <dd>Expone este nodo a Home Assistant mediante MQTT Discovery (retenido, prefijo <code>homeassistant</code>):
+            <ul>
+                <li>un <b>sensor</b> o <b>binary_sensor</b> por dispositivo, cuyo estado es la primera propiedad seleccionada en <i>Salida de payload</i> (si no, <code>state</code>, la primera propiedad legible o <code>linkquality</code>). Si hay varias propiedades, se exponen como atributos;</li>
+                <li>un interruptor <b>enabled</b> (categoría <code>config</code>) que activa o desactiva el nodo desde Home Assistant. Tema de estado: <code>node-red/&lt;tema base&gt;/ha/&lt;id del nodo&gt;/enabled</code>;</li>
+                <li>la disponibilidad sigue a <code>node-red/&lt;tema base&gt;/state</code>.</li>
+            </ul>
+            Hasta que se conozca el estado del interruptor (hasta 3 s tras el inicio), los mensajes entrantes se ponen en cola (máx. 20, ninguno de más de 60 s) y se reproducen cuando se activa el nodo. Si el interruptor está APAGADO, los mensajes se descartan y el nodo muestra <code>desactivado (Home Assistant)</code>. Los dispositivos renombrados y los grupos nuevos se vuelven a anunciar automáticamente; las entidades se eliminan de Home Assistant al borrar el nodo.
+        </dd>
+    </dl>
+
+    <h3>Salidas</h3>
+    <h5>Salida</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">cadena | objeto</span></dt><dd>El valor actual depende de la configuración de la salida de payload.</dd>
+        <dt>payload_raw <span class="property-type">objeto</span></dt><dd>datos tal cual</dd>
+        <dt>device<span class="property-type">objeto</span></dt><dd>información del dispositivo</dd>
+    </dl>
+</script>
+

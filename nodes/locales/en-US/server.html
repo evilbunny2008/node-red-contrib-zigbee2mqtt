@@ -8,6 +8,8 @@
         <dt class="optional">MQTT Port <span class="property-type">number</span></dt><dd>default port for mqtt is 1883</dd>
         <dt class="optional">MQTT Username <span class="property-type">string</span></dt><dd></dd>
         <dt class="optional">MQTT Password <span class="property-type">string</span></dt><dd></dd>
+        <dt class="optional">Flow Label / Icon <span class="property-type">string</span></dt><dd>Prefix (<code>[Label]</code>) and icon shown on every in/out/get node that uses this server, to tell installations or rooms apart in the flow.</dd>
+        <dt class="optional">Log Node Red <span class="property-type">error | warning | notice | debug</span></dt><dd>Verbosity of the Node-RED system log written by the nodes (<i>notice</i> by default): <i>error</i> only failures, <i>warning</i> + warnings, <i>notice</i> + normal system events, <i>debug</i> everything. It can also be changed live from the bridge node (no redeploy) and is independent from the Zigbee2MQTT log level.</dd>
     </dl>
     <h3>Connection status</h3>
     <p>Node-RED publishes its own connection status for this server node, retained, to
@@ -15,4 +17,6 @@
         Zigbee2MQTT's <code>bridge/state</code>: <code>{"state":"online"}</code> when connected and
         <code>{"state":"offline"}</code> on shutdown. If Node-RED stops unexpectedly the broker publishes
         <code>offline</code> itself (MQTT Last Will). The message is cleared when the server node is deleted.</p>
+    <h3>Home Assistant</h3>
+    <p>In nodes with <i>Home Assistant</i> enabled the server publishes the MQTT Discovery configuration (retained) under <code>homeassistant/&lt;component&gt;/&lt;id&gt;/config</code> and handles the <i>enabled</i> switch on <code>node-red/&lt;base topic&gt;/ha/&lt;node id&gt;/enabled[/set]</code>. It is (re)published when MQTT connects and when the bridge comes back online; otherwise only when it changes (new/renamed devices, new groups).</p>
 </script>

@@ -1,23 +1,35 @@
-<script type="text/x-red" data-help-name="zigbee2mqtt-eb-eb-in">
-    <p>Tento uzol počúva mqtt správy poslané vašim zigbee2mqtt mostom (bridge).</p>
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-in">
+    <p>Tento uzol počúva MQTT správy odosielané z vášho Zigbee2MQTT mosta (bridge).</p>
     <h3>Konfigurácia</h3>
     <dl class="message-properties">
         <dt class="optional">Meno <span class="property-type">reťazec</span></dt><dd>Vyberte akékoľvek meno na identifikáciu vášho uzla</dd>
         <dt>Server <span class="property-type">objekt</span></dt><dd>Vyberte inštanciu servera zigbee2mqtt, ktorú chcete použiť</dd>
         <dt>Zariadenie <span class="property-type">reťazec</span></dt><dd>Vyberte zariadenie, ktoré chcete počúvať</dd>
-        <dt class="optional">Výstup dát <span class="property-type">reťazec</span></dt><dd>Vyberte možnosť, ktorú chcete poslať do payloadu</dd>
-        <dt class="optional">Spustiť výstup <span class="property-type">boolean</span></dt><dd>Výstup stavu pri štarte.<br>
-        <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Posielať len v prípade zmeny hodnoty. Zrušte v prípade tlačidiel.<br>
-        <b><i>poznámka #1:</i></b> nastavte <code>retain: true</code> v konfiguračnom súbore zigbee2mqtt configuration.yaml pre každé zariadenie (z2m plugin automaticky nastaví pri pridaní zariadenia)<br>
-        <b><i>poznámka #2:</i></b> nevypíše v "Deploy only modified nodes", pokiaľ nie sú žiadne zmeny v aktuálnom uzle
+        <dt class="optional">Výstup payloadu <span class="property-type">reťazec</span></dt><dd>Vyberte možnosť, ktorú chcete odoslať v payloade</dd>
+        <dt class="optional">Viacero vstupov <span class="property-type">boolean</span></dt><dd>Počúvať viacero zariadení alebo skupín jedným uzlom. <code>payload</code> sa stane objektom s kľúčmi podľa zariadení (každá položka obsahuje <code>payload</code>, <code>item</code>, <code>topic</code>, <code>homekit</code>, <code>format</code>) a <code>msg.math</code> obsahuje počet, minimum, maximum, priemer a súčet číselných hodnôt.</dd>
+        <dt class="optional">Filtrovať vlastnosti <span class="property-type">zoznam</span></dt><dd>Za zmenu sa považujú iba zmeny vybraných vlastností (prázdne = celý payload). Porovnávajú sa iba vlastnosti prítomné v práve prijatej MQTT správe, takže nesúvisiace hlásenia (<code>linkquality</code>, <code>last_seen</code>…) výstup nespustia.</dd>
+        <dt class="optional">Odosielať pri spustení <span class="property-type">boolean</span></dt><dd>Odoslať stav pri spustení.</dd>
+        <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Odoslať iba pri zmene hodnoty. Pri tlačidlách ho vypnite.<br>
+        <b><i>Poznámka č. 1:</i></b> nastavte <code>retain: true</code> v configuration.yaml Zigbee2MQTT pre každé zariadenie (plugin Z2M ho nastaví automaticky pri pridaní zariadenia).<br>
+        <b><i>Poznámka č. 2:</i></b> pri „Deploy only modified nodes“ sa nič neodošle, kým v aktuálnom uzle nie sú žiadne zmeny.
+        </dd>
+        <dt class="optional">Home Assistant <span class="property-type">boolean</span></dt>
+        <dd>Sprístupní tento uzol v Home Assistant cez MQTT Discovery (retained, prefix <code>homeassistant</code>):
+            <ul>
+                <li><b>sensor</b> alebo <b>binary_sensor</b> pre každé zariadenie, ktorého stavom je prvá vybraná vlastnosť v <i>Výstupe payloadu</i> (inak <code>state</code>, prvá čitateľná vlastnosť alebo <code>linkquality</code>). Viacero vlastností sa sprístupní ako atribúty;</li>
+                <li>prepínač <b>enabled</b> (kategória <code>config</code>), ktorým uzol zapnete alebo vypnete z Home Assistant. Téma stavu: <code>node-red/&lt;základná téma&gt;/ha/&lt;id uzla&gt;/enabled</code>;</li>
+                <li>dostupnosť sa riadi témou <code>node-red/&lt;základná téma&gt;/state</code>.</li>
+            </ul>
+            Kým nie je známy stav prepínača (do 3 s po spustení), prichádzajúce správy sa zaradia do fronty (max. 20, žiadna staršia ako 60 s) a po zapnutí uzla sa prehrajú. Keď je prepínač VYPNUTÝ, správy sa zahodia a uzol zobrazí <code>vypnuté (Home Assistant)</code>. Premenované zariadenia a nové skupiny sa automaticky oznámia znova; po odstránení uzla sa entity z Home Assistant odstránia.
         </dd>
     </dl>
 
     <h3>Výstupy</h3>
     <h5>Výstup</h5>
     <dl class="message-properties">
-        <dt>payload <span class="property-type">reťazec | objekt</span></dt><dd>aktuálna hodnota závisí na formátovaní nastavení výstupného stavu</dd>
-        <dt>payload_raw <span class="property-type">objekt</span></dt><dd>dáta tak, ako sú</dd>
+        <dt>payload <span class="property-type">reťazec | objekt</span></dt><dd>aktuálna hodnota podľa nastavenia výstupu payloadu</dd>
+        <dt>payload_raw <span class="property-type">objekt</span></dt><dd>údaje v pôvodnej podobe</dd>
         <dt>zariadenie<span class="property-type">objekt</span></dt><dd>informácie o zariadení</dd>
     </dl>
 </script>
+

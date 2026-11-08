@@ -1,0 +1,52 @@
+{
+    "label": {
+        "name": "Name",
+        "friendly_name": "Gerätename",
+        "server": "Server",
+        "topic": "Gerät",
+        "state": "Payload-Ausgabe",
+        "refresh": "Aktualisieren",
+        "refresh_devices_list": "Geräteliste aktualisieren",
+        "start_output": "Bei Start ausgeben",
+        "start_output_help": "Wert beim Start senden",
+        "always": "Immer",
+        "on_state_change": "Bei Statusänderung",
+        "on_update": "Bei jeder Aktualisierung",
+        "filter_changes": "Filter",
+        "filter_changes_help": "Nur bei geändertem Wert senden",
+        "output": "Ausgabe",
+        "enable_multiple": "Mehrere Eingänge",
+        "enable_multiple_help": "Mehrere Geräte überwachen",
+        "filter_properties": "Eigenschaften filtern",
+        "filter_properties_help": "Nur Änderungen der ausgewählten Eigenschaften gelten als Änderung (leer = gesamter Payload)",
+        "expose_to_home_assistant": "Home Assistant",
+        "expose_to_home_assistant_help": "In Home Assistant bereitstellen (MQTT Discovery, mit Aktivierungsschalter)"
+    },
+    "placeholder": {
+        "name": "Name",
+        "friendly_name": "Gerätename"
+    },
+    "status": {
+        "no_server": "kein Server-Node",
+        "no_device": "Gerät nicht gefunden",
+        "no_connection": "keine Verbindung",
+        "connected": "verbunden",
+        "received": "empfangen",
+        "waiting_ha": "Warten auf Home Assistant",
+        "disabled_ha": "deaktiviert (Home Assistant)"
+    },
+    "multiselect": {
+        "devices": "Geräte",
+        "filter_devices": "Geräte filtern…",
+        "refresh": "Geräteliste aktualisieren",
+        "none_selected": "Nichts ausgewählt",
+        "complete_payload": "Vollständiger Status",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "Gruppen",
+        "all_properties": "Alle Eigenschaften"
+    },
+    "tip": {
+        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden"
+    }
+}

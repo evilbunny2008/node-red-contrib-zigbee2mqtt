@@ -1,8 +1,9 @@
 <script type="text/x-red" data-template-name="zigbee2mqtt-eb-api" data-hidden="true">
 </script>
 
+
 <!-- ============================================================================ -->
-<!-- 🔥 CRITICAL: Carregar Scripts SINCRONAMENTE (ordem importa!)              -->
+<!-- 🔥 CRITICAL: Carregar Scripts SINCRONAMENTE (ordem importa!)                -->
 <!-- ============================================================================ -->
 
 <!-- 1️⃣ Debug System (PRIMEIRO - outros dependem dele) -->
@@ -11,11 +12,17 @@
 <!-- 2️⃣ Config System -->
 <script src="resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/z2m-config.js"></script>
 
-<!-- 3️⃣ UI Libraries -->
-<script src="resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/multiple-select.min.js"></script>
 
-<!-- 4️⃣ Editor Class (depende de debug.js e z2m-config.js) -->
-<script src="resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/node-red-contrib-zigbee2mqtt-helpers.js"></script>
+
+<!-- ============================================================================ -->
+<!-- 3️⃣ 4️⃣ 5️⃣ Cascata SEQUENCIAL (callbacks aninhados) - ver script abaixo:     -->
+<!--                                                                              -->
+<!--   3️⃣ multiple-select.min.js                      (UI Libraries)              -->
+<!--   4️⃣ node-red-contrib-zigbee2mqtt-utils.js (funções utilitárias)      -->
+<!--   5️⃣ node-red-contrib-zigbee2mqtt-helpers.js      (Editor Class - depende   -->
+<!--        de debug.js, z2m-config.js e do editor-utils)                         -->
+<!--        (o helpers.js também define o Z2MI18n - tradução do editor)           -->
+<!-- ============================================================================ -->
 
 <!-- ============================================================================ -->
 <!-- ✅ Verificação de Carregamento                                             -->
@@ -31,37 +38,84 @@
     });
 
     (function() {
-        if (typeof Z2MDebug === 'undefined') return;
-        var debug = Z2MDebug.create('api.html');
-        
-        debug.log('');
-        debug.log('╔═══════════════════════════════════════════════════════════╗');
-        debug.log('║ 🔍 [api.html] SCRIPT LOADING CHECK                       ║');
-        debug.log('╚═══════════════════════════════════════════════════════════╝');
-        
-        const checks = {
-            'Z2MDebug': typeof Z2MDebug !== 'undefined',
-            'Z2MConfig': typeof Z2MConfig !== 'undefined',
-            'Zigbee2MqttEditor': typeof Zigbee2MqttEditor !== 'undefined'
-        };
-        
-        let allOk = true;
-        for (let [name, status] of Object.entries(checks)) {
-            const icon = status ? '✅' : '❌';
-            debug.log(`  ${icon} ${name}: ${status ? 'LOADED' : 'MISSING'}`);
-            if (!status) allOk = false;
+        var BASE = 'resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/';
+        var debug = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('api.html') : null;
+
+        // Sinal global: os editores dos nós podem esperar por isto em vez de usar setTimeout fixos
+        //   Z2MReady.done(function () { new Zigbee2MqttEditor(...).build(); });
+        window.Z2MReady = $.Deferred();
+
+        /**
+         * Carrega UM script e só chama `next` depois de executado.
+         * cache:true evita o "?_=timestamp" do $.getScript (mantém a cache do browser).
+         */
+        function loadScript(file, next) {
+            if (debug) debug.log('⏳ Loading ' + file + ' ...');
+            $.ajax({
+                url: BASE + file,
+                dataType: 'script',
+                cache: true
+            }).done(function() {
+                if (debug) debug.log('✅ Loaded ' + file);
+                next();
+            }).fail(function(jqXHR, status, error) {
+                // console.error direto: este erro tem de aparecer mesmo com o debug desligado
+                console.error('[api.html] ❌ FAILED to load ' + BASE + file, status, error);
+                window.Z2MReady.reject(file);
+            });
         }
-        
-        if (allOk) {
+        function checkScripts() {
+            if (typeof Z2MDebug === 'undefined') return;
+            var debug = Z2MDebug.create('api.html');
+
             debug.log('');
-            debug.log('✅ All scripts loaded successfully!');
-        } else {
-            debug.error('');
-            debug.error('❌ Some scripts FAILED to load!');
-            debug.error('   Check if files exist in resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/');
+            debug.log('╔═══════════════════════════════════════════════════════════╗');
+            debug.log('║ 🔍 [api.html] SCRIPT LOADING CHECK                       ║');
+            debug.log('╚═══════════════════════════════════════════════════════════╝');
+
+            const checks = {
+                'Z2MDebug': typeof Z2MDebug !== 'undefined',
+                'Z2MConfig': typeof Z2MConfig !== 'undefined',
+                'jQuery.multipleSelect': !!($.fn && $.fn.multipleSelect),
+                'Zigbee2MqttEditorUtils': typeof Zigbee2MqttEditorUtils !== 'undefined',
+                // ⚠️ o nome da classe é Zigbee2MqttEditor (M maiúsculo)
+                'Zigbee2MqttEditor': typeof Zigbee2MqttEditor !== 'undefined',
+                'Z2MI18n': typeof Z2MI18n !== 'undefined'
+            };
+
+            let allOk = true;
+            for (let [name, status] of Object.entries(checks)) {
+                const icon = status ? '✅' : '❌';
+                debug.log(`  ${icon} ${name}: ${status ? 'LOADED' : 'MISSING'}`);
+                if (!status) allOk = false;
+            }
+
+            if (allOk) {
+                debug.log('');
+                debug.log('✅ All scripts loaded successfully!');
+            } else {
+                debug.error('');
+                debug.error('❌ Some scripts FAILED to load!');
+                debug.error('   Check if files exist in resources/@evilbunny/node-red-contrib-zigbee2mqtt/js/');
+            }
+
+            debug.log('╚═══════════════════════════════════════════════════════════╝');
+            debug.log('');
         }
-        
-        debug.log('╚═══════════════════════════════════════════════════════════╝');
-        debug.log('');
+
+        // ── CASCATA SEQUENCIAL (callbacks aninhados) ─────────────────────────
+        // multiple-select  ->  editor-utils  ->  helpers
+		
+        loadScript('multiple-select.min.js', function() {
+            loadScript('node-red-contrib-zigbee2mqtt-utils.js', function() {
+                // A partir daqui Zigbee2MqttEditorUtils já existe
+                loadScript('node-red-contrib-zigbee2mqtt-helpers.js', function() {
+                    // Só agora faz sentido verificar: os scripts são assíncronos
+                    checkScripts();
+                    window.Z2MReady.resolve();
+                });
+            });
+        });
+		
     })();
 </script>

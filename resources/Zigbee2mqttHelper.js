@@ -172,7 +172,9 @@ class Zigbee2mqttHelper {
     static payload2homekit(payload) {
         var msg = {};
 
-        if (!payload) return msg;
+        // v3.1.0: o payload tem de ser um objeto simples (arrays vindos do broker rebentavam os "in" checks)
+        // [ORIGINAL v3.3.8] if (!payload) return msg;
+        if (!payload || typeof payload !== "object" || Array.isArray(payload)) return msg;
 
         //Lightbulb
         if ("brightness" in payload) {
@@ -328,6 +330,10 @@ class Zigbee2mqttHelper {
             msg["OccupancySensor"] = {
                 "OccupancyDetected":payload.occupancy?1:0
             };
+            // v3.1.0: tamper (violação do sensor) -> HomeKit StatusTampered (0 = normal, 1 = violado)
+            if ('tamper' in payload) {
+                msg["OccupancySensor"]["StatusTampered"] = payload.tamper ? 1 : 0;
+            }
         }
 
         //WaterLeak
@@ -367,11 +373,14 @@ class Zigbee2mqttHelper {
         var result = {};
 
         // REFATORADO: Verificação de nulos mais robusta
-        if (!payload || typeof payload !== 'object') 
+        // v3.1.0: idem payload2homekit - arrays também são rejeitados
+        // [ORIGINAL v3.3.8] if (!payload || typeof payload !== 'object') return result;
+        if (!payload || typeof payload !== "object" || Array.isArray(payload))
             return result;
 
         //convert XY to RGB, HSV
-        if (payload && "color" in payload && "x" in payload.color) {
+        // (robustez) "x" in <não-objeto> lança TypeError: exige que color seja um objeto
+        if (payload && "color" in payload && payload.color && typeof payload.color === "object" && "x" in payload.color) {
             var bri = "brightness" in payload ? payload.brightness : 255;
             var rgb = Zigbee2mqttHelper.cie2rgb(payload.color.x, payload.color.y, bri);
             var hsv = Zigbee2mqttHelper.rgb2hsv(rgb.r, rgb.g, rgb.b);

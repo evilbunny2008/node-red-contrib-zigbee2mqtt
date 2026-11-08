@@ -1,3 +1,31 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// Z2MI18n - ponto ÚNICO de tradução do editor (RED._ + fallback + interpolação __var__)
+//   Z2MI18n.t('server:editor.nothing')
+//   Z2MI18n.t('bridge:notifications.log_level_set', {level: 'debug'})   // "...__level__"
+//   Z2MI18n.t('server:editor.manual_value', {value: 5}, 'Manual (5)')   // 3º arg = fallback
+// Os textos vivem em nodes/locales/<idioma>/<nó>.json (namespace = nome do ficheiro .json).
+// ═══════════════════════════════════════════════════════════════════════════
+if (typeof window !== 'undefined' && typeof window.Z2MI18n === 'undefined') {
+    (function () {
+        const MODULE = '@evilbunny/node-red-contrib-zigbee2mqtt/';
+        function t(key, vars, fallback) {
+            if (typeof key !== 'string') return (fallback !== undefined) ? fallback : '';
+            const full = MODULE + key;
+            let out;
+            try {
+                out = (typeof RED !== 'undefined' && RED._) ? RED._(full, vars || {}) : full;
+            } catch (e) {
+                out = full;
+            }
+            // RED._ devolve a própria chave quando falta a tradução
+            if (!out || out === full || out === key) {
+                return (fallback !== undefined) ? fallback : key.replace(/^[^:]*:/, '');
+            }
+            return out;
+        }
+        window.Z2MI18n = { t: t, MODULE: MODULE };
+    })();
+}
 // Fallback in case this file is evaluated before debug.js (api.html loads debug.js
 // first, but don't let load order break the editor): a silent logger with the same API.
 if (typeof window !== 'undefined' && typeof window.Z2MDebug === 'undefined') {
@@ -8,7 +36,12 @@ if (typeof window !== 'undefined' && typeof window.Z2MDebug === 'undefined') {
         window.Z2MDebug = { create: function () { return logger; }, isEnabled: function () { return false; } };
     })();
 }
-
+// O módulo de utilitários tem de estar carregado antes deste ficheiro
+// (garantido pela cascata em api.html). Falhar cedo e de forma explícita.
+if (typeof Zigbee2MqttEditorUtils === 'undefined') {
+    console.error('[Z2M Helpers] Zigbee2MqttEditorUtils is missing. ' +
+        'Check the load order in api.html: multiple-select -> editor-utils -> helpers');
+}
 /**
  * ============================================================================
  * ZIGBEE2MQTT EDITOR CLASS - ORGANIZED STRUCTURE
@@ -43,6 +76,7 @@ class Zigbee2MqttEditor {
         this.debug = (typeof Z2MDebug !== 'undefined') ? Z2MDebug.create('Z2M Editor') : console;
         
         this.node = node;
+		this.utils = Zigbee2MqttEditorUtils;
         this.devices = null;
         this._traceLog = []; 
         this.addTrace = (msg) => { 
@@ -55,6 +89,8 @@ class Zigbee2MqttEditor {
         this.property = node.state||null;
         this.optionsValue = node.optionsValue||null;
         this.optionsType = node.optionsType||null;
+        // v3.1.0: propriedades escolhidas para o filtro granular do nó "in" (array ou null)
+        this.filterProperties = this.normalizeFilterProperties(node.filterProperties);
         this.refresh = false;
         this.initializing = false;
  
@@ -99,6 +135,7 @@ class Zigbee2MqttEditor {
             that.debug.log('|->   🔵 Phase 2: buildDevicePropertyInput & buildDeviceOptionsInput');
             await that.buildDevicePropertyInput();
             await that.buildDeviceOptionsInput();
+            await that.buildFilterPropertiesInput(); // v3.1.0 (no-op nos nós sem #node-input-filterProperties)
             that.debug.log('|->   ✅ Phase 2: COMPLETE');
             
             // ====================================================================
@@ -384,6 +421,7 @@ class Zigbee2MqttEditor {
                 }
             } else {
                 that.setFriendlyName();
+                that.buildFilterPropertiesInput(); // v3.1.0: a lista de propriedades depende dos devices escolhidos
             }
             
             that.debug.log('');
@@ -542,9 +580,10 @@ class Zigbee2MqttEditor {
                         const uiConfig = window.Z2MConfig?.getComplexInputConfig(currentCmd);
                         if (uiConfig) {
                             // 1. Limpar labels manuais se o valor for padrão
+                            //    (a opção manual é identificada pela flag "manual", não pelo texto: o texto é traduzido)
                             let z2mType = that.currentPayloadTypes?.find(t => t.value === 'z2m_payload');
                             if (z2mType && z2mType.options) {
-                                const standardOptions = z2mType.options.filter(opt => !String(opt.label).startsWith('Manual ('));
+                                const standardOptions = z2mType.options.filter(opt => !opt.manual);
                                 const isStandard = standardOptions.some(opt => String(opt.value) === String(value));
                                 if (isStandard) {
                                     z2mType.options = standardOptions;
@@ -641,10 +680,10 @@ class Zigbee2MqttEditor {
             dropWidth: 320,
             width: 320,
             filter: true,
-            formatAllSelected:function(){return RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.select_device")}
+            formatAllSelected:function(){return Z2MI18n.t('server:editor.select_device')}
         };
         if (that.config.allow_empty && !that.isMultiple()) {
-            params.formatAllSelected = function(){return RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.msg_topic")};
+            params.formatAllSelected = function(){return Z2MI18n.t('server:editor.msg_topic')};
         }
 
         that.getDeviceIdInput().children().remove();
@@ -665,7 +704,7 @@ class Zigbee2MqttEditor {
             return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
         });
         if (groups.length) {
-            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.groups")});
+            html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.groups')});
             html.appendTo(that.getDeviceIdInput());
             $.each(groups, function(index, value) {
                 let text = '';
@@ -683,36 +722,30 @@ class Zigbee2MqttEditor {
             return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
         });
         if (devices.length) {
-            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.devices")});
+            html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.devices')});
             html.appendTo(that.getDeviceIdInput());
-            
+			
             // ✅ Filtrar baseado no MODE
             let filteredDevices;
             
             if (that.config.mode === 'out') {
                 // OUT: Mostrar apenas devices com ESCRITA (comandos)
-                filteredDevices = devices.filter(device => {
-                    return that.deviceHasCommandsForDevice(device);
-                });
+                filteredDevices = Zigbee2MqttEditorUtils.filterDevicesByMode(devices, 'out');
                 that.debug.log('|     [buildDeviceIdInput OUT] Total devices:', devices.length);
                 that.debug.log('|     [buildDeviceIdInput OUT] Devices with commands:', filteredDevices.length);
             } else if (that.config.mode === 'in') {
                 // IN: Mostrar apenas devices com LEITURA (sensores)
-                    filteredDevices = devices.filter(device => {
-                    return that.deviceHasReadableExposesForDevice(device);
-                });
+                filteredDevices = Zigbee2MqttEditorUtils.filterDevicesByMode(devices, 'in');
                 that.debug.log('|     [buildDeviceIdInput IN] Total devices:', devices.length);
                 that.debug.log('|     [buildDeviceIdInput IN] Devices with readable:', filteredDevices.length);
             } else if (that.config.mode === 'all') {
                 // ALL: Mostrar TODOS os devices - MESMO o Coordinator
-                filteredDevices = devices;
+                filteredDevices = Zigbee2MqttEditorUtils.filterDevicesByMode(devices, 'all');
                 that.debug.log('|     [buildDeviceIdInput ALL] Showing ALL devices:', filteredDevices.length);
             } else {
                 // FALLBACK: Se mode não for reconhecido, excluir apenas Coordinator
                 that.debug.warn('|     [buildDeviceIdInput] Unknown mode:', that.config.mode, '- filtering Coordinator');
-                filteredDevices = devices.filter(device => {
-                    return device.type !== 'Coordinator';
-                });
+                filteredDevices = Zigbee2MqttEditorUtils.filterDevicesByMode(devices, that.config.mode);
             }
             
             // Adicionar os devices filtrados
@@ -764,14 +797,14 @@ class Zigbee2MqttEditor {
             dropWidth: 320,
             width: 320,
             single: false, // always allow selecting multiple attributes; no selection = complete payload
-            placeholder: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.complete_payload")
+            placeholder: Z2MI18n.t('server:editor.complete_payload')
         }).multipleSelect('disable');
 
         let html = '';
         let device = that.getDevice();
 
         if (device && 'definition' in device && device.definition && 'exposes' in device.definition) {
-            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.zigbee2mqtt")});
+            html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.zigbee2mqtt')});
             html.appendTo(that.getDevicePropertyInput());
 
             $.each(device.definition.exposes, function(index, value) {
@@ -798,7 +831,7 @@ class Zigbee2MqttEditor {
                 return !that.getDevicePropertyInput().find('option[value="' + c[0] + '"]').length;
             });
             if (common.length) {
-                html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.common")});
+                html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.common')});
                 html.appendTo(that.getDevicePropertyInput());
                 common.forEach(function(c) {
                     $('<option value="' + c[0] + '">' + c[1] + '</option>').appendTo(html);
@@ -807,7 +840,7 @@ class Zigbee2MqttEditor {
         }
 
         if (device && 'homekit' in device && device.homekit && Object.keys(device.homekit).length) {
-            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.homekit")});
+            html = $('<optgroup/>', {label: Z2MI18n.t('server:editor.homekit')});
             html.appendTo(that.getDevicePropertyInput());
 
             $.each(device.homekit, function (index, value) {
@@ -835,6 +868,131 @@ class Zigbee2MqttEditor {
 
         that.debug.log('╔═══════════════════════════════════════════════════════════╗');
         that.debug.log('║ 🗿️ [buildDevicePropertyInput] COMPLETE                     ║');
+        that.debug.log('╚═══════════════════════════════════════════════════════════╝');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🔎 FILTER PROPERTIES (v3.1.0) - seletor múltiplo das chaves do JSON a monitorizar
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /**
+     * Converte o valor guardado no nó (string legada, array, null) num array limpo e sem duplicados.
+     *   null / undefined / '' / '0' -> []
+     *   'temperature'               -> ['temperature']
+     *   ['a', ' b ', '', 'a']       -> ['a', 'b']
+     * @param {string|Array|null} value
+     * @returns {Array<string>}
+     */
+    normalizeFilterProperties(value) {
+        if (typeof value === 'string') {
+            value = (value && value !== '0') ? [value] : [];
+        }
+        if (!Array.isArray(value)) {
+            return [];
+        }
+        const clean = [];
+        value.forEach(function (prop) {
+            if (typeof prop !== 'string') return;
+            const trimmed = prop.trim();
+            if (trimmed && clean.indexOf(trimmed) < 0) clean.push(trimmed);
+        });
+        return clean;
+    }
+
+    /**
+     * Devolve os devices atualmente selecionados (1 no modo simples, N no modo múltiplo).
+     * @returns {Array<Object>}
+     */
+    getSelectedDevicesForFilter() {
+        let that = this;
+        const list = (that.devices && Array.isArray(that.devices[0])) ? that.devices[0] : [];
+        if (!list.length || !that.device_id) return [];
+        const ids = Array.isArray(that.device_id) ? that.device_id : [that.device_id];
+        return list.filter(function (item) { return ids.indexOf(item.ieee_address) >= 0; });
+    }
+
+    /**
+     * Constrói o <select multiple id="node-input-filterProperties">.
+     * Opções = propriedades legíveis (PUBLISH) dos devices escolhidos + last_seen / linkquality.
+     * Sem seleção = sem filtro granular (compara o payload completo, como antes).
+     * @returns {Promise<void>}
+     */
+    async buildFilterPropertiesInput() {
+        let that = this;
+        const $filter = $('#node-input-filterProperties');
+        if (!$filter.length) return; // só existe no nó "in"
+
+        that.debug.log('╔═══════════════════════════════════════════════════════════╗');
+        that.debug.log('║ 🔎 [buildFilterPropertiesInput] STARTING                  ║');
+        that.debug.log('╚═══════════════════════════════════════════════════════════╝');
+
+        // o que estava escolhido (UI atual > valor guardado no nó) - sobrevive a rebuilds/mudança de device
+        let wanted = [];
+        try {
+            if ($filter.data('multipleSelect')) {
+                wanted = $filter.multipleSelect('getSelects', 'value');
+            }
+        } catch (e) { wanted = []; }
+        if (!wanted.length) wanted = that.normalizeFilterProperties(that.filterProperties);
+
+        $filter.children().remove();
+        $filter.multipleSelect('destroy').multipleSelect({
+            numberDisplayed: 1,
+            dropWidth: 320,
+            width: 320,
+            filter: true,
+            single: false, // sempre múltiplo; nenhuma seleção = payload completo
+            placeholder: Z2MI18n.t('in:multiselect.all_properties')
+        }).multipleSelect('disable');
+
+        const seen = {};
+        const addOption = function ($group, value, label) {
+            if (seen[value]) return;
+            seen[value] = true;
+            $('<option/>', { value: value, text: label }).appendTo($group);
+        };
+
+        const devices = that.getSelectedDevicesForFilter();
+        if (devices.length) {
+            const $exposed = $('<optgroup/>', { label: Z2MI18n.t('server:editor.zigbee2mqtt') });
+            $exposed.appendTo($filter);
+            devices.forEach(function (device) {
+                Zigbee2MqttEditorUtils.getReadableExposes(device).forEach(function (expose) {
+                    addOption($exposed, expose.property,
+                        Zigbee2MqttEditorUtils.formatExposeLabel(expose, { style: 'auto', includeUnit: true }) || expose.property);
+                });
+            });
+
+            // atributos comuns que o z2m acrescenta à maioria dos devices
+            const $common = $('<optgroup/>', { label: Z2MI18n.t('server:editor.common') });
+            $common.appendTo($filter);
+            addOption($common, 'last_seen', 'last_seen');
+            addOption($common, 'linkquality', 'linkquality, lqi');
+        }
+
+        // manter também escolhas guardadas que já não existem nas opções (ex.: device offline/ainda sem definition),
+        // para o oneditsave não as perder sem o utilizador perceber
+        wanted.forEach(function (value) {
+            if (!seen[value]) {
+                let $orphans = $filter.find('optgroup.z2m-filter-orphans');
+                if (!$orphans.length) {
+                    $orphans = $('<optgroup/>', { 'class': 'z2m-filter-orphans', label: Z2MI18n.t('server:editor.orphan_properties', null, '⚠') }).appendTo($filter);
+                }
+                addOption($orphans, value, value);
+            }
+        });
+
+        $filter.multipleSelect('enable');
+        $filter.multipleSelect('refresh'); // sincronizar o modelo interno com as <option> acabadas de criar
+
+        that.filterProperties = wanted.filter(function (value) {
+            return $filter.find('option[value="' + value.replace(/"/g, '\\"') + '"]').length > 0;
+        });
+        $filter.multipleSelect('setSelects', that.filterProperties);
+
+        that.debug.log('|     ✅ Filter options:', $filter.find('option').length, '| selected:', that.filterProperties);
+        that.debug.log('╔═══════════════════════════════════════════════════════════╗');
+        that.debug.log('║ 🔎 [buildFilterPropertiesInput] COMPLETE                  ║');
         that.debug.log('╚═══════════════════════════════════════════════════════════╝');
     }
 
@@ -898,7 +1056,7 @@ class Zigbee2MqttEditor {
             $cmd.typedInput('types', [
                 {
                     value: 'nothing',
-                    label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"),
+                    label: Z2MI18n.t('server:editor.nothing'),
                     options: ['']
                 }
             ]);
@@ -953,8 +1111,10 @@ class Zigbee2MqttEditor {
                             // label by property, not name: multi-gang devices expose several
                             // features all named "state" (state_l1, state_l2, ...)
                             $('<option/>', {
-                                value: expose.property,
-                                text: expose.property || expose.name
+                                value: expose.property,   // ← o valor guardado no nó NÃO muda
+                                // style:'property' reproduz o aspeto antigo; 'auto' mostra "Descrição (property)"
+                                text: Zigbee2MqttEditorUtils.formatExposeLabel(expose, { style: 'auto', includeUnit: false })
+                                      || expose.property || expose.name
                             }).appendTo($commandList);
                             commandsCount++;
                         }
@@ -1069,19 +1229,19 @@ class Zigbee2MqttEditor {
         const commandTypes = [
             {
                 value: 'z2m_cmd',
-                label: 'zigbee2mqtt',
+                label: Z2MI18n.t('server:editor.zigbee2mqtt'),
                 icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png',
                 options: z2mOptions
             },
             {
                 value: 'homekit',
-                label: 'homekit',
+                label: Z2MI18n.t('server:editor.homekit'),
                 icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/homekit-logo.png',
-                options: [{ value: 'homekit', label: 'Apple Homekit data format' }]
+                options: [{ value: 'homekit', label: Z2MI18n.t('server:editor.homekit_data_format') }]
             },
             {
                 value: 'nothing',
-                label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"),
+                label: Z2MI18n.t('server:editor.nothing'),
                 options: ['']
             },
             'str',
@@ -1262,17 +1422,8 @@ class Zigbee2MqttEditor {
             // Prefer the values the device itself declares for this property (binary
             // on/off/toggle, or enum values such as OPEN/CLOSE/STOP for covers or
             // LOCK/UNLOCK for locks); only fall back to the generic lists below if it doesn't.
-            const findExposeByProperty = (exposes) => {
-                for (let expose of exposes || []) {
-                    if (expose.property === currentCommand) return expose;
-                    if (expose.features) {
-                        const found = findExposeByProperty(expose.features);
-                        if (found) return found;
-                    }
-                }
-                return null;
-            };
-            const deviceExpose = findExposeByProperty(device?.definition?.exposes);
+            const deviceExpose = Zigbee2MqttEditorUtils.findExposeByProperty(device?.definition?.exposes, currentCommand);
+						
             const deviceValues = [];
             if (deviceExpose && Array.isArray(deviceExpose.values) && deviceExpose.values.length) {
                 deviceExpose.values.forEach(value => deviceValues.push({ value: String(value), label: String(value).toUpperCase() }));
@@ -1303,18 +1454,7 @@ class Zigbee2MqttEditor {
                 z2mPayloadOptions = [...droplistFromConfig];
             } 
             else if (device?.definition?.exposes) {
-                const findExpose = (exposes) => {
-                    for (let expose of exposes) {
-                        if (expose.property === currentCommand) return expose;
-                        if (expose.features) {
-                            const found = findExpose(expose.features);
-                            if (found) return found;
-                        }
-                    }
-                    return null;
-                };
-
-                const foundExpose = findExpose(device.definition.exposes);
+                const foundExpose = Zigbee2MqttEditorUtils.findExposeByProperty(device.definition.exposes, currentCommand);
 
                 if (foundExpose) {
                     if (foundExpose.values && Array.isArray(foundExpose.values)) {
@@ -1335,7 +1475,7 @@ class Zigbee2MqttEditor {
                         );
                         
                         if (config?.isToggleable(currentCommand)) {
-                            z2mPayloadOptions.push({ value: 'TOGGLE', label: 'Toggle' });
+                            z2mPayloadOptions.push({ value: 'TOGGLE', label: Z2MI18n.t('server:editor.toggle', null, 'Toggle') });
                         }
                     }
                     else if ('value_min' in foundExpose && 'value_max' in foundExpose) {
@@ -1440,15 +1580,16 @@ class Zigbee2MqttEditor {
         } 
         else if (z2mPayloadOptions.length > 0) {
             // ✅ Injetar label manual se o valor inicial (cache/node) não estiver na lista
+            //    (a opção é marcada com "manual: true": o texto é traduzido, por isso não serve de identificador)
             if (currentValue !== null && currentType === 'z2m_payload') {
                 const exists = z2mPayloadOptions.some(opt => String(opt.value) === String(currentValue));
                  if (!exists && currentValue !== '') {
-                    z2mPayloadOptions.unshift({ value: String(currentValue), label: `Manual (${currentValue})` });
+                    z2mPayloadOptions.unshift({ value: String(currentValue), label: Z2MI18n.t('server:editor.manual_value', {value: currentValue}, 'Manual (' + currentValue + ')'), manual: true });
                 }
             }
             payloadTypes.push({
                 value: 'z2m_payload',
-                label: 'zigbee2mqtt',
+                label: Z2MI18n.t('server:editor.zigbee2mqtt'),
                 icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png',
                 options: z2mPayloadOptions
             });
@@ -1456,7 +1597,7 @@ class Zigbee2MqttEditor {
         else if (isComplexUI || isNumeric) {
             payloadTypes.push({
                 value: 'z2m_payload',
-                label: 'zigbee2mqtt',
+                label: Z2MI18n.t('server:editor.zigbee2mqtt'),
                 icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png'
             });
         }
@@ -1575,7 +1716,7 @@ class Zigbee2MqttEditor {
                 that.getDeviceOptionsInput().typedInput('types', [
                     {
                         value: 'nothing',
-                        label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"),
+                        label: Z2MI18n.t('server:editor.nothing'),
                         options: ['']
                     }
                 ]);
@@ -1593,7 +1734,7 @@ class Zigbee2MqttEditor {
         
         let device = that.getDevice();
         let options = [];
-        options.push({'value': 'nothing', 'label': RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"), options:['']});
+        options.push({'value': 'nothing', 'label': Z2MI18n.t('server:editor.nothing'), options:['']});
         options.push('msg');
         options.push('json');
         
@@ -1714,8 +1855,7 @@ class Zigbee2MqttEditor {
             return true;
         }
         
-        const flatten = arr => arr.flatMap(e => e.features ? flatten(e.features) : [e]);
-        const exposes = flatten(device.definition.exposes);
+        const exposes = Zigbee2MqttEditorUtils.flattenExposes(device.definition.exposes);
         
         let pairValue = null;
         const pairCmd = isMin ? pairInfo.max : pairInfo.min;
@@ -1728,7 +1868,7 @@ class Zigbee2MqttEditor {
         // Validar
         if (isMin && pairValue !== null && value >= pairValue) {
             RED.notify(
-                'Min ' + pairInfo.unit + ' must be less than max ' + pairInfo.unit + ' (' + pairValue + ')',
+                Z2MI18n.t('server:editor.min_max_min', {unit: pairInfo.unit, value: pairValue}, 'Min ' + pairInfo.unit + ' must be less than max ' + pairInfo.unit + ' (' + pairValue + ')'),
                 'warning'
             );
             return false;
@@ -1736,7 +1876,7 @@ class Zigbee2MqttEditor {
         
         if (!isMin && pairValue !== null && value <= pairValue) {
             RED.notify(
-                'Max ' + pairInfo.unit + ' must be greater than min ' + pairInfo.unit + ' (' + pairValue + ')',
+                Z2MI18n.t('server:editor.min_max_max', {unit: pairInfo.unit, value: pairValue}, 'Max ' + pairInfo.unit + ' must be greater than min ' + pairInfo.unit + ' (' + pairValue + ')'),
                 'warning'
             );
             return false;
@@ -1812,8 +1952,7 @@ class Zigbee2MqttEditor {
         
         const device = that.getDevice();
         if (device && device.definition && device.definition.exposes) {
-            const flatten = arr => arr.flatMap(e => e.features ? flatten(e.features) : [e]);
-            const exposes = flatten(device.definition.exposes);
+            const exposes = Zigbee2MqttEditorUtils.flattenExposes(device.definition.exposes);
             
             const expose = exposes.find(e => e.property === cmd);
             if (expose && 'value_min' in expose && 'value_max' in expose) {
@@ -1838,7 +1977,7 @@ class Zigbee2MqttEditor {
     hasSetAccess(access) {
         // Verificar se o bit SET (2) está ativo usando bitwise AND
         // Se (access & 2) > 0, então tem permissão de escrita
-        return (access & 2) > 0;
+        return Zigbee2MqttEditorUtils.hasSetAccess(access);
     }
     /**
      * Verifica se access permite PUBLISH (leitura) - bit 1
@@ -1848,7 +1987,7 @@ class Zigbee2MqttEditor {
     hasPublishAccess(access) {
         // Verificar se o bit PUBLISH (1) está ativo usando bitwise AND
         // Se (access & 1) > 0, então device publica dados (leitura)
-        return (access & 1) > 0;
+        return Zigbee2MqttEditorUtils.hasPublishAccess(access);
     }
     /**
      * Verifica se device SELECIONADO tem comandos (propriedades com SET)
@@ -1856,102 +1995,24 @@ class Zigbee2MqttEditor {
      */
     deviceHasCommands() {
         let that = this;
-        let device = that.getDevice();
         
         that.debug.log('🔵 [deviceHasCommands] Checking...');
         
-        if (!device) {
-            that.debug.log('⚠️ [deviceHasCommands] No device selected');
-            return false;
-        }
-        
-        if (!('definition' in device) || !device.definition) {
-            that.debug.log('⚠️ [deviceHasCommands] No device.definition');
-            return false;
-        }
-        
-        if (!('exposes' in device.definition)) {
-            that.debug.log('⚠️ [deviceHasCommands] No device.definition.exposes');
-            return false;
-        }
-        
-        const flatten = arr => arr.flatMap(e => e.features ? flatten(e.features) : [e]);
-        const exposes = flatten(device.definition.exposes);
-        
-        const hasWritableExposes = exposes.some(expose => {
-            // Verificar propriedade direta
-            if ('property' in expose && 'access' in expose) {
-                const canSet = that.hasSetAccess(expose.access);
-                if (canSet) {
-                    that.debug.log(`  ✅ [${expose.property}] access=${expose.access} → CAN SET`);
-                    return true;
-                } else {
-                    that.debug.log(`  ❌ [${expose.property}] access=${expose.access} → READ ONLY`);
-                }
-            }
-
-            if ('features' in expose && Array.isArray(expose.features)) {
-                return expose.features.some(feature => {
-                    if ('property' in feature && 'access' in feature) {
-                        const canSet = that.hasSetAccess(feature.access);
-                        if (canSet) {
-                            that.debug.log(`  ✅ [${feature.property}] access=${feature.access} → CAN SET`);
-                            return true;
-                        } else {
-                            that.debug.log(`  ❌ [${feature.property}] access=${feature.access} → READ ONLY`);
-                        }
-                    }
-                    return false;
-                });
-            }
-            
-            return false;
-        });
+        // verbose:true -> mantém os logs "No device selected / No device.definition /
+        // No device.definition.exposes" e os ❌ READ ONLY de cada expose
+        const hasWritableExposes = Zigbee2MqttEditorUtils.deviceHasCommands(that.getDevice(), { verbose: true });
         
         that.debug.log('✅ [deviceHasCommands] Result:', hasWritableExposes);
         return hasWritableExposes;
     }
-    /**
+	/**
      * Verifica se um device ESPECÍFICO tem comandos
      * @param {Object} device - Device a verificar
      * @returns {boolean}
      */
     deviceHasCommandsForDevice(device) {
-        if (!device || !('definition' in device) || !device.definition || !('exposes' in device.definition)) {
-            return false;
-        }
-        
-        const flatten = arr => arr.flatMap(e => e.features ? flatten(e.features) : [e]);
-        const exposes = flatten(device.definition.exposes);
-        
-        const hasWritableExposes = exposes.some(expose => {
-            // Verificar propriedade direta
-            if ('property' in expose && 'access' in expose) {
-                const canSet = this.hasSetAccess(expose.access);
-                if (canSet) {
-                    this.debug.log(`  ✅ [${device.friendly_name}][${expose.property}] access=${expose.access} → CAN SET`);
-                    return true;
-                }
-            }
-            
-            // Verificar features aninhadas
-            if ('features' in expose && Array.isArray(expose.features)) {
-                return expose.features.some(feature => {
-                    if ('property' in feature && 'access' in feature) {
-                        const canSet = this.hasSetAccess(feature.access);
-                        if (canSet) {
-                            this.debug.log(`❌ [${device.friendly_name}][${feature.property}] access=${feature.access} → CAN SET`);
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-            }
-            
-            return false;
-        });
-        
-        return hasWritableExposes;
+        // (loga só os ✅ CAN SET, tal como antes)
+        return Zigbee2MqttEditorUtils.deviceHasCommands(device);
     }
     /**
      * Verifica se um device ESPECÍFICO tem exposes legíveis
@@ -1959,43 +2020,9 @@ class Zigbee2MqttEditor {
      * @returns {boolean}
      */
     deviceHasReadableExposesForDevice(device) {
-        if (!device || !('definition' in device) || !device.definition || !('exposes' in device.definition)) {
-            return false;
-        }
-        
-        const flatten = arr => arr.flatMap(e => e.features ? flatten(e.features) : [e]);
-        const exposes = flatten(device.definition.exposes);
-        
         // Verificar se existe pelo menos 1 expose com PUBLISH (bit 1)
-        const hasReadableExposes = exposes.some(expose => {
-            // Verificar propriedade direta
-            if ('property' in expose && 'access' in expose) {
-                const canPublish = this.hasPublishAccess(expose.access);
-                if (canPublish) {
-                    this.debug.log(`  ✅ [${device.friendly_name}][${expose.property}] access=${expose.access} → CAN PUBLISH`);
-                    return true;
-                }
-            }
-            
-            // Verificar features aninhadas
-            if ('features' in expose && Array.isArray(expose.features)) {
-                return expose.features.some(feature => {
-                    if ('property' in feature && 'access' in feature) {
-                        const canPublish = this.hasPublishAccess(feature.access);
-                        if (canPublish) {
-                            this.debug.log(`  ✅ [${device.friendly_name}][${feature.property}] access=${feature.access} → CAN PUBLISH`);
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-            }
-            
-            return false;
-        });
-        
-        return hasReadableExposes;
-    }    
+        return Zigbee2MqttEditorUtils.deviceHasReadableExposes(device);
+    }  
     // ============================================================================
     // 🎨 DYNAMIC UI ENGINE - Sliders e Color Pickers (SUBSTITUI LOGICA ANTIGA)
     // ============================================================================
@@ -2135,7 +2162,7 @@ class Zigbee2MqttEditor {
         });
 
         // Montar a estrutura form-row correta (Label à esquerda, Inputs à direita)
-        const mainLabel = config.parts.length === 1 ? config.parts[0].label : 'Manual Adjust';
+        const mainLabel = config.parts.length === 1 ? config.parts[0].label : Z2MI18n.t('out:label.manual_adjust', null, 'Manual Adjust');
         const finalInputsHtml = `
             <label class="l-width"><i class="fa fa-sliders"></i> ${mainLabel}</label>
             <div style="display: inline-flex; width: 70%; align-items: center; flex-wrap: wrap;">
@@ -2211,13 +2238,14 @@ class Zigbee2MqttEditor {
             if (that.currentPayloadTypes) {
                 let z2mType = that.currentPayloadTypes.find(t => t.value === 'z2m_payload');
                 if (z2mType && z2mType.options) {
-                    const standardOptions = z2mType.options.filter(opt => !String(opt.label).startsWith('Manual ('));
+                    // a opção manual é identificada pela flag "manual" (o texto é traduzido)
+                    const standardOptions = z2mType.options.filter(opt => !opt.manual);
                     // 🔥 FIX: Comparação case-insensitive para evitar adicionar múltiplos "Manual" da mesma cor
                     const isStandard = standardOptions.some(opt => String(opt.value).toUpperCase() === String(finalValue).toUpperCase());
-                    const currentManual = z2mType.options.find(opt => String(opt.label).startsWith('Manual ('));
+                    const currentManual = z2mType.options.find(opt => opt.manual);
                     
                     if (!isStandard && finalValue !== '' && (!currentManual || currentManual.value !== String(finalValue))) {
-                        z2mType.options = [{ value: String(finalValue), label: `Manual (${finalValue})` }, ...standardOptions];
+                        z2mType.options = [{ value: String(finalValue), label: Z2MI18n.t('server:editor.manual_value', {value: finalValue}, 'Manual (' + finalValue + ')'), manual: true }, ...standardOptions];
                         $payload.typedInput('types', that.currentPayloadTypes);
                         // 🔥 CRITICAL: Re-setar o valor após mudar os types para o widget aceitar a nova opção
                         $payload.typedInput('value', finalValue);
@@ -2458,7 +2486,7 @@ class Zigbee2MqttEditor {
 			if (!that.device_id) {
 				that.device_id = [];
 			}
-			that.getDeviceFriendlyNameInput().val(that.device_id.length + ' ' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.selected"));
+			that.getDeviceFriendlyNameInput().val(that.device_id.length + ' ' + Z2MI18n.t('server:editor.selected'));
 		} else if (that.device_id && that.device_id.length) {
 			if (typeof(that.device_id) == 'object') {
 				that.device_id = that.device_id[0];
@@ -2638,4 +2666,3 @@ bootLog.log('╔═════════════════════�
 bootLog.log('║ ✅ Z2M DEBUG TOOLS LOADED                                  ║');
 bootLog.log('╚═════════════════════════════════════════════════════════════╝');
 bootLog.log('Zigbee2MqttEditor class loaded ✔');
-

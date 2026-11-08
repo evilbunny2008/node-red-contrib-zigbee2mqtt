@@ -1,4 +1,6 @@
 const Zigbee2mqttHelper = require('../resources/Zigbee2mqttHelper.js');
+// Node-RED system logger (4 levels); the level is the one chosen in the server config node
+const Z2MLogger = require('../resources/js/node-red-contrib-zigbee2mqtt-logger.js').Logger;
 
 module.exports = function(RED) {
 
@@ -9,9 +11,17 @@ module.exports = function(RED) {
 
             let node = this;
             node.config = config;
+            // Logger Node-RED: follows the level of the selected server node (live, no redeploy needed)
+            node.logger = Z2MLogger.create(node, {
+                prefix: 'Bridge',
+                getLevel: function () { return node.server ? node.server.debug_level : undefined; }
+            });
             node.cleanTimer = null;
             node.is_subscribed = false;
             node.server = RED.nodes.getNode(node.config.server);
+            if (!node.server) {
+                node.logger.error('No Zigbee2MQTT server configuration node selected/found - the bridge node is inactive');
+            }
 
             if (node.server) {
                 node.listener_onMQTTConnect = function() { node.onMQTTConnect(); }
@@ -19,6 +29,11 @@ module.exports = function(RED) {
 
                 node.listener_onMQTTMessageBridge = function(data) { node.onMQTTMessageBridge(data); }
                 node.server.on('onMQTTMessageBridge', node.listener_onMQTTMessageBridge);
+
+                // onConnectError() existed but was never subscribed: without this the bridge node
+                // kept showing its last status when the MQTT connection dropped.
+                node.listener_onConnectError = function(err) { node.onConnectError(err); }
+                node.server.on('onConnectError', node.listener_onConnectError);
 
                 node.on('close', () => node.onClose());
 
@@ -72,7 +87,7 @@ module.exports = function(RED) {
                     node.status({
                         fill: "blue",
                         shape: "ring",
-                        text: "publishing..."
+                        text: "@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.publishing"
                     });
 
                     node.server.mqtt.publish(
@@ -84,7 +99,7 @@ module.exports = function(RED) {
                                 node.status({
                                     fill: "red",
                                     shape: "dot",
-                                    text: "publish failed"
+                                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.publish_failed"
                                 });
                                 node.error("MQTT publish error: " + err.message);
                                 
@@ -112,11 +127,15 @@ module.exports = function(RED) {
         onClose() {
             let node = this;
             if (node.server) {
+                node.logger.debug('Bridge node closing');
                 // REFATORADO: Desregistar cliente
                 if (typeof node.server.unregisterClient === 'function') {
                     node.server.unregisterClient(node);
                 }
 
+                if (node.listener_onConnectError) {
+                    node.server.removeListener('onConnectError', node.listener_onConnectError);
+                }
                 if (node.listener_onMQTTConnect) {
                     node.server.removeListener('onMQTTConnect', node.listener_onMQTTConnect);
                 }
@@ -127,11 +146,15 @@ module.exports = function(RED) {
         }
 
         onMQTTConnect() {
+            this.logger.debug('MQTT connection of the server node is up');
             let node = this;
             node.setNodeStatus();
         }
 
         onConnectError() {
+            // Logger Node-RED (throttled: the MQTT client retries every 5s)
+            this.logger.throttle('warn', 'bridge-conn-error', 30000,
+                'The server node reported an MQTT connection error' + (arguments[0] && arguments[0].message ? ': ' + arguments[0].message : ''));
             let node = this;
             node.status({
                 fill: "red",
@@ -185,6 +208,16 @@ module.exports = function(RED) {
             }
             
             if (node.server.getTopic('/bridge/state') === data.topic) {
+                // Logger Node-RED: log only real state transitions
+                const bridgeOnline = (payload && typeof payload === 'object') ? payload.state === 'online' : payload === 'online';
+                if (node._lastBridgeOnline !== bridgeOnline) {
+                    if (bridgeOnline) {
+                        node.logger.notice('Zigbee2MQTT bridge is online');
+                    } else {
+                        node.logger.warn('Zigbee2MQTT bridge is OFFLINE (check zigbee2mqtt and the MQTT broker)');
+                    }
+                    node._lastBridgeOnline = bridgeOnline;
+                }
                 node.setNodeStatus();
             } else if (node.server.getTopic('/bridge/info') === data.topic) {
                 if (payload.permit_join != (node.status.fill === 'yellow')) {
@@ -194,6 +227,7 @@ module.exports = function(RED) {
                 if (!payload) 
                     return;
                 // Throttle visual: Atualizar no máximo a cada 1s para evitar sobrecarga do editor
+                node.logger.debug('Bridge event: ' + (payload.type || 'event') + (payload.data ? ' ' + JSON.stringify(payload.data) : ''));
                 const now = Date.now();
                 if (node._lastStatusUpdate === undefined) 
                     node._lastStatusUpdate = 0;

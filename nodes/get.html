@@ -79,7 +79,11 @@
         outputs: 1,
         outputLabels: ["value"],
         paletteLabel: 'get',
-        icon: "icon.png",
+        icon: function () {
+            // Flow Icon definido no nó servidor (reativo); fallback: icon.png
+            var srv = this.server ? RED.nodes.node(this.server) : null;
+            return (srv && srv.flowIcon) ? srv.flowIcon : "icon.png";
+        },
         label: function () {
             var label = 'z2m-get';
 
@@ -91,6 +95,11 @@
                 label = this.device_id;
             }
 
+            // Flow Label do nó servidor (reativo: lido a cada redraw)
+            var srvNode = this.server ? RED.nodes.node(this.server) : null;
+            if (srvNode && srvNode.flowLabel) {
+                label = '[' + srvNode.flowLabel + '] ' + label;
+            }
             return label;
         },
         oneditprepare: function () {

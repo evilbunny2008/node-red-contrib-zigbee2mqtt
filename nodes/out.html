@@ -5,6 +5,7 @@
         <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
         <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
 
+
         <div class="form-row">
             <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
             <input type="text" id="node-input-name" data-i18n="[placeholder]placeholder.name">
@@ -58,7 +59,7 @@
                     <input type="hidden" id="node-input-payloadType">
                 </div>
                 
-                <div id="slider-visibility-inline" style="display: none; flex-shrink: 0; margin-left: 5px;" title="Show Manual Controls">
+                <div id="slider-visibility-inline" style="display: none; flex-shrink: 0; margin-left: 5px;" title="Show Manual Controls" data-i18n="[title]label.show_manual_controls">
                     <label style="margin: 0; cursor: pointer; width: auto;">
                         <input type="checkbox" 
                                id="node-input-manualPayloadSliderVisible" 
@@ -100,6 +101,19 @@
         <div class="form-tips optionsType_description">
             <strong><div data-i18n="help.description"></div></strong>
             <span></span>
+        </div>
+
+        <!-- ============================================================================ -->
+        <!-- 📤 SAÍDA OPCIONAL: emite o estado atualizado do device após o comando         -->
+        <!-- O número de saídas (0/1) é calculado no oneditsave a partir desta checkbox.  -->
+        <!-- ============================================================================ -->
+        <div class="form-row">
+            <input type="checkbox" id="node-input-outputEnabled" style="display: inline-block; width: auto; vertical-align: top;">
+            <label for="node-input-outputEnabled" style="width: auto;"><i class="fa fa-share-square"></i> <span data-i18n="label.output_enabled"></span></label>
+            <!-- reflete o nº real de saídas (0/1); o Node-RED liga-o a defaults.outputs -->
+            <input type="hidden" id="node-input-outputs" value="0">
+            <!-- Estado da porta de saída (atualizado ao vivo quando o toggle muda) -->
+            <div class="form-tips" id="z2m-output-hint" style="margin-top: 6px;"></div>
         </div>
 
         <div class="form-row node-input-rule-container-row">
@@ -160,14 +174,34 @@
                 },
                 manualPayloadSliderVisible: {
                     value: true,
+                },
+                // ── Saída opcional "updated state" ─────────────────────────────
+                // outputEnabled: estado da checkbox (#node-input-outputEnabled). Tem de estar
+                //                em defaults para o Node-RED o gravar/carregar automaticamente.
+                // outputs:       propriedade especial do Node-RED que define o nº de saídas
+                //                (0 ou 1). É calculada no oneditsave - não tem input próprio.
+                outputEnabled: {
+                    value: false,
+                },
+                outputs: {
+                    value: 0,
                 }
             },
             inputLabels: "value",
-            outputLabels: ["success"],
+            // [ORIGINAL] outputLabels: ["success"],
+            // Só é chamada para as saídas que existem (outputs = 1) -> index 0 = "updated state"
+            outputLabels: function(index) {
+                return RED._("@evilbunny/node-red-contrib-zigbee2mqtt/out:label.output_state");
+            },
             paletteLabel: 'out',
             inputs: 1,
-            outputs: 1,
-            icon: "icon.png",
+            // [ORIGINAL] outputs: 1,
+            outputs: 0,
+            icon: function () {
+            // Flow Icon definido no nó servidor (reativo); fallback: icon.png
+            var srv = this.server ? RED.nodes.node(this.server) : null;
+            return (srv && srv.flowIcon) ? srv.flowIcon : "icon.png";
+        },
             label: function() {
                 var label = 'z2m-out';
 
@@ -178,6 +212,11 @@
                 } else if (typeof(this.device_id) == 'string') {
                     label = this.device_id;
                 }
+            // Flow Label do nó servidor (reativo: lido a cada redraw)
+            var srvNode = this.server ? RED.nodes.node(this.server) : null;
+            if (srvNode && srvNode.flowLabel) {
+                label = '[' + srvNode.flowLabel + '] ' + label;
+            }
                 return label;
             },
             oneditprepare: function() {
@@ -200,6 +239,96 @@
                 }
  
                 node.z2mEditor = new Zigbee2MqttEditor(node, { 'allow_empty': false, 'mode': 'out' });
+
+                // Sincroniza em tempo real a checkbox com #node-input-outputs (0 ou 1)
+                const syncOutputs = function () {
+                    const enabled = $('#node-input-outputEnabled').is(':checked');
+                    $('#node-input-outputs').val(enabled ? 1 : 0);
+                    d.log('outputs synced:', enabled ? 1 : 0);
+                };
+                $('#node-input-outputEnabled').off('change.z2m_outputs').on('change.z2m_outputs', syncOutputs);
+                syncOutputs();
+
+                // ── LIVE-OUTPUT-BEGIN ─────────────────────────────────────────────────────────
+                // A porta de saída "updated state" é aplicada AO VIVO: assim que o toggle muda, o nó
+                // ganha/perde a porta no canvas (sem esperar pelo "Done").
+                //  - ligar   -> node.outputs = 1 (a porta aparece e já se pode ligar a fios)
+                //  - desligar-> node.outputs = 0 e os fios dessa porta são removidos (esperado)
+                //  - Cancel  -> repõe outputs/outputEnabled/estado "changed" e RESTAURA os fios removidos
+                // Nota: a alteração ao vivo não passa pelo histórico (undo) do Node-RED.
+                // i18n dos textos da porta de saída (fallback = inglês original)
+                const OUT_HINTS_EN = {
+                    enabled: 'Output port enabled (1 output: updated state).',
+                    none: 'No output port (fire and forget).',
+                    removed: 'Output port removed.',
+                    removed_wires: 'Output port removed: __count__ wire(s) disconnected (Cancel restores them).',
+                    enabled_again: 'Output port enabled again: __count__ wire(s) restored.',
+                    added: 'Output port added: you can wire it now (Cancel reverts).'
+                };
+                const OUT_T = function (k, v) {
+                    return Z2MI18n.t('out:output_hint.' + k, v, OUT_HINTS_EN[k].replace('__count__', v ? v.count : ''));
+                };
+                const liveOutput = (function () {
+                    const snap = {
+                        outputs: parseInt(node.outputs, 10) || 0,
+                        outputEnabled: node.outputEnabled,
+                        changed: node.changed,
+                        dirty: RED.nodes.dirty(),
+                        removedLinks: []
+                    };
+                    node._z2mOutputSnapshot = snap;
+
+                    const paint = function (text) { $('#z2m-output-hint').text(text); };
+                    const redraw = function () { node.dirty = true; RED.view.redraw(true); };
+
+                    paint(snap.outputs > 0 ? OUT_T('enabled') : OUT_T('none'));
+
+                    return {
+                        apply: function (enabled) {
+                            const wanted = enabled ? 1 : 0;
+                            if ((parseInt(node.outputs, 10) || 0) === wanted) return;
+
+                            if (wanted === 0) {
+                                // remover os fios ligados à porta que vai desaparecer (guardados para o Cancel)
+                                const doomed = [];
+                                RED.nodes.eachLink(function (l) {
+                                    if (l.source === node && (parseInt(l.sourcePort, 10) || 0) >= wanted) doomed.push(l);
+                                });
+                                doomed.forEach(function (l) { RED.nodes.removeLink(l); snap.removedLinks.push(l); });
+                                paint(doomed.length ? OUT_T('removed_wires', {count: doomed.length}) : OUT_T('removed'));
+                            } else {
+                                // se estes fios foram removidos nesta sessão (off -> on), voltam a ligar-se
+                                snap.removedLinks.forEach(function (l) { RED.nodes.addLink(l); });
+                                const restored = snap.removedLinks.length;
+                                snap.removedLinks = [];
+                                paint(restored ? OUT_T('enabled_again', {count: restored}) : OUT_T('added'));
+                            }
+
+                            node.outputs = wanted;
+                            node.outputEnabled = !!enabled;
+                            node.changed = true;
+                            RED.nodes.dirty(true);
+                            redraw();
+                        },
+
+                        cancel: function () {
+                            if ((parseInt(node.outputs, 10) || 0) !== snap.outputs) {
+                                node.outputs = snap.outputs;
+                                snap.removedLinks.forEach(function (l) { RED.nodes.addLink(l); });
+                            }
+                            node.outputEnabled = snap.outputEnabled;
+                            node.changed = snap.changed;
+                            RED.nodes.dirty(snap.dirty);
+                            snap.removedLinks = [];
+                            redraw();
+                        }
+                    };
+                })();
+                node._z2mOutputLive = liveOutput;
+                $('#node-input-outputEnabled').off('change.z2m_live').on('change.z2m_live', function () {
+                    liveOutput.apply($(this).is(':checked'));
+                });
+                // ── LIVE-OUTPUT-END ───────────────────────────────────────────────────────────
                 
                 setTimeout(() => {
                     node.z2mEditor.build().then(() => {
@@ -254,10 +383,35 @@
                 
                 // 5. Checkbox Manual Slider
                 node.manualPayloadSliderVisible = $('#node-input-manualPayloadSliderVisible').is(':checked');
+
+                // 6. Saída opcional "updated state"
+                //    outputEnabled=true  -> 1 saída (estado atualizado do device)
+                //    outputEnabled=false -> 0 saídas (comportamento "fire and forget")
+                //    O Node-RED compara o valor antigo/novo de `outputs` depois do oneditsave e
+                //    cria/remove a porta (e os fios) por si - tal como o node "switch".
+                const outputEnabled = $('#node-input-outputEnabled').is(':checked');
+                node.outputEnabled = outputEnabled;
+                node.outputs = outputEnabled ? 1 : 0;
+                // O Node-RED lê #node-input-outputs para "outputs" (defaults) depois do oneditsave:
+                // garantir que o input escondido tem SEMPRE o valor final.
+                $('#node-input-outputs').val(node.outputs);
+                // alterações ao vivo confirmadas: o snapshot do Cancel deixa de ser necessário
+                delete node._z2mOutputSnapshot;
+                delete node._z2mOutputLive;
                 
                 if (d && d.log) 
                     d.log('Saved Node State:', node.command, node.payload);
+                if (d && d.log) 
+                    d.log('Saved Output State: outputEnabled=', node.outputEnabled, 'outputs=', node.outputs);
                 return true;
+            },
+            oneditcancel: function() {
+                // repõe a porta de saída (e os fios removidos) se o toggle foi mexido ao vivo
+                if (this._z2mOutputLive) {
+                    this._z2mOutputLive.cancel();
+                    delete this._z2mOutputSnapshot;
+                    delete this._z2mOutputLive;
+                }
             }
 
     });

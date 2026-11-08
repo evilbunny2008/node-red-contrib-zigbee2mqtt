@@ -4,11 +4,44 @@
 
 <script type="text/x-red" data-template-name="zigbee2mqtt-eb-server">
     <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
+    <style>
+        /* Log Node Red: botoes de nivel (mesmo aspeto dos botoes "Log Zigbee2Mqtt") */
+        .z2m-nr-level-group { display: inline-flex; gap: 4px; width: 70%; vertical-align: middle; }
+        .z2m-nr-level-btn { flex: 1 1 0; min-width: 0; text-align: center; cursor: pointer; padding: 6px 4px; }
+        .z2m-nr-level-btn[disabled] { opacity: .5; cursor: not-allowed; }
+        /* grupo + dica no mesmo bloco: a dica alinha com o botao "Error" */
+        .z2m-nr-level-wrap { display: inline-block; width: 70%; vertical-align: top; }
+        .z2m-nr-level-wrap .z2m-nr-level-group { display: flex; width: 100%; }
+        .z2m-nr-level-hint { margin-top: 4px; font-size: 11px; opacity: 0.75; min-height: 14px; }
+        .red-ui-button.z2m-nr-level-btn.active { color: #fff; font-weight: bold; }
+        .red-ui-button.z2m-nr-level-btn.active.z2m-lvl-error  { background: #c62828; border-color: #c62828; }
+        .red-ui-button.z2m-nr-level-btn.active.z2m-lvl-warn   { background: #ef6c00; border-color: #ef6c00; }
+        .red-ui-button.z2m-nr-level-btn.active.z2m-lvl-notice { background: #2e7d32; border-color: #2e7d32; }
+        .red-ui-button.z2m-nr-level-btn.active.z2m-lvl-debug  { background: #1565c0; border-color: #1565c0; }
+    </style>
     <input autocomplete="false" name="hidden" type="text" style="display:none;">
 
     <div class="form-row">
         <label for="node-config-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
         <input type="text" id="node-config-input-name">
+    </div>
+    <!-- Flow Label / Icon: usados pelos nós in/out/get que usam este servidor -->
+    <div class="form-row">
+        <label for="node-config-input-flowLabel" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.flow_label"></span></label>
+        <input type="text" id="node-config-input-flowLabel" data-i18n="[placeholder]placeholder.flow_label">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-flowIcon" class="l-width"><i class="fa fa-picture-o"></i> <span data-i18n="label.flow_icon"></span></label>
+        <select id="node-config-input-flowIcon" style="width:70%">
+            <option value="" data-i18n="icons.default"></option>
+            <option value="font-awesome/fa-lightbulb-o" data-i18n="icons.lightbulb"></option>
+            <option value="font-awesome/fa-home" data-i18n="icons.home"></option>
+            <option value="font-awesome/fa-bolt" data-i18n="icons.bolt"></option>
+            <option value="font-awesome/fa-thermometer-half" data-i18n="icons.thermometer"></option>
+            <option value="font-awesome/fa-plug" data-i18n="icons.plug"></option>
+            <option value="font-awesome/fa-wifi" data-i18n="icons.wifi"></option>
+            <option value="font-awesome/fa-microchip" data-i18n="icons.microchip"></option>
+        </select>
     </div>
     <div class="form-row">
         <label for="node-config-input-host" class="l-width"><i class="fa fa-location-arrow"></i> <span data-i18n="label.host"></span></label>
@@ -37,6 +70,19 @@
             <option value="1">1</option>
             <option value="2">2</option>
         </select>
+    </div>
+    <div class="form-row">
+        <label class="l-width"><i class="fa fa-file-text-o"></i> <span data-i18n="label.log_node_red"></span></label>
+        <input type="hidden" id="node-config-input-debug_level" value="notice">
+        <div class="z2m-nr-level-wrap">
+            <div class="z2m-nr-level-group">
+                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-error"  data-level="error" data-i18n="log_levels.error"></button>
+                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-warn"   data-level="warn" data-i18n="log_levels.warn"></button>
+                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-notice" data-level="notice" data-i18n="log_levels.notice"></button>
+                <button type="button" class="red-ui-button z2m-nr-level-btn z2m-lvl-debug"  data-level="debug" data-i18n="log_levels.debug"></button>
+            </div>
+            <div id="node-config-debug_level-hint" class="z2m-nr-level-hint"></div>
+        </div>
     </div>
     <div class="form-row">
         <input type="checkbox" id="node-config-input-usetls" style="display: inline-block; width: auto; vertical-align: top;">
@@ -81,6 +127,21 @@
                 value: 'zigbee2mqtt',
                 required: true
             },
+            // Node-RED system logger level (error | warn | notice | debug) - "Logger Node-RED" select.
+            // Applied at runtime by nodes/server.js through node.logger.
+            debug_level: {
+                value: 'notice',
+                required: false
+            },
+            // Flow Label / Icon (font-awesome/fa-xxx) mostrados nos nós in/out/get deste servidor
+            flowLabel: {
+                value: '',
+                required: false
+            },
+            flowIcon: {
+                value: '',
+                required: false
+            },
             // Legacy plaintext login from older versions. There is no form input for
             // these any more; they're kept in defaults only so the editor doesn't drop
             // them before they've been migrated into credentials (see oneditprepare/oneditsave).
@@ -106,6 +167,38 @@
            if (node.mqtt_qos === undefined) {
                $('#node-config-input-mqtt_qos').val(0);
            }
+           // "Logger Node-RED": default for configs saved by older versions + highlight of the selected level
+           if (!node.debug_level) {
+               $('#node-config-input-debug_level').val('notice');
+           }
+           // (textos em inglês = fallback; a tradução vem de server.json -> log_levels_hint.*)
+           var debugLevelHints = {
+               error:  'only failures',
+               warn:   'errors + warnings',
+               notice: 'errors + warnings + system events',
+               debug:  'everything, incl. diagnostic detail'
+           };
+           var paintDebugLevel = function () {
+               var level = $('#node-config-input-debug_level').val();
+               $('.z2m-nr-level-btn').removeClass('active')
+                   .filter('[data-level="' + level + '"]').addClass('active');
+               $('#node-config-debug_level-hint').text(Z2MI18n.t('server:log_levels_hint.' + level, null, debugLevelHints[level] || ''));
+           };
+           $('#node-config-input-debug_level').on('change', paintDebugLevel);
+           $('.z2m-nr-level-btn').on('click', function () {
+               $('#node-config-input-debug_level').val($(this).data('level')).trigger('change');
+           });
+           paintDebugLevel();
+           // Reflect the state of the running server: if it differs from the value shown
+           // (e.g. changed but not deployed yet), say so next to the select.
+           if (node.id) {
+               $.getJSON('zigbee2mqtt-eb/serverState/' + node.id).done(function (state) {
+                   var running = state && state.node_red && state.node_red.debug_level;
+                   if (running && running !== $('#node-config-input-debug_level').val()) {
+                       $('#node-config-debug_level-hint').text(Z2MI18n.t('server:log_running_hint', {level: running}, 'running: ' + running + ' - Deploy to apply'));
+                   }
+               });
+           }
            // Migrate a legacy plaintext login into the credential inputs; it is saved
            // as credentials and the plaintext copies are cleared in oneditsave.
            let creds = node.credentials || {};
@@ -119,6 +212,15 @@
         oneditsave: function () {
             this.mqtt_username = null;
             this.mqtt_password = null;
+            // Reatividade: redesenhar os nós que usam este servidor para o label/ícone novos aparecerem já
+            var serverId = this.id;
+            setTimeout(function () {
+                RED.nodes.eachNode(function (n) {
+                    if (n.server === serverId) { n.dirty = true; n.changed = true; }
+                });
+                RED.nodes.dirty(true);
+                RED.view.redraw(true);
+            }, 0);
         }
     });
 </script>

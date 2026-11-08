@@ -1,0 +1,52 @@
+{
+    "label": {
+        "name": "Nome",
+        "friendly_name": "Nome do dispositivo",
+        "server": "Servidor",
+        "topic": "Dispositivo",
+        "state": "Saída do payload",
+        "refresh": "Atualizar",
+        "refresh_devices_list": "Atualizar lista de dispositivos",
+        "start_output": "Enviar ao iniciar",
+        "start_output_help": "Enviar o valor ao iniciar",
+        "always": "Sempre",
+        "on_state_change": "Ao mudar o estado",
+        "on_update": "A cada atualização",
+        "filter_changes": "Filtrar",
+        "filter_changes_help": "Enviar somente se o valor mudar",
+        "output": "Saída",
+        "enable_multiple": "Entrada múltipla",
+        "enable_multiple_help": "Escutar vários dispositivos",
+        "filter_properties": "Filtrar propriedades",
+        "filter_properties_help": "Somente mudanças nas propriedades selecionadas contam como mudança (vazio = payload completo)",
+        "expose_to_home_assistant": "Home Assistant",
+        "expose_to_home_assistant_help": "Expor ao Home Assistant (MQTT Discovery, com um interruptor de ativação)"
+    },
+    "placeholder": {
+        "name": "Nome",
+        "friendly_name": "Nome do dispositivo"
+    },
+    "status": {
+        "no_server": "sem nó de servidor",
+        "no_device": "dispositivo não encontrado",
+        "no_connection": "sem conexão",
+        "connected": "conectado",
+        "received": "recebido",
+        "waiting_ha": "aguardando o Home Assistant",
+        "disabled_ha": "desativado (Home Assistant)"
+    },
+    "multiselect": {
+        "devices": "Dispositivos",
+        "filter_devices": "Filtrar dispositivos…",
+        "refresh": "Atualizar lista de dispositivos",
+        "none_selected": "Nenhum selecionado",
+        "complete_payload": "Estado completo",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "Grupos",
+        "all_properties": "Todas as propriedades"
+    },
+    "tip": {
+        "deploy": "<b>Importante:</b> faça o deploy do nó de servidor para carregar a lista de dispositivos"
+    }
+}

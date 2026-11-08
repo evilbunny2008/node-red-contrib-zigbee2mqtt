@@ -18,6 +18,74 @@
     'use strict';
     // Cache para regex compilados
     const REGEX_CACHE = {};
+
+    // ============================================================================
+    // 🌍 I18N - texto inglês (fallback) -> chave em nodes/locales/<idioma>/server.json
+    // Os dados abaixo mantêm o inglês; a tradução é aplicada no momento do uso (tr()).
+    // ============================================================================
+    const LABEL_KEYS = {
+        // composite
+        'color (JSON/xy)': 'config.composite.color', 'color_rgb (r,g,b)': 'config.composite.color_rgb',
+        'color_hex (#RRGGBB)': 'config.composite.color_hex', 'color_xy (x,y)': 'config.composite.color_xy',
+        'color_hsb (h,s,b)': 'config.composite.color_hsb', 'color_hsv (h,s,v)': 'config.composite.color_hsv',
+        'color_hue (h)': 'config.composite.color_hue', 'color_saturation (s)': 'config.composite.color_saturation',
+        // cores
+        '🔴 Red': 'config.colors.red', '🟢 Green': 'config.colors.green', '🔵 Blue': 'config.colors.blue',
+        '🟡 Yellow': 'config.colors.yellow', '🟠 Orange': 'config.colors.orange', '🟣 Purple': 'config.colors.purple',
+        '⚪ White': 'config.colors.white', '⚪ White (D65)': 'config.colors.white_d65',
+        // droplists
+        'Coolest (6535K)': 'config.payload.color_temp.coolest', 'Cool (4000K)': 'config.payload.color_temp.cool',
+        'Neutral (2857K)': 'config.payload.color_temp.neutral', 'Warm (2203K)': 'config.payload.color_temp.warm',
+        'Warmest (2000K)': 'config.payload.color_temp.warmest',
+        'Off (0%)': 'config.payload.brightness.off', 'Low (25%)': 'config.payload.brightness.low',
+        'Medium (50%)': 'config.payload.brightness.medium', 'High (75%)': 'config.payload.brightness.high',
+        'Max (100%)': 'config.payload.brightness.max',
+        'Closed (0%)': 'config.payload.position.closed', 'Quarter (25%)': 'config.payload.position.quarter',
+        'Half (50%)': 'config.payload.position.half', 'Three Quarters (75%)': 'config.payload.position.three_quarters',
+        'Open (100%)': 'config.payload.position.open',
+        '1 minute': 'config.payload.countdown.m1', '5 minutes': 'config.payload.countdown.m5',
+        '10 minutes': 'config.payload.countdown.m10', '30 minutes': 'config.payload.countdown.m30',
+        '1 hour': 'config.payload.countdown.h1',
+        'Very Low (0)': 'config.payload.sensitivity.very_low', 'Low (3)': 'config.payload.sensitivity.low',
+        'Medium (5)': 'config.payload.sensitivity.medium', 'High (7)': 'config.payload.sensitivity.high',
+        'Very High (9)': 'config.payload.sensitivity.very_high',
+        '🔴 Red (0°)': 'config.payload.color_hue.red', '🟢 Green (120°)': 'config.payload.color_hue.green',
+        '🔵 Blue (240°)': 'config.payload.color_hue.blue', '🟡 Yellow (60°)': 'config.payload.color_hue.yellow',
+        '🟣 Magenta (300°)': 'config.payload.color_hue.magenta',
+        '🎨 Full Saturation (100%)': 'config.payload.color_saturation.full',
+        '🔉 Half Saturation (50%)': 'config.payload.color_saturation.half',
+        '⚪ No Saturation (White)': 'config.payload.color_saturation.none',
+        // sliders
+        'Brightness': 'config.slider.brightness', 'Min Brightness': 'config.slider.min_brightness',
+        'Max Brightness': 'config.slider.max_brightness', 'Off': 'config.slider.off', 'Max': 'config.slider.max',
+        'Color Temp': 'config.slider.color_temp', '150 (Cool)': 'config.slider.cool_150', '500 (Warm)': 'config.slider.warm_500',
+        'CIE X': 'config.slider.cie_x', 'CIE Y': 'config.slider.cie_y', 'Position': 'config.slider.position',
+        'Closed': 'config.slider.closed', 'Open': 'config.slider.open', 'Tilt': 'config.slider.tilt',
+        'Timer': 'config.slider.timer', 'Transition': 'config.slider.transition', 'Hue': 'config.slider.hue',
+        'Saturation': 'config.slider.saturation', 'Value': 'config.slider.value', 'White': 'config.slider.white',
+        'Color': 'config.slider.color', 'Red': 'config.slider.red', 'Green': 'config.slider.green',
+        'Blue': 'config.slider.blue', 'Range': 'config.slider.range', 'Sensitivity': 'config.slider.sensitivity',
+        'Low': 'config.slider.low', 'Medium': 'config.slider.medium', 'High': 'config.slider.high',
+        'Pick Color': 'config.slider.pick_color'
+    };
+
+    /** Traduz um texto de dados (se houver chave e o Z2MI18n já estiver carregado); senão devolve o original */
+    function tr(text) {
+        const key = LABEL_KEYS[text];
+        if (!key || !window.Z2MI18n) return text;
+        return window.Z2MI18n.t('server:' + key, null, text);
+    }
+
+    /** Traduz label/minLabel/maxLabel de uma configuração de slider (já clonada) */
+    function localizeCfg(c) {
+        if (c.label) c.label = tr(c.label);
+        (c.parts || []).forEach(function (p) {
+            if (p.label) p.label = tr(p.label);
+            if (p.minLabel) p.minLabel = tr(p.minLabel);
+            if (p.maxLabel) p.maxLabel = tr(p.maxLabel);
+        });
+        return c;
+    }
  
     // ============================================================================
     // 🔢 NUMERIC PATTERNS - Comandos que aceitam input numérico (e Sliders)
@@ -767,13 +835,13 @@
         
         // Busca exata
         if (PAYLOAD_DROPLIST[cmdLower]) {
-            return [...PAYLOAD_DROPLIST[cmdLower]];
+            return PAYLOAD_DROPLIST[cmdLower].map(i => Object.assign({}, i, { label: tr(i.label) }));
         }
         
         // Busca por padrão
         // Sensitivity variants
         if (/_sensitivity$/i.test(cmdLower)) {
-            return [...PAYLOAD_DROPLIST.sensitivity];
+            return PAYLOAD_DROPLIST.sensitivity.map(i => Object.assign({}, i, { label: tr(i.label) }));
         }
         
         return null;
@@ -856,9 +924,9 @@
             const max = parseInt(sliderAttrs.max) || 9;
             const percentage = Math.round(((value - min) / (max - min)) * 100);
 
-            let label = 'Low';
-            if (percentage > 66) label = 'High';
-            else if (percentage > 33) label = 'Medium';
+            let label = tr('Low');
+            if (percentage > 66) label = tr('High');
+            else if (percentage > 33) label = tr('Medium');
 
             return `${value} (${label} - ${percentage}%)`;
         }
@@ -884,7 +952,8 @@
      */
     function getCompositeExpansions(property) {             // Obtém comandos virtuais para uma propriedade composite
         if (!property) return null;
-        return COMPOSITE_EXPANSIONS[property.toLowerCase()] || null;
+        const list = COMPOSITE_EXPANSIONS[property.toLowerCase()];
+        return list ? list.map(i => Object.assign({}, i, { label: tr(i.label) })) : null;
     }
 
     function getComplexInputConfig(command) {
@@ -902,7 +971,7 @@
                 const cfg = JSON.parse(JSON.stringify(COMPLEX_INPUTS[visualKey]));
                 if (cfg.parts && cfg.parts[0]) cfg.parts[0].label = command;
                 else cfg.label = command;
-                return cfg;
+                return localizeCfg(cfg);
             }
  
             // 3. Resolvedor por Palavras-Chave (Suporta prefixos e sufixos)
@@ -916,7 +985,7 @@
                 const tpl = JSON.parse(JSON.stringify(COMPLEX_INPUTS[id]));
                 if (tpl.parts && tpl.parts[0]) tpl.parts[0].label = label;
                 else tpl.label = label;
-                return tpl;
+                return localizeCfg(tpl);
             }
         }
         
@@ -952,6 +1021,6 @@
         formatSliderValue
     };
 
-    console.log('[Z2M Config] ✅ Loaded successfully');
+    if (window.Z2MDebug && window.Z2MDebug.isEnabled()) console.log('[Z2M Config] ✅ Loaded successfully');
 
 })(window);

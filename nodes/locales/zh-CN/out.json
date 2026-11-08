@@ -1,0 +1,56 @@
+{
+    "label": {
+        "name": "名称",
+        "friendly_name": "设备名称",
+        "server": "服务器",
+        "topic": "设备",
+        "command": "命令",
+        "payload": "Payload",
+        "options": "选项",
+        "transition": "过渡时间（秒）",
+        "refresh": "刷新",
+        "refresh_devices_list": "刷新设备列表",
+        "output_enabled": "状态更新后输出",
+        "output_state": "更新后的状态",
+        "show_manual_controls": "显示手动控制",
+        "manual_adjust": "手动调整",
+        "pick_color": "选择颜色"
+    },
+    "placeholder": {
+        "name": "名称",
+        "friendly_name": "设备名称",
+        "transition": "秒"
+    },
+    "status": {
+        "no_server": "未配置服务器节点",
+        "no_device": "未找到设备",
+        "no_payload": "没有 Payload",
+        "no_connection": "连接断开",
+        "connected": "已连接",
+        "received": "正常",
+        "ready": "就绪",
+        "mqtt_connected": "MQTT 已连接",
+        "mqtt_disconnected": "MQTT 已断开",
+        "mqtt_not_connected": "MQTT 未连接",
+        "publish_failed": "发布失败",
+        "error": "错误",
+        "invalid_json_command": "无效的 JSON 命令"
+    },
+    "output_hint": {
+        "enabled": "输出端口已启用（1 个输出：更新后的状态）。",
+        "none": "无输出端口（发送后不管）。",
+        "removed": "输出端口已移除。",
+        "removed_wires": "输出端口已移除：已断开 __count__ 条连线（取消可恢复）。",
+        "enabled_again": "输出端口已重新启用：已恢复 __count__ 条连线。",
+        "added": "输出端口已添加：现在可以连线了（取消可还原）。"
+    },
+    "help": {
+        "important": "重要：",
+        "description": "说明：",
+        "options": "选项：",
+        "command_homekit": "此功能仍属实验性质，目前仅支持 HomeKit 的 Lightbulb 和 Lock 服务。",
+        "command_brightness_move": "除了设置固定亮度，也可以让亮度持续变化并在指定时间后停止。例如，payload 为 -5 时会以每秒 5 个单位的速度调低亮度。",
+        "command_brightness_step": "除了设置固定亮度，也可以按步长增加或减少当前亮度。",
+        "option_transition": "过渡到此状态所需的秒数。brightness=0 或 state=toggle 时不生效。"
+    }
+}

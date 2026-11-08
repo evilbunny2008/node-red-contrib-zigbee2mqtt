@@ -1,0 +1,176 @@
+{
+    "label": {
+        "base_topic": "基础主题",
+        "name": "名称",
+        "host": "MQTT 主机",
+        "mqtt_port": "MQTT 端口",
+        "mqtt_username": "MQTT 用户名",
+        "mqtt_password": "MQTT 密码",
+        "use-tls": "使用 TLS",
+        "tls-config": "TLS 配置",
+        "flow_label": "流程标签",
+        "flow_icon": "图标",
+        "log_node_red": "Node-RED 日志"
+    },
+    "placeholder": {
+        "name": "名称",
+        "flow_label": "例如：客厅"
+    },
+    "status": {
+        "no_server": "未配置服务器节点",
+        "no_device": "未找到设备",
+        "no_connection": "连接断开",
+        "no_value": "没有值",
+        "received": "正常",
+        "server_stopping": "服务器正在停止"
+    },
+    "tip": {
+        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表"
+    },
+    "icons": {
+        "default": "（默认）",
+        "lightbulb": "灯泡",
+        "home": "家",
+        "bolt": "闪电",
+        "thermometer": "温度计",
+        "plug": "插头",
+        "wifi": "wifi",
+        "microchip": "微芯片"
+    },
+    "log_levels": {
+        "error": "错误",
+        "warn": "警告",
+        "notice": "通知",
+        "debug": "调试"
+    },
+    "log_levels_hint": {
+        "error": "仅故障",
+        "warn": "错误 + 警告",
+        "notice": "错误 + 警告 + 系统事件",
+        "debug": "全部内容，包括诊断详情"
+    },
+    "log_running_hint": "运行中：__level__ – 部署后生效",
+    "editor": {
+        "groups": "群组",
+        "devices": "设备",
+        "selected": "已选",
+        "nothing": "无",
+        "select_device": "选择设备",
+        "msg_topic": "msg.topic",
+        "complete_payload": "完整 Payload",
+        "zigbee2mqtt": "zigbee2mqtt",
+        "common": "通用",
+        "homekit": "Apple HomeKit",
+        "homekit_data_format": "Apple HomeKit 数据格式",
+        "manual_value": "手动（__value__）",
+        "toggle": "切换",
+        "orphan_properties": "⚠ 已不可用",
+        "min_max_min": "__unit__ 最小值必须小于 __unit__ 最大值（__value__）",
+        "min_max_max": "__unit__ 最大值必须大于 __unit__ 最小值（__value__）",
+        "error_no_commands": "此设备没有可用的输出命令。请选择具有可控功能的设备。"
+    },
+    "config": {
+        "composite": {
+            "color": "color (JSON/xy)",
+            "color_rgb": "color_rgb (r,g,b)",
+            "color_hex": "color_hex (#RRGGBB)",
+            "color_xy": "color_xy (x,y)",
+            "color_hsb": "color_hsb (h,s,b)",
+            "color_hsv": "color_hsv (h,s,v)",
+            "color_hue": "color_hue (h)",
+            "color_saturation": "color_saturation (s)"
+        },
+        "colors": {
+            "red": "🔴 红色",
+            "green": "🟢 绿色",
+            "blue": "🔵 蓝色",
+            "yellow": "🟡 黄色",
+            "orange": "🟠 橙色",
+            "purple": "🟣 紫色",
+            "white": "⚪ 白色",
+            "white_d65": "⚪ 白色（D65）"
+        },
+        "payload": {
+            "color_temp": {
+                "coolest": "最冷（6535K）",
+                "cool": "冷（4000K）",
+                "neutral": "中性（2857K）",
+                "warm": "暖（2203K）",
+                "warmest": "最暖（2000K）"
+            },
+            "brightness": {
+                "off": "关（0%）",
+                "low": "低（25%）",
+                "medium": "中（50%）",
+                "high": "高（75%）",
+                "max": "最大（100%）"
+            },
+            "position": {
+                "closed": "关闭（0%）",
+                "quarter": "四分之一（25%）",
+                "half": "一半（50%）",
+                "three_quarters": "四分之三（75%）",
+                "open": "打开（100%）"
+            },
+            "countdown": {
+                "m1": "1 分钟",
+                "m5": "5 分钟",
+                "m10": "10 分钟",
+                "m30": "30 分钟",
+                "h1": "1 小时"
+            },
+            "sensitivity": {
+                "very_low": "非常低（0）",
+                "low": "低（3）",
+                "medium": "中（5）",
+                "high": "高（7）",
+                "very_high": "非常高（9）"
+            },
+            "color_hue": {
+                "red": "🔴 红色（0°）",
+                "green": "🟢 绿色（120°）",
+                "blue": "🔵 蓝色（240°）",
+                "yellow": "🟡 黄色（60°）",
+                "magenta": "🟣 品红（300°）"
+            },
+            "color_saturation": {
+                "full": "🎨 完全饱和（100%）",
+                "half": "🔉 半饱和（50%）",
+                "none": "⚪ 无饱和度（白色）"
+            }
+        },
+        "slider": {
+            "brightness": "亮度",
+            "min_brightness": "最小亮度",
+            "max_brightness": "最大亮度",
+            "off": "关",
+            "max": "最大",
+            "color_temp": "色温",
+            "cool_150": "150（冷）",
+            "warm_500": "500（暖）",
+            "cie_x": "CIE X",
+            "cie_y": "CIE Y",
+            "position": "位置",
+            "closed": "关闭",
+            "open": "打开",
+            "tilt": "倾斜",
+            "timer": "定时器",
+            "transition": "过渡",
+            "hue": "色相",
+            "saturation": "饱和度",
+            "value": "明度",
+            "white": "白色",
+            "color": "颜色",
+            "red": "红",
+            "green": "绿",
+            "blue": "蓝",
+            "range": "范围",
+            "sensitivity": "灵敏度",
+            "low": "低",
+            "medium": "中",
+            "high": "高",
+            "generic": "数值",
+            "pick_color": "选择颜色"
+        }
+    }
+}
