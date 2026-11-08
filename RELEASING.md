@@ -6,10 +6,12 @@ The `Test` workflow runs on pull requests and pushes to `master`. It is also cal
 
 ## One-time npm setup
 
-In the npm settings for `node-red-contrib-zigbee2mqtt`, add a Trusted Publisher with:
+npm only lets a Trusted Publisher be added to a package that already exists, so the first release is published with a token. Create an npm granular access token with read and write access to the `@evilbunny` scope and save it as the `NPM_TOKEN` repository secret. Once the package is on npm, add the Trusted Publisher below, then remove the `NODE_AUTH_TOKEN` env from the publish steps and delete the secret.
+
+In the npm settings for `@evilbunny/node-red-contrib-zigbee2mqtt`, add a Trusted Publisher with:
 
 - Provider: GitHub Actions
-- Organization or user: `andreypopov`
+- Organization or user: `evilbunny2008`
 - Repository: `node-red-contrib-zigbee2mqtt`
 - Workflow filename: `publish-npm.yml`
 - Environment: leave blank

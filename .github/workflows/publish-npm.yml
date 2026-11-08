@@ -30,6 +30,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
 
+      # Trusted publishing (OIDC) needs npm >= 11.5.1; Node 24's bundled npm may be older
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - name: Check release tag matches package version
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
@@ -50,7 +54,13 @@ jobs:
       - name: Publish stable release
         if: ${{ !github.event.release.prerelease }}
         run: npm publish --access public
+        env:
+          # Only needed until a Trusted Publisher is configured on npmjs.com; remove afterwards
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish prerelease
         if: ${{ github.event.release.prerelease }}
         run: npm publish --access public --tag next
+        env:
+          # Only needed until a Trusted Publisher is configured on npmjs.com; remove afterwards
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
