@@ -60,7 +60,7 @@ test('admin API returns controller data and routes actions to the server node', 
     registerApi(runtime.RED);
     const request = (route, query = {}) => {
         const response = makeResponse();
-        return { response, result: runtime.routes.get(`/zigbee2mqtt/${route}`)({ query }, response) };
+        return { response, result: runtime.routes.get(`/zigbee2mqtt-eb/${route}`)({ query }, response) };
     };
 
     const devices = request('getDevices', { controllerID: 'server' });
