@@ -19,5 +19,10 @@ jobs:
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
+      # Trusted publishing (OIDC) needs npm >= 11.5.1; Node 24's bundled npm may be older
+      - run: npm install -g npm@latest
       - run: npm ci
-      - run: npm publish
+      - run: npm publish --access public
+        env:
+          # Only needed until a Trusted Publisher is configured on npmjs.com; remove afterwards
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
