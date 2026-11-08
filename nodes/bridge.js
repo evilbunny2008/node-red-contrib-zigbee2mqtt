@@ -31,7 +31,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "node-red-contrib-zigbee2mqtt/bridge:status.no_server"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.no_server"
                 });
             }
 
@@ -45,7 +45,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "node-red-contrib-zigbee2mqtt/bridge:status.no_server"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.no_server"
                 });
             }
         }
@@ -75,10 +75,10 @@ module.exports = function(RED) {
                 node.status({
                     fill: "yellow",
                     shape: "ring",
-                    text: "node-red-contrib-zigbee2mqtt/bridge:status.searching"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.searching"
                 });
             } else {
-                let text = node.server.bridge_state?RED._("node-red-contrib-zigbee2mqtt/bridge:status.online"):RED._("node-red-contrib-zigbee2mqtt/bridge:status.offline");
+                let text = node.server.bridge_state?RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.online"):RED._("@evilbunny/node-red-contrib-zigbee2mqtt/bridge:status.offline");
                 if (node.server.bridge_info && "log_level" in node.server.bridge_info) {
                     text += ' (log: '+node.server.bridge_info.log_level+')';
                 }
@@ -118,7 +118,7 @@ module.exports = function(RED) {
             });
         }
     }
-    RED.nodes.registerType('zigbee2mqtt-bridge', Zigbee2mqttNodeBridge);
+    RED.nodes.registerType('zigbee2mqtt-eb-bridge', Zigbee2mqttNodeBridge);
 };
 
 

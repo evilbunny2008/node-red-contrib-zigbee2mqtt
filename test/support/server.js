@@ -50,7 +50,7 @@ const { createRuntime } = require('./runtime');
 function createServer(config = {}) {
     const runtime = createRuntime();
     registerServer(runtime.RED);
-    const ServerNode = runtime.types.get('zigbee2mqtt-server');
+    const ServerNode = runtime.types.get('zigbee2mqtt-eb-server');
     const node = new ServerNode({
         id: 'server-id',
         base_topic: 'zigbee2mqtt',

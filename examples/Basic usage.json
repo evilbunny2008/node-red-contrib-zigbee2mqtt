@@ -1,7 +1,7 @@
 [
     {
         "id": "123545dd506fb882",
-        "type": "zigbee2mqtt-in",
+        "type": "zigbee2mqtt-eb-in",
         "z": "d9c248a1ac73f01a",
         "name": "",
         "server": "183e467f17e7451d",
@@ -19,7 +19,7 @@
     },
     {
         "id": "4834aa1faa625685",
-        "type": "zigbee2mqtt-bridge",
+        "type": "zigbee2mqtt-eb-bridge",
         "z": "d9c248a1ac73f01a",
         "name": "",
         "server": "183e467f17e7451d",
@@ -32,7 +32,7 @@
     },
     {
         "id": "b38b944ffd4e9a66",
-        "type": "zigbee2mqtt-out",
+        "type": "zigbee2mqtt-eb-out",
         "z": "d9c248a1ac73f01a",
         "name": "",
         "server": "183e467f17e7451d",
@@ -153,7 +153,7 @@
     },
     {
         "id": "7fdcec472ec527db",
-        "type": "zigbee2mqtt-get",
+        "type": "zigbee2mqtt-eb-get",
         "z": "d9c248a1ac73f01a",
         "name": "",
         "server": "183e467f17e7451d",
@@ -303,7 +303,7 @@
     },
     {
         "id": "183e467f17e7451d",
-        "type": "zigbee2mqtt-server",
+        "type": "zigbee2mqtt-eb-server",
         "name": "",
         "host": "192.168.1.2",
         "mqtt_port": "1883",

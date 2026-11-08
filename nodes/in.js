@@ -58,7 +58,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: "red",
                     shape: "dot",
-                    text: "node-red-contrib-zigbee2mqtt/in:status.no_server"
+                    text: "@evilbunny/node-red-contrib-zigbee2mqtt/in:status.no_server"
                 });
             }
         }
@@ -223,7 +223,7 @@ module.exports = function(RED) {
             this.status({
                 fill: "red",
                 shape: "dot",
-                text: "node-red-contrib-zigbee2mqtt/in:status.no_connection"
+                text: "@evilbunny/node-red-contrib-zigbee2mqtt/in:status.no_connection"
             });
         }
 
@@ -317,5 +317,5 @@ module.exports = function(RED) {
         }
 
     }
-    RED.nodes.registerType('zigbee2mqtt-in', Zigbee2mqttNodeIn);
+    RED.nodes.registerType('zigbee2mqtt-eb-in', Zigbee2mqttNodeIn);
 };

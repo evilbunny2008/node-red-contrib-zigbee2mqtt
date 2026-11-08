@@ -1,6 +1,6 @@
-<script type="text/x-red" data-template-name="zigbee2mqtt-in">
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
+<script type="text/x-red" data-template-name="zigbee2mqtt-eb-in">
+    <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
+    <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
 
     <div class="form-row">
         <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
@@ -54,7 +54,7 @@
 </script>
 
 <script type='text/javascript'>
-    RED.nodes.registerType('zigbee2mqtt-in', {
+    RED.nodes.registerType('zigbee2mqtt-eb-in', {
         category: 'Zigbee2mqtt',
         color: '#FDBF48',
         defaults: {
@@ -62,7 +62,7 @@
                 value: ""
             },
             server: {
-                type: "zigbee2mqtt-server",
+                type: "zigbee2mqtt-eb-server",
                 required: true
             },
             friendly_name: {

@@ -1,4 +1,4 @@
-var NODE_PATH = '/zigbee2mqtt/';
+var NODE_PATH = '/zigbee2mqtt-eb/';
 
 module.exports = function(RED) {
     RED.httpAdmin.get(NODE_PATH + 'getDevices', function (req, res) {

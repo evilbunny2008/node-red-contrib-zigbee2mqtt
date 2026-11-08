@@ -90,10 +90,10 @@ class Zigbee2MqttEditor {
             dropWidth: 320,
             width: 320,
             filter: true,
-            formatAllSelected:function(){return RED._("node-red-contrib-zigbee2mqtt/server:editor.select_device")}
+            formatAllSelected:function(){return RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.select_device")}
         };
         if (that.config.allow_empty && !that.isMultiple()) {
-            params.formatAllSelected = function(){return RED._("node-red-contrib-zigbee2mqtt/server:editor.msg_topic")};
+            params.formatAllSelected = function(){return RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.msg_topic")};
         }
 
         that.getDeviceIdInput().children().remove();
@@ -113,7 +113,7 @@ class Zigbee2MqttEditor {
             return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
         });
         if (groups.length) {
-            html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.groups")});
+            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.groups")});
             html.appendTo(that.getDeviceIdInput());
             $.each(groups, function(index, value) {
                 let text = '';
@@ -131,7 +131,7 @@ class Zigbee2MqttEditor {
             return (a.friendly_name || '').localeCompare(b.friendly_name || '', undefined, {sensitivity: 'base'});
         });
         if (devices.length) {
-            html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.devices")});
+            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.devices")});
             html.appendTo(that.getDeviceIdInput());
             $.each(devices, function(index, value) {
                 var model = '';
@@ -165,19 +165,19 @@ class Zigbee2MqttEditor {
             dropWidth: 320,
             width: 320,
             single: !that.isMultipleProperties(),
-            placeholder: RED._("node-red-contrib-zigbee2mqtt/server:editor.complete_payload")
+            placeholder: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.complete_payload")
         }).multipleSelect('disable');
 
         if (!that.isMultipleProperties()) {
             // with several properties allowed, selecting none means the complete payload
-            that.getDevicePropertyInput().html('<option value="0">'+ RED._("node-red-contrib-zigbee2mqtt/server:editor.complete_payload")+'</option>');
+            that.getDevicePropertyInput().html('<option value="0">'+ RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.complete_payload")+'</option>');
         }
 
         let html = '';
         let device = that.getDevice();
 
         if (device && 'definition' in device && device.definition && 'exposes' in device.definition) {
-            html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.zigbee2mqtt")});
+            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.zigbee2mqtt")});
             html.appendTo(that.getDevicePropertyInput());
 
             $.each(device.definition.exposes, function(index, value) {
@@ -205,7 +205,7 @@ class Zigbee2MqttEditor {
                 return !that.getDevicePropertyInput().find('option[value="' + property + '"]').length;
             });
             if (common.length) {
-                html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.common")});
+                html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.common")});
                 html.appendTo(that.getDevicePropertyInput());
                 common.forEach((property) => {
                     $('<option/>', {value: property, text: property}).appendTo(html);
@@ -214,7 +214,7 @@ class Zigbee2MqttEditor {
         }
 
         if (device && 'homekit' in device && device.homekit && Object.keys(device.homekit).length) {
-            html = $('<optgroup/>', {label: RED._("node-red-contrib-zigbee2mqtt/server:editor.homekit")});
+            html = $('<optgroup/>', {label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.homekit")});
             html.appendTo(that.getDevicePropertyInput());
 
             $.each(device.homekit, function (index, value) {
@@ -295,18 +295,18 @@ class Zigbee2MqttEditor {
             single: false,
             selectAll: false,
             filter: true,
-            filterPlaceholder: RED._('node-red-contrib-zigbee2mqtt/in:multiselect.filter_properties'),
+            filterPlaceholder: RED._('@evilbunny/node-red-contrib-zigbee2mqtt/in:multiselect.filter_properties'),
             placeholder: options.length
-                ? RED._('node-red-contrib-zigbee2mqtt/in:multiselect.compare_full_payload')
-                : RED._(`node-red-contrib-zigbee2mqtt/in:multiselect.${hasSelectedDevice ? 'no_properties_available' : 'select_devices_first'}`),
+                ? RED._('@evilbunny/node-red-contrib-zigbee2mqtt/in:multiselect.compare_full_payload')
+                : RED._(`@evilbunny/node-red-contrib-zigbee2mqtt/in:multiselect.${hasSelectedDevice ? 'no_properties_available' : 'select_devices_first'}`),
             width: 320,
             dropWidth: 320,
             maxHeight: 300,
             minimumCountSelected: 1,
             ellipsis: false,
-            formatAllSelected: () => RED._('node-red-contrib-zigbee2mqtt/in:multiselect.all_properties_selected'),
-            formatCountSelected: (count) => `${count} ${RED._('node-red-contrib-zigbee2mqtt/in:multiselect.properties_selected')}`,
-            formatNoMatchesFound: () => RED._('node-red-contrib-zigbee2mqtt/in:multiselect.no_properties_found')
+            formatAllSelected: () => RED._('@evilbunny/node-red-contrib-zigbee2mqtt/in:multiselect.all_properties_selected'),
+            formatCountSelected: (count) => `${count} ${RED._('@evilbunny/node-red-contrib-zigbee2mqtt/in:multiselect.properties_selected')}`,
+            formatNoMatchesFound: () => RED._('@evilbunny/node-red-contrib-zigbee2mqtt/in:multiselect.no_properties_found')
         });
         input.multipleSelect('setSelects', this.filterProperties);
         if (options.length) {
@@ -329,7 +329,7 @@ class Zigbee2MqttEditor {
         // console.log('BUILD buildDeviceOptionsInput');
         let device = that.getDevice();
         let options = [];
-        options.push({'value': 'nothing', 'label': RED._("node-red-contrib-zigbee2mqtt/server:editor.nothing"), options:['']});
+        options.push({'value': 'nothing', 'label': RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"), options:['']});
         options.push('msg');
         options.push('json');
         if (device && 'definition' in device && device.definition && 'options' in device.definition) {
@@ -397,7 +397,7 @@ class Zigbee2MqttEditor {
     async getDevices() {
         let that = this;
         if (that.devices === null || that.refresh) {
-            const response = await fetch('zigbee2mqtt/getDevices?' + new URLSearchParams({
+            const response = await fetch('zigbee2mqtt-eb/getDevices?' + new URLSearchParams({
                 controllerID: that.getServerInput().val(),
                 refresh: that.refresh
             }).toString(), {
@@ -536,7 +536,7 @@ class Zigbee2MqttEditor {
             if (!that.device_id) {
                 that.device_id = [];
             }
-            that.getDeviceFriendlyNameInput().val(that.device_id.length + ' ' + RED._("node-red-contrib-zigbee2mqtt/server:editor.selected"));
+            that.getDeviceFriendlyNameInput().val(that.device_id.length + ' ' + RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.selected"));
         } else if (that.device_id && that.device_id.length) {
             if (typeof(that.device_id) == 'object') {
                 that.device_id = that.device_id[0]; //get the first device

@@ -271,11 +271,11 @@ test('device MQTT updates are decoded and retained status is forwarded', () => {
 
 test('in node receives a retained state that arrives before device metadata', (t) => {
     const { node: server } = createServer();
-    const input = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const input = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'server',
         device_id: '0x001'
     }, server).node;
-    const quietInput = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const quietInput = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'server',
         device_id: '0x001',
         outputAtStartup: false
@@ -348,7 +348,7 @@ test('button input ignores telemetry after earlier actions and accepts repeated 
         await t.test(retained ? 'retained action after reconnect' : 'earlier live action', (t) => {
             const { node: server } = createServer();
             addButton(server);
-            const input = instantiate(registerIn, 'zigbee2mqtt-in', {
+            const input = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
                 server: 'server', device_id: '0x002', state: 'action',
                 filterChanges: false, outputAtStartup: false
             }, server).node;
@@ -383,10 +383,10 @@ test('button input ignores telemetry after earlier actions and accepts repeated 
 test('full-state and multiple-device inputs omit earlier actions on telemetry updates', (t) => {
     const { node: server } = createServer();
     addButton(server);
-    const full = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const full = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'server', device_id: '0x002', state: '0', filterChanges: false
     }, server).node;
-    const multiple = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const multiple = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'server', device_id: ['0x002'], enableMultiple: true, filterChanges: false
     }, server).node;
     t.after(() => {

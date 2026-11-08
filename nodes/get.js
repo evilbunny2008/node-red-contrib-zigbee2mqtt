@@ -65,7 +65,7 @@ module.exports = function(RED) {
                 node.status({
                     fill: 'red',
                     shape: 'dot',
-                    text: 'node-red-contrib-zigbee2mqtt/server:status.no_server',
+                    text: '@evilbunny/node-red-contrib-zigbee2mqtt/server:status.no_server',
                 });
             }
         }
@@ -76,5 +76,5 @@ module.exports = function(RED) {
         }
     }
 
-    RED.nodes.registerType('zigbee2mqtt-get', Zigbee2mqttNodeGet);
+    RED.nodes.registerType('zigbee2mqtt-eb-get', Zigbee2mqttNodeGet);
 };

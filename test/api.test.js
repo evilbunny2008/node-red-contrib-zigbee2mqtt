@@ -46,11 +46,11 @@ test('registers each admin API route under the Zigbee2MQTT path', () => {
     registerApi(runtime.RED);
 
     assert.deepEqual([...runtime.routes.keys()], [
-        '/zigbee2mqtt/getDevices', '/zigbee2mqtt/restart', '/zigbee2mqtt/setPermitJoin',
-        '/zigbee2mqtt/setLogLevel', '/zigbee2mqtt/getConfig', '/zigbee2mqtt/renameDevice',
-        '/zigbee2mqtt/removeDevice', '/zigbee2mqtt/renameGroup', '/zigbee2mqtt/removeGroup',
-        '/zigbee2mqtt/addGroup', '/zigbee2mqtt/removeDeviceFromGroup',
-        '/zigbee2mqtt/addDeviceToGroup', '/zigbee2mqtt/refreshMap', '/zigbee2mqtt/showMap'
+        '/zigbee2mqtt-eb/getDevices', '/zigbee2mqtt-eb/restart', '/zigbee2mqtt-eb/setPermitJoin',
+        '/zigbee2mqtt-eb/setLogLevel', '/zigbee2mqtt-eb/getConfig', '/zigbee2mqtt-eb/renameDevice',
+        '/zigbee2mqtt-eb/removeDevice', '/zigbee2mqtt-eb/renameGroup', '/zigbee2mqtt-eb/removeGroup',
+        '/zigbee2mqtt-eb/addGroup', '/zigbee2mqtt-eb/removeDeviceFromGroup',
+        '/zigbee2mqtt-eb/addDeviceToGroup', '/zigbee2mqtt-eb/refreshMap', '/zigbee2mqtt-eb/showMap'
     ]);
 });
 
@@ -114,11 +114,11 @@ test('admin API handles missing controllers and refresh errors', async () => {
     registerApi(runtime.RED);
     const missing = makeResponse();
 
-    runtime.routes.get('/zigbee2mqtt/getDevices')({ query: { controllerID: 'missing' } }, missing);
+    runtime.routes.get('/zigbee2mqtt-eb/getDevices')({ query: { controllerID: 'missing' } }, missing);
     assert.deepEqual(missing.body, [[], []]);
 
     const notFound = makeResponse();
-    runtime.routes.get('/zigbee2mqtt/restart')({ query: { controllerID: 'missing' } }, notFound);
+    runtime.routes.get('/zigbee2mqtt-eb/restart')({ query: { controllerID: 'missing' } }, notFound);
     assert.equal(notFound.statusCode, 404);
     assert.equal(notFound.ended, true);
 
@@ -127,7 +127,7 @@ test('admin API handles missing controllers and refresh errors', async () => {
     const withController = createRuntime({ nodes: { server: controller } });
     registerApi(withController.RED);
     const errorResponse = makeResponse();
-    withController.routes.get('/zigbee2mqtt/refreshMap')(
+    withController.routes.get('/zigbee2mqtt-eb/refreshMap')(
         { query: { controllerID: 'server' } }, errorResponse
     );
     await new Promise((resolve) => setImmediate(resolve));

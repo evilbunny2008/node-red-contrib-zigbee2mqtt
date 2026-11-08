@@ -1,6 +1,6 @@
-<script type="text/x-red" data-template-name="zigbee2mqtt-out">
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
-    <link rel="stylesheet" href="resources/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
+<script type="text/x-red" data-template-name="zigbee2mqtt-eb-out">
+    <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/multiple-select.css" type="text/css" />
+    <link rel="stylesheet" href="resources/@evilbunny/node-red-contrib-zigbee2mqtt/css/common.css" type="text/css" />
 
     <div class="form-row">
         <label for="node-input-name" class="l-width"><i class="fa fa-bookmark"></i> <span data-i18n="label.name"></span></label>
@@ -88,7 +88,7 @@
 </script>
 
 <script type='text/javascript'>
-    RED.nodes.registerType('zigbee2mqtt-out', {
+    RED.nodes.registerType('zigbee2mqtt-eb-out', {
         category: 'Zigbee2mqtt',
         color: '#FDBF48',
         align: 'right',
@@ -97,7 +97,7 @@
                 value: ""
             },
             server: {
-                type: "zigbee2mqtt-server",
+                type: "zigbee2mqtt-eb-server",
                 required: true
             },
             friendly_name: {
@@ -143,8 +143,8 @@
         outputLabels: function(index) {
             if (index !== 0) return null;
             return RED._(this.outputMode === 'sent'
-                ? "node-red-contrib-zigbee2mqtt/out:label.output_result"
-                : "node-red-contrib-zigbee2mqtt/out:label.output_state");
+                ? "@evilbunny/node-red-contrib-zigbee2mqtt/out:label.output_result"
+                : "@evilbunny/node-red-contrib-zigbee2mqtt/out:label.output_state");
         },
         icon: "icon.png",
         label: function() {
@@ -262,19 +262,19 @@
                     {
                         value: 'z2m_cmd',
                         label: 'zigbee2mqtt',
-                        icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                        icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png',
                         options: [...commands, ...exposeOptions]
                     },
                     //homekit
                     {
                         value:'homekit',
                         label:'homekit',
-                        icon:'icons/node-red-contrib-zigbee2mqtt/homekit-logo.png',
+                        icon:'icons/@evilbunny/node-red-contrib-zigbee2mqtt/homekit-logo.png',
                         options:[{'value':'homekit', 'label':'Apple Homekit data format'}]
                     },
                     {
                         value: 'nothing',
-                        label: RED._("node-red-contrib-zigbee2mqtt/server:editor.nothing"),
+                        label: RED._("@evilbunny/node-red-contrib-zigbee2mqtt/server:editor.nothing"),
                         options:['']
                     },
                     {value:'str', label: 'str'},
@@ -309,7 +309,7 @@
                     const predefinedValuesPayload = {
                         value: 'z2m_payload',
                         label: 'zigbee2mqtt',
-                        icon: 'icons/node-red-contrib-zigbee2mqtt/icon.png',
+                        icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png',
                         options
                     };
                     return [predefinedValuesPayload, ...types]

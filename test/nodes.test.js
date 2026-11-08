@@ -41,7 +41,7 @@ function makeServer() {
 
 test('input node routes matching single-device, availability and multiple-device updates', () => {
     const server = makeServer();
-    const single = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const single = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'server', device_id: '0x001', filterChanges: true, filterProperties: 'state'
     }, server).node;
 
@@ -59,7 +59,7 @@ test('input node routes matching single-device, availability and multiple-device
     server.emit('onMQTTAvailability', { item: { ieee_address: '0x001' } });
     assert.deepEqual(server.calls[2].options, { node_send: false });
 
-    const multiple = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const multiple = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'server', enableMultiple: true, device_id: ['0x001', 2],
         filterChanges: true, filterProperties: 'state, brightness'
     }, server).node;
@@ -80,7 +80,7 @@ test('input node names its Home Assistant switch after the selected group', () =
     server.config.name = 'Home';
     const room = { id: 2, friendly_name: 'room' };
     server.getDeviceOrGroupByKey = (key) => key === 2 ? room : null;
-    const { node } = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const { node } = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'server', device_id: 2, exposeToHomeAssistant: true
     }, server);
 
@@ -91,7 +91,7 @@ test('input node names its Home Assistant switch after the selected group', () =
 
 test('input node restores its last status on reconnect and detaches listeners on close', () => {
     const server = makeServer();
-    const { node } = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const { node } = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'server', device_id: 'lamp'
     }, server);
     const successful = { fill: 'green', shape: 'dot', text: 'received' };
@@ -109,7 +109,7 @@ test('input node restores its last status on reconnect and detaches listeners on
 });
 
 test('input node reports a missing server', () => {
-    const { node } = instantiate(registerIn, 'zigbee2mqtt-in', {
+    const { node } = instantiate(registerIn, 'zigbee2mqtt-eb-in', {
         server: 'missing', device_id: 'lamp'
     }, undefined);
 
@@ -118,7 +118,7 @@ test('input node reports a missing server', () => {
 
 test('get node uses configured device or incoming message topic', () => {
     const server = makeServer();
-    const dynamic = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const dynamic = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'msg.topic'
     }, server).node;
     dynamic.emit('input', { topic: '0x001', payload: 'request' });
@@ -126,7 +126,7 @@ test('get node uses configured device or incoming message topic', () => {
         msg: { topic: '0x001', payload: 'request' }, key: '0x001'
     });
 
-    const fixed = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const fixed = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'lamp'
     }, server).node;
     fixed.emit('input', { topic: 'ignored' });
@@ -143,7 +143,7 @@ test('get node requests missing state once and sends each waiting message after 
         definition: { exposes: [{ name: 'state', access: 5 }] }
     }];
     server.devices_values = {};
-    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'lamp', state: 'state'
     }, server);
     t.after(() => {
@@ -183,7 +183,7 @@ test('get node with several properties uses the cache only when all of them are 
         definition: { exposes: [{ name: 'state', access: 5 }, { name: 'brightness', access: 5 }] }
     }];
     server.devices_values = { 'zigbee2mqtt/lamp': { state: 'ON', brightness: 80 } };
-    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'lamp', state: ['state', 'brightness']
     }, server);
 
@@ -204,7 +204,7 @@ test('get node with several properties finishes waiting once any of them is repo
         definition: { exposes: [{ name: 'state', access: 5 }] }
     }];
     server.devices_values = {};
-    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'lamp', state: ['state', 'action']
     }, server);
     t.after(() => {
@@ -231,7 +231,7 @@ test('get node with several properties sends what is cached when the device does
         definition: { exposes: [{ name: 'state', access: 5 }] }
     }];
     server.devices_values = { 'zigbee2mqtt/lamp': { state: 'ON' } };
-    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'lamp', state: ['state', 'action']
     }, server);
     t.after(() => {
@@ -269,7 +269,7 @@ test('get node requests readable properties nested under light exposes', async (
         }] }
     }];
     server.devices_values = {};
-    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'light-wardrobe', state: 'state'
     }, server);
     t.after(() => {
@@ -306,7 +306,7 @@ test('multiple get node immediately returns cached device and group states witho
     server.groups = [{ id: 4, friendly_name: 'room' }];
     server.devices_values['zigbee2mqtt/cached'] = { temperature: 20 };
     server.devices_values['zigbee2mqtt/room'] = { temperature: 24 };
-    const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', enableMultiple: true,
         device_id: ['cached', 'readable', 'unreadable', 'room'], state: 'state'
     }, server);
@@ -339,7 +339,7 @@ test('multiple get node immediately returns null states when no selected device 
         friendly_name: name, ieee_address: `0x00${index + 1}`,
         definition: { exposes: [{ name: 'state', access: 5 }] }
     }));
-    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', enableMultiple: true, device_id: ['first', 'second'], state: '0'
     }, server);
     t.after(() => {
@@ -365,7 +365,7 @@ test('single get node stops waiting for missing state after exactly five seconds
         friendly_name: 'lamp', ieee_address: '0x001',
         definition: { exposes: [{ name: 'state', access: 5 }] }
     }];
-    const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'lamp', state: 'state'
     }, server);
     t.after(() => node.emit('close'));
@@ -411,7 +411,7 @@ for (const failure of ['no readable properties', 'publish error', 'publish excep
                 args.at(-1)(new Error('publish failed'));
             };
         }
-        const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-get', {
+        const { node, logs } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
             server: 'server', device_id: 'unavailable', state: '0'
         }, server);
         t.after(() => node.emit('close'));
@@ -451,7 +451,7 @@ test('get node cancels a pending state request when it closes', async (t) => {
         definition: { exposes: [{ name: 'state', access: 5 }] }
     }];
     server.devices_values = {};
-    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'server', device_id: 'lamp', state: 'state'
     }, server);
     t.after(() => clearTimeout(node.cleanTimer));
@@ -469,7 +469,7 @@ test('get node cancels a pending state request when it closes', async (t) => {
 });
 
 test('get node reports a missing server', () => {
-    const { node } = instantiate(registerGet, 'zigbee2mqtt-get', {
+    const { node } = instantiate(registerGet, 'zigbee2mqtt-eb-get', {
         server: 'missing'
     }, undefined);
     assert.match(node.lastStatus.text, /no_server/);
@@ -477,7 +477,7 @@ test('get node reports a missing server', () => {
 
 test('output node translates commands and publishes with configured MQTT QoS', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'toggle',
         commandType: 'z2m_cmd', command: 'state'
     }, server);
@@ -496,7 +496,7 @@ test('output node translates commands and publishes with configured MQTT QoS', (
 
 test('output node optionally sends input and updated full device state', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'on',
         commandType: 'z2m_cmd', command: 'state', outputs: 1
     }, server);
@@ -556,7 +556,7 @@ test('output node can send its output as soon as the command is published', (t) 
         this.publications.push(args);
         args.at(-1)(this.publishError || null);
     };
-    const create = (device_id) => instantiate(registerOut, 'zigbee2mqtt-out', {
+    const create = (device_id) => instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id, payloadType: 'str', payload: 'on',
         commandType: 'z2m_cmd', command: 'state', outputs: 1, outputMode: 'sent'
     }, server).node;
@@ -588,7 +588,7 @@ test('output node publishes group commands without an entity-state output', (t) 
     const group = { friendly_name: 'downstairs' };
     server.groups = [group];
     server.getDeviceOrGroupByKey = (key) => key === 'downstairs' ? group : null;
-    const { node, logs } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node, logs } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'downstairs', payloadType: 'str', payload: 'on',
         commandType: 'z2m_cmd', command: 'state', outputs: 1
     }, server);
@@ -605,7 +605,7 @@ test('output node publishes group commands without an entity-state output', (t) 
 test('output node clears a pending state output when MQTT publish fails', (t) => {
     const server = makeServer();
     server.mqtt.publishError = new Error('publish failed');
-    const { node, logs } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node, logs } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'on',
         commandType: 'z2m_cmd', command: 'state', outputs: 1
     }, server);
@@ -623,7 +623,7 @@ test('output node clears a pending state output when MQTT publish fails', (t) =>
 
 test('output node removes its state listener and pending timer on close', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'on',
         commandType: 'z2m_cmd', command: 'state', outputs: 1
     }, server);
@@ -639,7 +639,7 @@ test('output node removes its state listener and pending timer on close', (t) =>
 
 test('output node targets an endpoint when msg.topic contains its full set topic', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'msg.topic', payloadType: 'msg', payload: 'payload',
         commandType: 'z2m_cmd', command: 'state'
     }, server);
@@ -655,7 +655,7 @@ test('output node targets an endpoint when msg.topic contains its full set topic
 
 test('output node keeps default topics when msg.topic names only a device', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'msg.topic', payloadType: 'msg', payload: 'payload',
         commandType: 'z2m_cmd', command: 'state'
     }, server);
@@ -669,7 +669,7 @@ test('output node keeps default topics when msg.topic names only a device', (t) 
 
 test('output node publishes numeric tilt commands for Venetian blinds', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'str', payload: '45',
         commandType: 'z2m_cmd', command: 'tilt'
     }, server);
@@ -686,7 +686,7 @@ test('output node does not publish values that are not numbers', (t) => {
     for (const [payloadType, payload, command] of [
         ['str', 'abc', 'tilt'], ['str', '', 'brightness'], ['str', 'x', 'scene'], ['num', 'abc', 'sensitivity']
     ]) {
-        const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
             server: 'server', device_id: 'lamp', payloadType, payload, commandType: 'z2m_cmd', command
         }, server);
         t.after(() => clearTimeout(node.cleanTimer));
@@ -700,7 +700,7 @@ test('output node does not publish values that are not numbers', (t) => {
 
 test('output node preserves floating-point values for device parameters', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'num', payload: '4.5',
         commandType: 'z2m_cmd', command: 'sensitivity'
     }, server);
@@ -713,7 +713,7 @@ test('output node preserves floating-point values for device parameters', (t) =>
 
 test('output node wraps color objects when the command comes from the message', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'msg', payload: 'payload',
         commandType: 'msg', command: 'command'
     }, server);
@@ -728,7 +728,7 @@ test('output node wraps color objects when the command comes from the message', 
 
 test('output node supports lock, color and HomeKit commands', (t) => {
     const server = makeServer();
-    const lock = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const lock = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'toggle',
         commandType: 'z2m_cmd', command: 'lock'
     }, server).node;
@@ -736,7 +736,7 @@ test('output node supports lock, color and HomeKit commands', (t) => {
     t.after(() => clearTimeout(lock.cleanTimer));
     assert.equal(server.mqtt.publications.at(-1)[1], '{"state":"unlock"}');
 
-    const color = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const color = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'str', payload: '#00ff00',
         commandType: 'z2m_cmd', command: 'color_hex'
     }, server).node;
@@ -744,7 +744,7 @@ test('output node supports lock, color and HomeKit commands', (t) => {
     t.after(() => clearTimeout(color.cleanTimer));
     assert.equal(server.mqtt.publications.at(-1)[1], '{"color":{"hex":"#00ff00"}}');
 
-    const homekit = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const homekit = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'msg', payload: 'payload',
         commandType: 'homekit'
     }, server).node;
@@ -761,7 +761,7 @@ test('output node publishes state commands for all nine endpoints', (t) => {
 
     for (let endpoint = 1; endpoint <= 9; endpoint++) {
         const command = `state_l${endpoint}`;
-        const { node } = instantiate(registerOut, 'zigbee2mqtt-out', {
+        const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
             server: 'server', device_id: 'lamp', payloadType: 'str', payload: 'on',
             commandType: 'z2m_cmd', command
         }, server);
@@ -775,7 +775,7 @@ test('output node publishes state commands for all nine endpoints', (t) => {
 
 test('output node applies device options and rejects invalid JSON payloads', (t) => {
     const server = makeServer();
-    const options = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const options = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'json', payload: '{"transition":2}',
         commandType: 'json', optionsType: 'json', optionsValue: '{"retain":true}'
     }, server).node;
@@ -786,7 +786,7 @@ test('output node applies device options and rejects invalid JSON payloads', (t)
     });
     assert.equal(server.mqtt.publications.at(-1)[1], '{"transition":2}');
 
-    const invalid = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const invalid = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'lamp', payloadType: 'json', payload: '{invalid',
         commandType: 'str', command: 'state'
     }, server);
@@ -797,13 +797,13 @@ test('output node applies device options and rejects invalid JSON payloads', (t)
 });
 
 test('output node reports missing server and missing device', () => {
-    const noServer = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const noServer = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'missing', device_id: 'lamp'
     }, undefined).node;
     assert.match(noServer.lastStatus.text, /no_server/);
 
     const server = makeServer();
-    const noDevice = instantiate(registerOut, 'zigbee2mqtt-out', {
+    const noDevice = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
         server: 'server', device_id: 'missing'
     }, server).node;
     noDevice.emit('input', {});
@@ -812,7 +812,7 @@ test('output node reports missing server and missing device', () => {
 
 test('bridge node publishes input and forwards bridge messages with status updates', (t) => {
     const server = makeServer();
-    const { node } = instantiate(registerBridge, 'zigbee2mqtt-bridge', {
+    const { node } = instantiate(registerBridge, 'zigbee2mqtt-eb-bridge', {
         server: 'server'
     }, server);
     t.after(() => clearTimeout(node.cleanTimer));
@@ -841,7 +841,7 @@ test('bridge node publishes input and forwards bridge messages with status updat
 });
 
 test('bridge node reports a missing server', () => {
-    const { node } = instantiate(registerBridge, 'zigbee2mqtt-bridge', {
+    const { node } = instantiate(registerBridge, 'zigbee2mqtt-eb-bridge', {
         server: 'missing'
     }, undefined);
     assert.match(node.lastStatus.text, /no_server/);
