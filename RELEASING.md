@@ -13,7 +13,7 @@ In the npm settings for `@evilbunny/node-red-contrib-zigbee2mqtt`, add a Trusted
 - Provider: GitHub Actions
 - Organization or user: `evilbunny2008`
 - Repository: `node-red-contrib-zigbee2mqtt`
-- Workflow filename: `publish-npm.yml`
+- Workflow filename: `npm-publish.yml`
 - Environment: leave blank
 - Allowed actions: enable direct `npm publish`
 
