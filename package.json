@@ -34,6 +34,10 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "scripts": {
+    "test": "node --test",
+    "release": "npm version ${BUMP:-patch} && git push --follow-tags && gh release create v$(node -p \"require('./package.json').version\") --generate-notes"
+  },
   "homepage": "https://github.com/evilbunny2008/node-red-contrib-zigbee2mqtt",
   "repository": {
     "type": "git",
