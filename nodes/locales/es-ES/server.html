@@ -1,0 +1,22 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-server">
+    <p>Conexión con tu puente Zigbee2MQTT</p>
+    <h3>Configuración</h3>
+    <dl class="message-properties">
+        <dt class="optional">Nombre <span class="property-type">cadena</span></dt><dd>Elige un nombre para identificar este nodo.</dd>
+        <dt>Host MQTT <span class="property-type">cadena</span></dt><dd>Dirección IP o host MQTT de tu instancia de Zigbee2MQTT. Ejemplos: <code>127.0.0.1</code>, <code>192.168.1.100</code>, <code>myzigbee2mqtt.dydns.com</code></dd>
+         <dt class="required">Tema base <span class="property-type">cadena</span></dt><dd>El mismo valor que en tu configuration.yaml.</dd>
+        <dt class="optional">Puerto MQTT <span class="property-type">número</span></dt><dd>El puerto predeterminado de MQTT es 1883.</dd>
+        <dt class="optional">Usuario MQTT <span class="property-type">cadena</span></dt><dd></dd>
+        <dt class="optional">Contraseña MQTT <span class="property-type">cadena</span></dt><dd></dd>
+        <dt class="optional">Etiqueta del flujo / Icono <span class="property-type">cadena</span></dt><dd>Prefijo (<code>[Etiqueta]</code>) e icono que se muestran en cada nodo In, Out y Get que usa este servidor, para distinguir instalaciones o estancias en el flujo.</dd>
+        <dt class="optional">Registro de Node-RED <span class="property-type">error | warning | notice | debug</span></dt><dd>Nivel de detalle del registro del sistema de Node-RED que escriben los nodos (<i>notice</i> de forma predeterminada): <i>error</i> solo fallos, <i>warning</i> añade advertencias, <i>notice</i> añade eventos normales del sistema y <i>debug</i> muestra todo. También se puede cambiar en directo desde el nodo Bridge (sin volver a desplegar) y es independiente del nivel de registro de Zigbee2MQTT.</dd>
+    </dl>
+    <h3>Estado de la conexión</h3>
+    <p>Node-RED publica el estado de su propia conexión para este nodo servidor, como mensaje retenido, en
+        <code>node-red/&lt;tema base&gt;/state</code> (p. ej., <code>node-red/zigbee2mqtt/state</code>), con el mismo formato que
+        <code>bridge/state</code> de Zigbee2MQTT: <code>{"state":"online"}</code> cuando está conectado y
+        <code>{"state":"offline"}</code> al apagarse. Si Node-RED se detiene de forma inesperada, el broker publica
+        <code>offline</code> por sí mismo (MQTT Last Will). El mensaje se borra cuando se elimina el nodo servidor.</p>
+    <h3>Home Assistant</h3>
+    <p>En los nodos In con <i>Home Assistant</i> activado, el servidor publica la configuración de MQTT Discovery (retenida) en <code>homeassistant/&lt;componente&gt;/&lt;id&gt;/config</code> y gestiona el interruptor <i>enabled</i> en <code>node-red/&lt;tema base&gt;/ha/&lt;id del nodo&gt;/enabled[/set]</code>. Se (re)publica cuando MQTT se conecta y cuando el bridge vuelve a estar en línea; en los demás casos, solo cuando hay cambios (dispositivos nuevos o renombrados, grupos nuevos).</p>
+</script>

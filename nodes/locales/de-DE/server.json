@@ -1,0 +1,176 @@
+{
+    "label": {
+        "base_topic": "Basis-Topic",
+        "name": "Name",
+        "host": "MQTT-Host",
+        "mqtt_port": "MQTT-Port",
+        "mqtt_username": "MQTT-Benutzername",
+        "mqtt_password": "MQTT-Passwort",
+        "use-tls": "TLS verwenden",
+        "tls-config": "TLS-Konfiguration",
+        "flow_label": "Flow-Kennzeichnung",
+        "flow_icon": "Symbol",
+        "log_node_red": "Node-RED-Protokoll"
+    },
+    "placeholder": {
+        "name": "Name",
+        "flow_label": "z. B. Wohnzimmer"
+    },
+    "status": {
+        "no_server": "kein Server-Node",
+        "no_device": "Gerät nicht gefunden",
+        "no_connection": "keine Verbindung",
+        "no_value": "kein Wert",
+        "received": "ok",
+        "server_stopping": "Server wird beendet"
+    },
+    "tip": {
+        "deploy": "<b>Wichtig:</b> Server-Node bereitstellen, um die Geräteliste zu laden"
+    },
+    "icons": {
+        "default": "(Standard)",
+        "lightbulb": "Glühbirne",
+        "home": "Haus",
+        "bolt": "Blitz",
+        "thermometer": "Thermometer",
+        "plug": "Stecker",
+        "wifi": "WLAN",
+        "microchip": "Mikrochip"
+    },
+    "log_levels": {
+        "error": "Fehler",
+        "warn": "Warnung",
+        "notice": "Hinweis",
+        "debug": "Debug"
+    },
+    "log_levels_hint": {
+        "error": "nur Fehlfunktionen",
+        "warn": "Fehler + Warnungen",
+        "notice": "Fehler + Warnungen + Systemereignisse",
+        "debug": "alles, einschließlich Diagnosedetails"
+    },
+    "log_running_hint": "läuft: __level__ – zum Anwenden bereitstellen",
+    "editor": {
+        "groups": "Gruppen",
+        "devices": "Geräte",
+        "selected": "ausgewählt",
+        "nothing": "Nichts",
+        "select_device": "Gerät auswählen",
+        "msg_topic": "msg.topic",
+        "complete_payload": "Vollständiger Payload",
+        "zigbee2mqtt": "zigbee2mqtt",
+        "common": "Allgemein",
+        "homekit": "Apple HomeKit",
+        "homekit_data_format": "Apple-HomeKit-Datenformat",
+        "manual_value": "Manuell (__value__)",
+        "toggle": "Umschalten",
+        "orphan_properties": "⚠ Nicht mehr verfügbar",
+        "min_max_min": "Min. __unit__ muss kleiner als Max. __unit__ sein (__value__)",
+        "min_max_max": "Max. __unit__ muss größer als Min. __unit__ sein (__value__)",
+        "error_no_commands": "Für dieses Gerät sind keine Ausgabebefehle verfügbar. Bitte wähle ein Gerät mit steuerbaren Funktionen."
+    },
+    "config": {
+        "composite": {
+            "color": "color (JSON/xy)",
+            "color_rgb": "color_rgb (r,g,b)",
+            "color_hex": "color_hex (#RRGGBB)",
+            "color_xy": "color_xy (x,y)",
+            "color_hsb": "color_hsb (h,s,b)",
+            "color_hsv": "color_hsv (h,s,v)",
+            "color_hue": "color_hue (h)",
+            "color_saturation": "color_saturation (s)"
+        },
+        "colors": {
+            "red": "🔴 Rot",
+            "green": "🟢 Grün",
+            "blue": "🔵 Blau",
+            "yellow": "🟡 Gelb",
+            "orange": "🟠 Orange",
+            "purple": "🟣 Violett",
+            "white": "⚪ Weiß",
+            "white_d65": "⚪ Weiß (D65)"
+        },
+        "payload": {
+            "color_temp": {
+                "coolest": "Kaltweiß (6535K)",
+                "cool": "Kühl (4000K)",
+                "neutral": "Neutral (2857K)",
+                "warm": "Warm (2203K)",
+                "warmest": "Extra warm (2000K)"
+            },
+            "brightness": {
+                "off": "Aus (0%)",
+                "low": "Niedrig (25%)",
+                "medium": "Mittel (50%)",
+                "high": "Hoch (75%)",
+                "max": "Maximal (100%)"
+            },
+            "position": {
+                "closed": "Geschlossen (0%)",
+                "quarter": "Viertel (25%)",
+                "half": "Halb (50%)",
+                "three_quarters": "Dreiviertel (75%)",
+                "open": "Offen (100%)"
+            },
+            "countdown": {
+                "m1": "1 Minute",
+                "m5": "5 Minuten",
+                "m10": "10 Minuten",
+                "m30": "30 Minuten",
+                "h1": "1 Stunde"
+            },
+            "sensitivity": {
+                "very_low": "Sehr niedrig (0)",
+                "low": "Niedrig (3)",
+                "medium": "Mittel (5)",
+                "high": "Hoch (7)",
+                "very_high": "Sehr hoch (9)"
+            },
+            "color_hue": {
+                "red": "🔴 Rot (0°)",
+                "green": "🟢 Grün (120°)",
+                "blue": "🔵 Blau (240°)",
+                "yellow": "🟡 Gelb (60°)",
+                "magenta": "🟣 Magenta (300°)"
+            },
+            "color_saturation": {
+                "full": "🎨 Volle Sättigung (100%)",
+                "half": "🔉 Halbe Sättigung (50%)",
+                "none": "⚪ Keine Sättigung (Weiß)"
+            }
+        },
+        "slider": {
+            "brightness": "Helligkeit",
+            "min_brightness": "Min. Helligkeit",
+            "max_brightness": "Max. Helligkeit",
+            "off": "Aus",
+            "max": "Max.",
+            "color_temp": "Farbtemperatur",
+            "cool_150": "150 (Kalt)",
+            "warm_500": "500 (Warm)",
+            "cie_x": "CIE X",
+            "cie_y": "CIE Y",
+            "position": "Position",
+            "closed": "Geschlossen",
+            "open": "Offen",
+            "tilt": "Neigung",
+            "timer": "Timer",
+            "transition": "Übergang",
+            "hue": "Farbton",
+            "saturation": "Sättigung",
+            "value": "Wert",
+            "white": "Weiß",
+            "color": "Farbe",
+            "red": "Rot",
+            "green": "Grün",
+            "blue": "Blau",
+            "range": "Bereich",
+            "sensitivity": "Empfindlichkeit",
+            "low": "Niedrig",
+            "medium": "Mittel",
+            "high": "Hoch",
+            "generic": "Wert",
+            "pick_color": "Farbe wählen"
+        }
+    }
+}

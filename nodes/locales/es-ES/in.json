@@ -1,0 +1,52 @@
+{
+    "label": {
+        "name": "Nombre",
+        "friendly_name": "Nombre del dispositivo",
+        "server": "Servidor",
+        "topic": "Dispositivo",
+        "state": "Salida de payload",
+        "refresh": "Actualizar",
+        "refresh_devices_list": "Actualizar lista de dispositivos",
+        "start_output": "Enviar al iniciar",
+        "start_output_help": "Enviar el valor al iniciar",
+        "always": "Siempre",
+        "on_state_change": "Al cambiar el estado",
+        "on_update": "En cada actualización",
+        "filter_changes": "Filtrar",
+        "filter_changes_help": "Enviar solo cuando cambie el valor",
+        "output": "Salida",
+        "enable_multiple": "Entrada múltiple",
+        "enable_multiple_help": "Escuchar varios dispositivos",
+        "filter_properties": "Filtrar propiedades",
+        "filter_properties_help": "Solo los cambios en las propiedades seleccionadas cuentan como cambio (vacío = payload completo)",
+        "expose_to_home_assistant": "Home Assistant",
+        "expose_to_home_assistant_help": "Exponer a Home Assistant (MQTT Discovery, con un interruptor de activación)"
+    },
+    "placeholder": {
+        "name": "Nombre",
+        "friendly_name": "Nombre del dispositivo"
+    },
+    "status": {
+        "no_server": "no hay nodo servidor",
+        "no_device": "dispositivo no encontrado",
+        "no_connection": "sin conexión",
+        "connected": "conectado",
+        "received": "recibido",
+        "waiting_ha": "esperando a Home Assistant",
+        "disabled_ha": "desactivado (Home Assistant)"
+    },
+    "multiselect": {
+        "devices": "Dispositivos",
+        "filter_devices": "Filtrar dispositivos…",
+        "refresh": "Actualizar lista de dispositivos",
+        "none_selected": "Ninguno seleccionado",
+        "complete_payload": "Estado completo",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "Grupos",
+        "all_properties": "Todas las propiedades"
+    },
+    "tip": {
+        "deploy": "<b>Importante:</b> despliega el nodo servidor para cargar la lista de dispositivos"
+    }
+}

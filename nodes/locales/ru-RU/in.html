@@ -1,0 +1,35 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-in">
+    <p>Этот узел получает MQTT-сообщения от моста Zigbee2MQTT.</p>
+    <h3>Настройка</h3>
+    <dl class="message-properties">
+        <dt class="optional">Имя <span class="property-type">строка</span></dt><dd>Задайте любое имя для узла.</dd>
+        <dt>Сервер <span class="property-type">объект</span></dt><dd>Выберите используемый сервер Zigbee2MQTT.</dd>
+        <dt>Устройство <span class="property-type">строка</span></dt><dd>Выберите устройство, которое нужно слушать.</dd>
+        <dt class="optional">Вывод payload <span class="property-type">строка</span></dt><dd>Выберите, что отправлять в payload.</dd>
+        <dt class="optional">Несколько входов <span class="property-type">логическое</span></dt><dd>Слушать несколько устройств или групп одним узлом. <code>payload</code> становится объектом с ключами по устройствам (каждая запись содержит <code>payload</code>, <code>item</code>, <code>topic</code>, <code>homekit</code>, <code>format</code>), а <code>msg.math</code> содержит количество, минимум, максимум, среднее и сумму числовых значений.</dd>
+        <dt class="optional">Фильтр свойств <span class="property-type">список</span></dt><dd>Изменением считаются только изменения выбранных свойств (пусто = весь payload). Сравниваются только свойства, присутствующие в только что полученном MQTT-сообщении, поэтому посторонние отчёты (<code>linkquality</code>, <code>last_seen</code> и т. п.) не вызывают вывод.</dd>
+        <dt class="optional">Вывод при запуске <span class="property-type">логическое</span></dt><dd>Отправлять состояние при запуске.</dd>
+        <dt class="optional">Фильтр <span class="property-type">логическое</span></dt><dd>Отправлять только при изменении значения. Для кнопок отключите фильтр.<br>
+        <b><i>Примечание 1:</i></b> задайте <code>retain: true</code> в configuration.yaml Zigbee2MQTT для каждого устройства (плагин Z2M делает это автоматически при добавлении устройства).<br>
+        <b><i>Примечание 2:</i></b> при выборе «Deploy только изменённых узлов» вывода не будет, пока в текущем узле нет изменений.
+        </dd>
+        <dt class="optional">Home Assistant <span class="property-type">логическое</span></dt>
+        <dd>Добавляет этот узел в Home Assistant через MQTT Discovery (retained, префикс <code>homeassistant</code>):
+            <ul>
+                <li><b>sensor</b> или <b>binary_sensor</b> для каждого устройства; его состояние — первое выбранное свойство в <i>Вывод payload</i> (иначе <code>state</code>, первое читаемое свойство или <code>linkquality</code>). Несколько свойств передаются как атрибуты;</li>
+                <li>переключатель <b>enabled</b> (категория <code>config</code>), включающий и выключающий узел из Home Assistant. Топик состояния: <code>node-red/&lt;базовый топик&gt;/ha/&lt;id узла&gt;/enabled</code>;</li>
+                <li>доступность определяется топиком <code>node-red/&lt;базовый топик&gt;/state</code>.</li>
+            </ul>
+            Пока состояние переключателя неизвестно (до 3 с после запуска), входящие сообщения ставятся в очередь (не более 20, не старше 60 с) и воспроизводятся после включения узла. Если переключатель выключен, сообщения отбрасываются, а узел показывает <code>отключено (Home Assistant)</code>. Переименованные устройства и новые группы объявляются заново автоматически; при удалении узла сущности удаляются из Home Assistant.
+        </dd>
+    </dl>
+
+    <h3>Выходы</h3>
+    <h5>Выход</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">строка | объект</span></dt><dd>Текущее значение зависит от настроек вывода payload.</dd>
+        <dt>payload_raw <span class="property-type">объект</span></dt><dd>данные как есть</dd>
+        <dt>device<span class="property-type">объект</span></dt><dd>информация об устройстве</dd>
+    </dl>
+</script>
+

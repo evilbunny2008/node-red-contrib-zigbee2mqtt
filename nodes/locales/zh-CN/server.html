@@ -1,0 +1,22 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-server">
+    <p>连接到 Zigbee2MQTT 网桥</p>
+    <h3>配置</h3>
+    <dl class="message-properties">
+        <dt class="optional">名称 <span class="property-type">字符串</span></dt><dd>为此节点指定一个便于识别的名称。</dd>
+        <dt>MQTT 主机 <span class="property-type">字符串</span></dt><dd>Zigbee2MQTT 实例的 IP 地址或 MQTT 主机名。例如：<code>127.0.0.1</code>、<code>192.168.1.100</code>、<code>myzigbee2mqtt.dydns.com</code></dd>
+         <dt class="required">基础主题 <span class="property-type">字符串</span></dt><dd>与 configuration.yaml 中的值相同。</dd>
+        <dt class="optional">MQTT 端口 <span class="property-type">数字</span></dt><dd>MQTT 默认端口为 1883。</dd>
+        <dt class="optional">MQTT 用户名 <span class="property-type">字符串</span></dt><dd></dd>
+        <dt class="optional">MQTT 密码 <span class="property-type">字符串</span></dt><dd></dd>
+        <dt class="optional">流程标签 / 图标 <span class="property-type">字符串</span></dt><dd>显示在使用此服务器的每个 In、Out 和 Get 节点上的前缀（<code>[标签]</code>）和图标，用于在流程中区分不同的安装或房间。</dd>
+        <dt class="optional">Node-RED 日志 <span class="property-type">error | warning | notice | debug</span></dt><dd>节点写入的 Node-RED 系统日志的详细程度（默认为 <i>notice</i>）：<i>error</i> 仅记录故障，<i>warning</i> 增加警告，<i>notice</i> 再增加常规系统事件，<i>debug</i> 记录全部内容。也可以在 Bridge 节点中实时更改（无需重新部署），且与 Zigbee2MQTT 的日志级别相互独立。</dd>
+    </dl>
+    <h3>连接状态</h3>
+    <p>Node-RED 会以保留消息的形式，将此服务器节点自身的连接状态发布到
+        <code>node-red/&lt;基础主题&gt;/state</code>（例如 <code>node-red/zigbee2mqtt/state</code>），格式与
+        Zigbee2MQTT 的 <code>bridge/state</code> 相同：已连接时为 <code>{"state":"online"}</code>，
+        关闭时为 <code>{"state":"offline"}</code>。如果 Node-RED 意外停止，broker 会自行发布
+        <code>offline</code>（MQTT Last Will）。删除服务器节点时，该消息会被清除。</p>
+    <h3>Home Assistant</h3>
+    <p>对于启用了 <i>Home Assistant</i> 的 In 节点，服务器会将 MQTT Discovery 配置（保留消息）发布到 <code>homeassistant/&lt;组件&gt;/&lt;id&gt;/config</code>，并处理 <i>enabled</i> 开关，其主题为 <code>node-red/&lt;基础主题&gt;/ha/&lt;节点 ID&gt;/enabled[/set]</code>。MQTT 连接时以及网桥重新上线时会（重新）发布；其他情况下仅在发生变化时发布（新增或重命名的设备、新增群组）。</p>
+</script>

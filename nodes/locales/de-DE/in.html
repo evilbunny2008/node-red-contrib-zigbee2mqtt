@@ -1,0 +1,35 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-in">
+    <p>Dieser Node empfängt MQTT-Nachrichten, die von deiner Zigbee2MQTT-Bridge gesendet werden.</p>
+    <h3>Konfiguration</h3>
+    <dl class="message-properties">
+        <dt class="optional">Name <span class="property-type">Zeichenfolge</span></dt><dd>Wähle einen beliebigen Namen zur Identifizierung des Nodes.</dd>
+        <dt>Server <span class="property-type">Objekt</span></dt><dd>Wähle die zu verwendende Zigbee2MQTT-Serverinstanz.</dd>
+        <dt>Gerät <span class="property-type">Zeichenfolge</span></dt><dd>Wähle das Gerät aus, das überwacht werden soll.</dd>
+        <dt class="optional">Payload-Ausgabe <span class="property-type">Zeichenfolge</span></dt><dd>Wähle die Option, die in den Payload geschrieben werden soll.</dd>
+        <dt class="optional">Mehrere Eingänge <span class="property-type">boolesch</span></dt><dd>Mehrere Geräte/Gruppen mit einem Node überwachen. <code>payload</code> wird zu einem nach Gerät geordneten Objekt (jeder Eintrag enthält <code>payload</code>, <code>item</code>, <code>topic</code>, <code>homekit</code>, <code>format</code>), und <code>msg.math</code> enthält Anzahl, Minimum, Maximum, Durchschnitt und Summe der numerischen Werte.</dd>
+        <dt class="optional">Eigenschaften filtern <span class="property-type">Liste</span></dt><dd>Nur Änderungen der ausgewählten Eigenschaften gelten als Änderung (leer = gesamter Payload). Verglichen werden nur Eigenschaften, die in der soeben eingetroffenen MQTT-Nachricht enthalten sind; unabhängige Meldungen (<code>linkquality</code>, <code>last_seen</code> …) lösen daher keine Ausgabe aus.</dd>
+        <dt class="optional">Bei Start ausgeben <span class="property-type">boolesch</span></dt><dd>Zustand beim Start ausgeben.</dd>
+        <dt class="optional">Filter <span class="property-type">boolesch</span></dt><dd>Nur senden, wenn sich der Wert ändert. Für Taster deaktivieren.<br>
+        <b><i>Hinweis 1:</i></b> Setze <code>retain: true</code> in der Zigbee2MQTT-configuration.yaml für jedes Gerät (das Z2M-Plugin setzt dies beim Hinzufügen eines Geräts automatisch).<br>
+        <b><i>Hinweis 2:</i></b> Bei „Nur geänderte Nodes bereitstellen“ erfolgt keine Ausgabe, solange sich am aktuellen Node nichts geändert hat.
+        </dd>
+        <dt class="optional">Home Assistant <span class="property-type">boolesch</span></dt>
+        <dd>Stellt diesen Node über MQTT Discovery in Home Assistant bereit (retained, Präfix <code>homeassistant</code>):
+            <ul>
+                <li>ein <b>sensor</b> oder <b>binary_sensor</b> pro Gerät, dessen Zustand die erste ausgewählte Eigenschaft der <i>Payload-Ausgabe</i> ist (sonst <code>state</code>, die erste lesbare Eigenschaft oder <code>linkquality</code>). Mehrere Eigenschaften werden als Attribute bereitgestellt;</li>
+                <li>ein Schalter <b>enabled</b> (Kategorie <code>config</code>), mit dem der Node in Home Assistant ein- und ausgeschaltet wird. State-Topic: <code>node-red/&lt;Basis-Topic&gt;/ha/&lt;Node-ID&gt;/enabled</code>;</li>
+                <li>die Verfügbarkeit folgt <code>node-red/&lt;Basis-Topic&gt;/state</code>.</li>
+            </ul>
+            Solange der Schalterzustand unbekannt ist (bis zu 3 s nach dem Start), werden eingehende Nachrichten in eine Warteschlange gestellt (max. 20, keine älter als 60 s) und nach der Aktivierung des Nodes wiedergegeben. Ist der Schalter AUS, werden Nachrichten verworfen, und der Node zeigt <code>deaktiviert (Home Assistant)</code>. Umbenannte Geräte und neue Gruppen werden automatisch neu angekündigt; die Entitäten werden aus Home Assistant entfernt, wenn der Node gelöscht wird.
+        </dd>
+    </dl>
+
+    <h3>Ausgaben</h3>
+    <h5>Ausgabe</h5>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">Zeichenfolge | Objekt</span></dt><dd>Der aktuelle Wert hängt von den Einstellungen für die Payload-Ausgabe ab.</dd>
+        <dt>payload_raw <span class="property-type">Objekt</span></dt><dd>Daten unverändert</dd>
+        <dt>device<span class="property-type">Objekt</span></dt><dd>Geräteinformationen</dd>
+    </dl>
+</script>
+

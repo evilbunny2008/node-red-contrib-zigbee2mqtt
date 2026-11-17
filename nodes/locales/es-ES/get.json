@@ -1,0 +1,25 @@
+{
+    "label": {
+        "name": "Nombre",
+        "friendly_name": "Nombre del dispositivo",
+        "server": "Servidor",
+        "topic": "Dispositivo",
+        "state": "Salida de payload",
+        "refresh": "Actualizar",
+        "legacy_api": "API heredada",
+        "refresh_devices_list": "Actualizar lista de dispositivos",
+        "enable_multiple": "Entrada múltiple",
+        "enable_multiple_help": "Escuchar varios dispositivos"
+    },
+    "placeholder": {
+        "name": "Nombre",
+        "friendly_name": "Nombre del dispositivo"
+    },
+    "multiselect": {
+        "devices": "Dispositivos",
+        "filter_devices": "Filtrar dispositivos…",
+        "refresh": "Actualizar lista de dispositivos",
+        "none_selected": "Ninguno seleccionado",
+        "complete_payload": "Payload de estado completo"
+    }
+}

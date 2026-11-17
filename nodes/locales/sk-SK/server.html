@@ -3,10 +3,20 @@
     <h3>Konfigurácia</h3>
     <dl class="message-properties">
         <dt class="optional">Meno <span class="property-type">reťazec</span></dt><dd>Vyberte akékoľvek meno na identifikáciu vášho uzla.</dd>
-        <dt>MQTT Host <span class="property-type">reťazec</span></dt><dd>IP adresa alebo hostiteľ MQTT vášho Zigbee2mqtt inštancie. Príklady: <code>127.0.0.1</code>, <code>192.168.1.100</code>, <code>myzigbee2mqtt.dydns.com</code></dd>
-        <dt class="required">Základná téma <span class="property-type">reťazec</span></dt><dd>Rovnaká ako vo vašom configuration.yaml</dd>
+        <dt>MQTT Host <span class="property-type">reťazec</span></dt><dd>IP adresa alebo hostiteľ MQTT vašej inštancie Zigbee2mqtt. Príklady: <code>127.0.0.1</code>, <code>192.168.1.100</code>, <code>myzigbee2mqtt.dydns.com</code></dd>
+         <dt class="required">Základná téma <span class="property-type">reťazec</span></dt><dd>Rovnaká ako vo vašom configuration.yaml</dd>
         <dt class="optional">MQTT Port <span class="property-type">číslo</span></dt><dd>predvolený port pre MQTT je 1883</dd>
         <dt class="optional">MQTT Užívateľské meno <span class="property-type">reťazec</span></dt><dd></dd>
         <dt class="optional">MQTT Heslo <span class="property-type">reťazec</span></dt><dd></dd>
+        <dt class="optional">Označenie toku / Ikona <span class="property-type">reťazec</span></dt><dd>Prefix (<code>[Označenie]</code>) a ikona zobrazené na každom uzle In, Out a Get, ktorý používa tento server, aby ste v toku rozlíšili inštalácie alebo miestnosti.</dd>
+        <dt class="optional">Záznam Node-RED <span class="property-type">error | warning | notice | debug</span></dt><dd>Podrobnosť systémového záznamu Node-RED, ktorý zapisujú uzly (predvolene <i>notice</i>): <i>error</i> iba poruchy, <i>warning</i> + upozornenia, <i>notice</i> + bežné systémové udalosti, <i>debug</i> všetko. Dá sa zmeniť aj priamo z uzla Bridge (bez opätovného nasadenia) a nezávisí od úrovne záznamu Zigbee2MQTT.</dd>
     </dl>
+    <h3>Stav pripojenia</h3>
+    <p>Node-RED publikuje vlastný stav pripojenia pre tento serverový uzol, ako uchovanú správu (retained), do témy
+        <code>node-red/&lt;základná téma&gt;/state</code> (napr. <code>node-red/zigbee2mqtt/state</code>) v rovnakom formáte ako
+        <code>bridge/state</code> v Zigbee2MQTT: <code>{"state":"online"}</code> pri pripojení a
+        <code>{"state":"offline"}</code> pri ukončení. Ak sa Node-RED neočakávane zastaví, broker sám publikuje
+        <code>offline</code> (MQTT Last Will). Správa sa vymaže, keď sa serverový uzol odstráni.</p>
+    <h3>Home Assistant</h3>
+    <p>Pri uzloch In so zapnutou voľbou <i>Home Assistant</i> server publikuje konfiguráciu MQTT Discovery (retained) do <code>homeassistant/&lt;komponent&gt;/&lt;id&gt;/config</code> a obsluhuje prepínač <i>enabled</i> v <code>node-red/&lt;základná téma&gt;/ha/&lt;id uzla&gt;/enabled[/set]</code>. Publikuje sa (znova) pri pripojení MQTT a pri návrate mosta do online stavu; inak iba pri zmene (nové alebo premenované zariadenia, nové skupiny).</p>
 </script>

@@ -1,6 +1,7 @@
 {
     "label": {
         "name": "Name",
+        "friendly_name": "Friendly name",
         "server": "Server",
         "topic": "Device",
         "state": "Payload output",
@@ -11,7 +12,8 @@
         "enable_multiple_help": "Listen multiple devices"
     },
     "placeholder": {
-        "name": "Name"
+        "name": "Name",
+        "friendly_name": "Friendly name"
     },
     "multiselect": {
         "devices": "Devices",

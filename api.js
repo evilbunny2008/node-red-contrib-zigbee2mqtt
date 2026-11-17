@@ -19,6 +19,7 @@ module.exports = function(RED) {
         }
         // IDs do Node-RED são tipicamente hexadecimais e pontos.
         if (!config.controllerID || typeof config.controllerID !== 'string' || !/^[a-zA-Z0-9\._]+$/.test(config.controllerID)) {
+            RED.log.warn('[Z2M API] getDevices: rejected an invalid controllerID format');
             return res.status(400).json({error: "Invalid controllerID format"});
         }
         var controller = RED.nodes.getNode(config.controllerID);
@@ -39,6 +40,7 @@ module.exports = function(RED) {
     RED.httpAdmin.post(NODE_PATH + 'restart', RED.auth.needsPermission("zigbee2mqtt.write"), function (req, res) {
         var config = req.body;
         if (!config || !config.controllerID) {
+            RED.log.warn('[Z2M API] restart: request without controllerID');
             return res.status(400).json({error: "Missing controllerID"});
         }
         var controller = RED.nodes.getNode(config.controllerID);
@@ -48,9 +50,11 @@ module.exports = function(RED) {
                 res.json({"result":"ok"});
             } catch (e) {
                 console.error("[Z2M API] Restart failed:", e);
+                if (controller.logger) controller.logger.error('Restart request failed: ' + e.message);
                 res.status(500).json({error: e.message});
             }
         } else {
+            RED.log.warn('[Z2M API] restart: controller "' + config.controllerID + '" not found (not deployed yet?)');
             res.status(404).json({error: "Controller not found"});
         }
     });
@@ -65,6 +69,10 @@ module.exports = function(RED) {
                 config.permit_join === 'true', 
                 time
             );
+            if (result && result.error) {
+                // MQTT not connected: tell the editor instead of answering "ok"
+                return res.status(503).json(result);
+            }
             
             res.json({
                 "result": "ok", 
@@ -82,6 +90,34 @@ module.exports = function(RED) {
         if (controller && controller.type === "zigbee2mqtt-eb-server") {
             controller.setLogLevel(config.log_level);
             res.json({"result":"ok"});
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════
+    // LOGGER NODE-RED (select "Logger Node-RED" in the server / bridge editors)
+    // ═══════════════════════════════════════════════════════════
+    RED.httpAdmin.get(NODE_PATH + 'getDebugLevel', function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.type === "zigbee2mqtt-eb-server") {
+            res.json({"result": "ok", "level": controller.getDebugLevel()});
+        } else {
+            res.status(404).end();
+        }
+    });
+
+    RED.httpAdmin.get(NODE_PATH + 'setDebugLevel', RED.auth.needsPermission("zigbee2mqtt.write"), function (req, res) {
+        var config = req.query;
+        var controller = RED.nodes.getNode(config.controllerID);
+        if (controller && controller.type === "zigbee2mqtt-eb-server") {
+            var response = controller.setDebugLevel(config.level);
+            if (response && response.error) {
+                res.status(400).json(response);
+            } else {
+                res.json(response);
+            }
         } else {
             res.status(404).end();
         }
@@ -309,6 +345,11 @@ module.exports = function(RED) {
                 coordinator: coordinator // ✅ ADICIONAR COORDINATOR
             },
             
+            // Node-RED system logger (select "Logger Node-RED")
+            node_red: {
+                debug_level: serverNode.debug_level || 'notice',
+                levels: ['error', 'warn', 'notice', 'debug']
+            },
             // Estatísticas
             stats: {
                 devices: serverNode.devices ? serverNode.devices.length : 0,

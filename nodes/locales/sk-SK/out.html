@@ -1,23 +1,33 @@
 <script type="text/x-red" data-help-name="zigbee2mqtt-eb-out">
-    <p>Odoslať mqtt príkaz vášmu zariadeniu.</p>
+    <p>Odošle MQTT príkaz vášmu zariadeniu.</p>
     <h3>Konfigurácia</h3>
     <dl class="message-properties">
         <dt class="optional">Meno <span class="property-type">reťazec</span></dt><dd>Vyberte akékoľvek meno na identifikáciu vášho uzla</dd>
         <dt>Server <span class="property-type">objekt</span></dt><dd>Vyberte inštanciu servera zigbee2mqtt, ktorú chcete použiť</dd>
-        <dt>Zariadenie <span class="property-type">reťazec</span></dt><dd>Vyberte vaše zariadenie</dd>
+        <dt>Zariadenie <span class="property-type">reťazec</span></dt><dd>Vyberte svoje zariadenie</dd>
         <dt>Príkaz <span class="property-type">reťazec</span></dt>
         <dd>
             <ul>
                 <li><b>zigbee2mqtt:</b> preddefinované príkazy</li>
-                <li><b>homekit:</b> vyberte, ak údaje pochádzajú z homekit uzla</li>
-                <li><b>json:</b> vlastné údaje vo formáte json</li>
+                <li><b>homekit:</b> vyberte, ak údaje pochádzajú z uzla HomeKit</li>
+                <li><b>json:</b> vlastné údaje vo formáte JSON</li>
             </ul>
         </dd>
-        <dt>Payload <span class="property-type">reťazec alebo objekt</span></dt><dd>Vyberte zdroj vašich payload údajov</dd>
+        <dt>Payload <span class="property-type">reťazec alebo objekt</span></dt><dd>Vyberte zdroj údajov payloadu</dd>
+        <dt class="optional">Výstup po aktualizácii stavu <span class="property-type">boolean</span></dt>
+        <dd>Pridá jeden výstup, ktorý po príkaze vydá <b>aktualizovaný stav</b> zariadenia alebo skupiny. Uzol čaká až 30 s, kým Zigbee2MQTT publikuje stav obsahujúci odoslanú vlastnosť (napr. <code>state</code>, <code>brightness</code>); na jedno zariadenie môže čakať najviac 20 príkazov. Pôvodná správa sa odošle ďalej s týmito poľami:
+            <ul>
+                <li><code>payload</code> / <code>payload_raw</code>: nahromadený stav zariadenia;</li>
+                <li><code>payload_in</code>: payload, ktorý tento uzol prijal;</li>
+                <li><code>topic</code>, <code>selector</code>, <code>item</code>, <code>homekit</code>, <code>format</code>.</li>
+            </ul>
+            Bez tejto možnosti uzol nemá žiadne výstupy. Začiarkavacie políčko mení uzol <b>okamžite</b>: zapnutie pridá výstup, vypnutie ho odstráni <b>aj s jeho prepojeniami</b>. <i>Zrušiť</i> obnoví oboje.
+        </dd>
     </dl>
 
 <!--    <h3>Možnosti</h3>-->
 <!--    <dl class="message-properties">-->
-<!--        <dt class="optional">Čas prechodu <span class="property-type">int</span></dt><dd>Funguje s jasom.</dd>-->
+<!--        <dt class="optional">Čas prechodu <span class="property-type">int</span></dt><dd>Funguje s brightness.</dd>-->
 <!--    </dl>-->
 </script>
+

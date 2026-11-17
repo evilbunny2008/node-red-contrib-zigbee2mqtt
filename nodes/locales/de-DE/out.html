@@ -1,0 +1,33 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-out">
+    <p>Sendet einen MQTT-Befehl an dein Gerät.</p>
+    <h3>Konfiguration</h3>
+    <dl class="message-properties">
+        <dt class="optional">Name <span class="property-type">Zeichenfolge</span></dt><dd>Wähle einen beliebigen Namen zur Identifizierung des Nodes.</dd>
+        <dt>Server <span class="property-type">Objekt</span></dt><dd>Wähle die zu verwendende Zigbee2MQTT-Serverinstanz.</dd>
+        <dt>Gerät <span class="property-type">Zeichenfolge</span></dt><dd>Wähle dein Gerät aus.</dd>
+        <dt>Befehl <span class="property-type">Zeichenfolge</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> vordefinierte Befehle</li>
+                <li><b>homekit:</b> auswählen, wenn die Daten von einem HomeKit-Node stammen</li>
+                <li><b>json:</b> eigene Daten im JSON-Format</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">Zeichenfolge oder Objekt</span></dt><dd>Wähle die Payload-Datenquelle.</dd>
+        <dt class="optional">Ausgabe nach Zustandsaktualisierung <span class="property-type">boolesch</span></dt>
+        <dd>Fügt einen Ausgang hinzu, der nach dem Befehl den <b>aktualisierten Zustand</b> des Geräts bzw. der Gruppe ausgibt. Der Node wartet bis zu 30 s darauf, dass Zigbee2MQTT einen Zustand veröffentlicht, der die gesendete Eigenschaft enthält (z. B. <code>state</code>, <code>brightness</code>); es sind maximal 20 ausstehende Befehle pro Gerät möglich. Die ursprüngliche Nachricht wird weitergegeben mit:
+            <ul>
+                <li><code>payload</code> / <code>payload_raw</code>: der akkumulierte Zustand des Geräts;</li>
+                <li><code>payload_in</code>: der Payload, den dieser Node empfangen hat;</li>
+                <li><code>topic</code>, <code>selector</code>, <code>item</code>, <code>homekit</code>, <code>format</code>.</li>
+            </ul>
+            Ohne diese Option hat der Node keine Ausgänge. Das Kontrollkästchen ändert den Node <b>sofort</b>: Beim Aktivieren wird der Ausgang hinzugefügt, beim Deaktivieren wird er entfernt <b>und seine Verbindungen werden getrennt</b>. <i>Abbrechen</i> stellt beides wieder her.
+        </dd>
+    </dl>
+
+<!--    <h3>Optionen</h3>-->
+<!--    <dl class="message-properties">-->
+<!--        <dt class="optional">Übergangszeit <span class="property-type">int</span></dt><dd>Funktioniert mit brightness.</dd>-->
+<!--    </dl>-->
+</script>
+

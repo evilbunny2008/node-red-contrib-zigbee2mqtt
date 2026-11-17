@@ -1,0 +1,56 @@
+{
+    "label": {
+        "name": "Nome",
+        "friendly_name": "Nome do dispositivo",
+        "server": "Servidor",
+        "topic": "Dispositivo",
+        "command": "Comando",
+        "payload": "Payload",
+        "options": "Opções",
+        "transition": "Transição, s",
+        "refresh": "Atualizar",
+        "refresh_devices_list": "Atualizar lista de dispositivos",
+        "output_enabled": "Saída após atualização de estado",
+        "output_state": "estado atualizado",
+        "show_manual_controls": "Mostrar controlos manuais",
+        "manual_adjust": "Ajuste manual",
+        "pick_color": "Escolher cor"
+    },
+    "placeholder": {
+        "name": "Nome",
+        "friendly_name": "Nome do dispositivo",
+        "transition": "em segundos"
+    },
+    "status": {
+        "no_server": "sem nó de servidor",
+        "no_device": "dispositivo não encontrado",
+        "no_payload": "sem payload",
+        "no_connection": "sem ligação",
+        "connected": "ligado",
+        "received": "ok",
+        "ready": "pronto",
+        "mqtt_connected": "MQTT ligado",
+        "mqtt_disconnected": "MQTT desligado",
+        "mqtt_not_connected": "MQTT não ligado",
+        "publish_failed": "falha ao publicar",
+        "error": "erro",
+        "invalid_json_command": "comando JSON inválido"
+    },
+    "output_hint": {
+        "enabled": "Porta de saída ativada (1 saída: estado atualizado).",
+        "none": "Sem porta de saída (enviar e esquecer).",
+        "removed": "Porta de saída removida.",
+        "removed_wires": "Porta de saída removida: __count__ ligação(ões) desligada(s) (Cancelar restaura-as).",
+        "enabled_again": "Porta de saída ativada novamente: __count__ ligação(ões) restaurada(s).",
+        "added": "Porta de saída adicionada: já pode ligá-la (Cancelar reverte)."
+    },
+    "help": {
+        "important": "IMPORTANTE:",
+        "description": "Descrição:",
+        "options": "Opções:",
+        "command_homekit": "Esta funcionalidade é experimental e, por enquanto, só funciona com os serviços Lightbulb e Lock do HomeKit.",
+        "command_brightness_move": "Em vez de definir o brilho por valor, pode iniciar a variação e interrompê-la passado algum tempo. Exemplo: o payload -5 começa a reduzir o brilho a 5 unidades por segundo.",
+        "command_brightness_step": "Em vez de definir o brilho por valor, pode aumentar ou diminuir o valor atual num passo.",
+        "option_transition": "Número de segundos que a transição para este estado demora. Não funciona com brightness=0 nem com state=toggle."
+    }
+}

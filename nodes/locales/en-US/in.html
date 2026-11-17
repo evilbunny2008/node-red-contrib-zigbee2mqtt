@@ -6,10 +6,21 @@
         <dt>Server <span class="property-type">object</span></dt><dd>Choose the zigbee2mqtt server instance to use</dd>
         <dt>Device <span class="property-type">string</span></dt><dd>Select device to listen to</dd>
         <dt class="optional">Payload output <span class="property-type">string</span></dt><dd>Choose option which you want to send to payload</dd>
-        <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Output state at startup.<br>
+        <dt class="optional">Multiple input <span class="property-type">boolean</span></dt><dd>Listen to several devices/groups with one node. <code>payload</code> becomes an object keyed by device (each entry has <code>payload</code>, <code>item</code>, <code>topic</code>, <code>homekit</code>, <code>format</code>) and <code>msg.math</code> holds count/min/max/avg/sum of the numeric values.</dd>
+        <dt class="optional">Filter properties <span class="property-type">list</span></dt><dd>Only changes in the selected properties count as a change (empty = whole payload). Only properties present in the MQTT message that just arrived are compared, so unrelated reports (<code>linkquality</code>, <code>last_seen</code>...) do not trigger an output.</dd>
+        <dt class="optional">Start output <span class="property-type">boolean</span></dt><dd>Output state at startup.</dd>
         <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>Send only if value changes. Uncheck it for buttons.<br>
         <b><i>notice #1:</i></b> set <code>retain: true</code> in zigbee2mqtt configuration.yaml for every device (z2m plugin sets it automatically on device add)<br>
         <b><i>notice #2:</i></b> does not output on "Deploy only modified nodes" while there are no changes in current node
+        </dd>
+        <dt class="optional">Home Assistant <span class="property-type">boolean</span></dt>
+        <dd>Expose this node to Home Assistant through MQTT Discovery (retained, prefix <code>homeassistant</code>):
+            <ul>
+                <li>a <b>sensor</b> or <b>binary_sensor</b> per device, whose state is the first selected <i>Payload output</i> property (otherwise <code>state</code>, the first readable property, or <code>linkquality</code>). Several properties are exposed as attributes;</li>
+                <li>an <b>enabled</b> switch (<code>config</code> category) that turns the node on/off from Home Assistant. State topic: <code>node-red/&lt;base topic&gt;/ha/&lt;node id&gt;/enabled</code>;</li>
+                <li>availability follows <code>node-red/&lt;base topic&gt;/state</code>.</li>
+            </ul>
+            Until the switch state is known (up to 3 s after start) incoming messages are queued (max. 20, none older than 60 s) and replayed once the node is enabled. When the switch is OFF messages are dropped and the node shows <code>disabled (Home Assistant)</code>. Renamed devices and new groups are re-announced automatically; the entities are removed from Home Assistant when the node is deleted.
         </dd>
     </dl>
 
@@ -17,7 +28,7 @@
     <h5>Output</h5>
     <dl class="message-properties">
         <dt>payload <span class="property-type">string | object</span></dt><dd>current value depends on output state settings formatting</dd>
-        <dt>payload_raw <span class="property-type">sobject</span></dt><dd>data as it is</dd>
+        <dt>payload_raw <span class="property-type">object</span></dt><dd>data as it is</dd>
         <dt>device<span class="property-type">object</span></dt><dd>device info</dd>
     </dl>
 </script>

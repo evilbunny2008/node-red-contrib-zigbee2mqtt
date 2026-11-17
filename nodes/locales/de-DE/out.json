@@ -1,0 +1,56 @@
+{
+    "label": {
+        "name": "Name",
+        "friendly_name": "Gerätename",
+        "server": "Server",
+        "topic": "Gerät",
+        "command": "Befehl",
+        "payload": "Payload",
+        "options": "Optionen",
+        "transition": "Übergang, s",
+        "refresh": "Aktualisieren",
+        "refresh_devices_list": "Geräteliste aktualisieren",
+        "output_enabled": "Ausgabe nach Zustandsaktualisierung",
+        "output_state": "aktualisierter Zustand",
+        "show_manual_controls": "Manuelle Steuerung anzeigen",
+        "manual_adjust": "Manuell anpassen",
+        "pick_color": "Farbe wählen"
+    },
+    "placeholder": {
+        "name": "Name",
+        "friendly_name": "Gerätename",
+        "transition": "in Sekunden"
+    },
+    "status": {
+        "no_server": "kein Server-Node",
+        "no_device": "Gerät nicht gefunden",
+        "no_payload": "kein Payload",
+        "no_connection": "keine Verbindung",
+        "connected": "verbunden",
+        "received": "ok",
+        "ready": "bereit",
+        "mqtt_connected": "MQTT verbunden",
+        "mqtt_disconnected": "MQTT getrennt",
+        "mqtt_not_connected": "MQTT nicht verbunden",
+        "publish_failed": "Veröffentlichung fehlgeschlagen",
+        "error": "Fehler",
+        "invalid_json_command": "ungültiger JSON-Befehl"
+    },
+    "output_hint": {
+        "enabled": "Ausgang aktiviert (1 Ausgang: aktualisierter Zustand).",
+        "none": "Kein Ausgang (Fire and Forget).",
+        "removed": "Ausgang entfernt.",
+        "removed_wires": "Ausgang entfernt: __count__ Verbindung(en) getrennt (Abbrechen stellt sie wieder her).",
+        "enabled_again": "Ausgang wieder aktiviert: __count__ Verbindung(en) wiederhergestellt.",
+        "added": "Ausgang hinzugefügt: Du kannst ihn jetzt verbinden (Abbrechen macht dies rückgängig)."
+    },
+    "help": {
+        "important": "WICHTIG:",
+        "description": "Beschreibung:",
+        "options": "Optionen:",
+        "command_homekit": "Diese Funktion ist experimentell und funktioniert derzeit nur mit den HomeKit-Diensten Lightbulb und Lock.",
+        "command_brightness_move": "Statt einen festen Helligkeitswert zu setzen, kannst du die Helligkeit ändern und nach einer bestimmten Zeit anhalten. Der Payload -5 startet zum Beispiel das Dimmen um 5 Einheiten pro Sekunde.",
+        "command_brightness_step": "Statt einen festen Helligkeitswert zu setzen, kannst du den aktuellen Wert schrittweise erhöhen oder verringern.",
+        "option_transition": "Dauer des Übergangs zu diesem Zustand in Sekunden. Keine Wirkung bei brightness=0 oder state=toggle."
+    }
+}

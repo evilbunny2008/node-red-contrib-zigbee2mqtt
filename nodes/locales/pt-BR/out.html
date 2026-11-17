@@ -1,0 +1,33 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-out">
+    <p>Envia um comando MQTT ao seu dispositivo.</p>
+    <h3>Configuração</h3>
+    <dl class="message-properties">
+        <dt class="optional">Nome <span class="property-type">string</span></dt><dd>Escolha qualquer nome para identificar o seu nó</dd>
+        <dt>Servidor <span class="property-type">objeto</span></dt><dd>Escolha a instância do servidor zigbee2mqtt a ser usada</dd>
+        <dt>Dispositivo <span class="property-type">string</span></dt><dd>Selecione o seu dispositivo</dd>
+        <dt>Comando <span class="property-type">string</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> comandos predefinidos</li>
+                <li><b>homekit:</b> selecione se os dados vierem de um nó HomeKit</li>
+                <li><b>json:</b> dados personalizados em formato JSON</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">string ou objeto</span></dt><dd>Selecione a origem dos dados do payload</dd>
+        <dt class="optional">Saída após atualização de estado <span class="property-type">booleano</span></dt>
+        <dd>Adiciona uma saída que emite o <b>estado atualizado</b> do dispositivo/grupo após o comando. O nó aguarda por até 30 s que o Zigbee2MQTT publique um estado contendo a propriedade enviada (p. ex., <code>state</code>, <code>brightness</code>), com no máximo 20 comandos pendentes por dispositivo; a mensagem original é repassada com:
+            <ul>
+                <li><code>payload</code> / <code>payload_raw</code>: o estado acumulado do dispositivo;</li>
+                <li><code>payload_in</code>: o payload recebido por este nó;</li>
+                <li><code>topic</code>, <code>selector</code>, <code>item</code>, <code>homekit</code>, <code>format</code>.</li>
+            </ul>
+            Sem esta opção, o nó não tem saídas. A caixa de seleção altera o nó <b>imediatamente</b>: ativar adiciona a saída; desativar a remove <b>e desconecta suas ligações</b>. <i>Cancelar</i> restaura ambos.
+        </dd>
+    </dl>
+
+<!--    <h3>Opções</h3>-->
+<!--    <dl class="message-properties">-->
+<!--        <dt class="optional">Tempo de transição <span class="property-type">int</span></dt><dd>Funciona com brightness.</dd>-->
+<!--    </dl>-->
+</script>
+

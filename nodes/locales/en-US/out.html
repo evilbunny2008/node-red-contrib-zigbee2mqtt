@@ -14,6 +14,15 @@
             </ul>
         </dd>
         <dt>Payload <span class="property-type">string or object</span></dt><dd>Select your payload data source</dd>
+        <dt class="optional">Output after state update <span class="property-type">boolean</span></dt>
+        <dd>Adds one output that emits the <b>updated state</b> of the device/group after the command. The node waits for Zigbee2MQTT to publish a state containing the property that was sent (e.g. <code>state</code>, <code>brightness</code>) for up to 30 s (max. 20 pending commands per device); the original message is sent on with:
+            <ul>
+                <li><code>payload</code> / <code>payload_raw</code>: the accumulated state of the device;</li>
+                <li><code>payload_in</code>: the payload that was received by this node;</li>
+                <li><code>topic</code>, <code>selector</code>, <code>item</code>, <code>homekit</code>, <code>format</code>.</li>
+            </ul>
+            Without it the node has no outputs. The checkbox changes the node <b>immediately</b>: enabling adds the output, disabling removes it <b>and disconnects its wires</b>. <i>Cancel</i> restores both.
+        </dd>
     </dl>
 
 <!--    <h3>Options</h3>-->

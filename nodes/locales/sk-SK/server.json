@@ -2,36 +2,175 @@
     "label": {
         "base_topic": "Základná téma",
         "name": "Meno",
-        "host": "MQTT Host",
-        "mqtt_port": "MQTT Port",
-        "mqtt_username": "MQTT Užívateľské meno",
-        "mqtt_password": "MQTT Heslo",
+        "host": "Hostiteľ MQTT",
+        "mqtt_port": "Port MQTT",
+        "mqtt_username": "Používateľské meno MQTT",
+        "mqtt_password": "Heslo MQTT",
         "use-tls": "Použiť TLS",
-        "tls-config": "TLS konfigurácia"
+        "tls-config": "Konfigurácia TLS",
+        "flow_label": "Označenie toku",
+        "flow_icon": "Ikona",
+        "log_node_red": "Záznam Node-RED"
     },
     "placeholder": {
-        "name": "Meno"
+        "name": "Meno",
+        "flow_label": "napr. obývačka"
     },
     "status": {
         "no_server": "žiadny server",
         "no_device": "žiadne zariadenie",
         "no_connection": "žiadne pripojenie",
         "no_value": "žiadna hodnota",
-        "received": "ok"
+        "received": "OK",
+        "server_stopping": "server sa zastavuje"
     },
     "tip": {
-        "deploy": "<b>Dôležité:</b> nasadiť serverový uzol na získanie zoznamu zariadení"
+        "deploy": "<b>Dôležité:</b> nasaďte serverový uzol, aby sa načítal zoznam zariadení"
     },
+    "icons": {
+        "default": "(predvolené)",
+        "lightbulb": "žiarovka",
+        "home": "domov",
+        "bolt": "blesk",
+        "thermometer": "teplomer",
+        "plug": "zástrčka",
+        "wifi": "wifi",
+        "microchip": "mikročip"
+    },
+    "log_levels": {
+        "error": "Chyba",
+        "warn": "Upozornenie",
+        "notice": "Oznámenie",
+        "debug": "Ladenie"
+    },
+    "log_levels_hint": {
+        "error": "iba poruchy",
+        "warn": "chyby + upozornenia",
+        "notice": "chyby + upozornenia + systémové udalosti",
+        "debug": "všetko vrátane diagnostických podrobností"
+    },
+    "log_running_hint": "beží: __level__ – na použitie nasaďte (Deploy)",
     "editor": {
         "groups": "Skupiny",
         "devices": "Zariadenia",
         "selected": "vybrané",
         "nothing": "Nič",
         "select_device": "Vybrať zariadenie",
-        "msg_topic": "msg.téma",
-        "complete_payload": "Kompletná záťaž",
+        "msg_topic": "msg.topic",
+        "complete_payload": "Kompletný payload",
         "zigbee2mqtt": "zigbee2mqtt",
         "common": "Bežné",
-        "homekit": "Apple Homekit"
+        "homekit": "Apple HomeKit",
+        "homekit_data_format": "Formát údajov Apple HomeKit",
+        "manual_value": "Manuálne (__value__)",
+        "toggle": "Prepnúť",
+        "orphan_properties": "⚠ Už nie je dostupné",
+        "min_max_min": "Minimum __unit__ musí byť menšie ako maximum __unit__ (__value__)",
+        "min_max_max": "Maximum __unit__ musí byť väčšie ako minimum __unit__ (__value__)",
+        "error_no_commands": "Toto zariadenie nemá k dispozícii žiadne výstupné príkazy. Vyberte zariadenie s ovládateľnými funkciami."
+    },
+    "config": {
+        "composite": {
+            "color": "color (JSON/xy)",
+            "color_rgb": "color_rgb (r,g,b)",
+            "color_hex": "color_hex (#RRGGBB)",
+            "color_xy": "color_xy (x,y)",
+            "color_hsb": "color_hsb (h,s,b)",
+            "color_hsv": "color_hsv (h,s,v)",
+            "color_hue": "color_hue (h)",
+            "color_saturation": "color_saturation (s)"
+        },
+        "colors": {
+            "red": "🔴 Červená",
+            "green": "🟢 Zelená",
+            "blue": "🔵 Modrá",
+            "yellow": "🟡 Žltá",
+            "orange": "🟠 Oranžová",
+            "purple": "🟣 Fialová",
+            "white": "⚪ Biela",
+            "white_d65": "⚪ Biela (D65)"
+        },
+        "payload": {
+            "color_temp": {
+                "coolest": "Najstudenšia (6535K)",
+                "cool": "Studená (4000K)",
+                "neutral": "Neutrálna (2857K)",
+                "warm": "Teplá (2203K)",
+                "warmest": "Najteplejšia (2000K)"
+            },
+            "brightness": {
+                "off": "Vypnuté (0%)",
+                "low": "Nízky (25%)",
+                "medium": "Stredný (50%)",
+                "high": "Vysoký (75%)",
+                "max": "Maximum (100%)"
+            },
+            "position": {
+                "closed": "Zatvorené (0%)",
+                "quarter": "Štvrtina (25%)",
+                "half": "Polovica (50%)",
+                "three_quarters": "Tri štvrtiny (75%)",
+                "open": "Otvorené (100%)"
+            },
+            "countdown": {
+                "m1": "1 minúta",
+                "m5": "5 minút",
+                "m10": "10 minút",
+                "m30": "30 minút",
+                "h1": "1 hodina"
+            },
+            "sensitivity": {
+                "very_low": "Veľmi nízka (0)",
+                "low": "Nízka (3)",
+                "medium": "Stredná (5)",
+                "high": "Vysoká (7)",
+                "very_high": "Veľmi vysoká (9)"
+            },
+            "color_hue": {
+                "red": "🔴 Červená (0°)",
+                "green": "🟢 Zelená (120°)",
+                "blue": "🔵 Modrá (240°)",
+                "yellow": "🟡 Žltá (60°)",
+                "magenta": "🟣 Purpurová (300°)"
+            },
+            "color_saturation": {
+                "full": "🎨 Plná sýtosť (100%)",
+                "half": "🔉 Polovičná sýtosť (50%)",
+                "none": "⚪ Bez sýtosti (biela)"
+            }
+        },
+        "slider": {
+            "brightness": "Jas",
+            "min_brightness": "Min. jas",
+            "max_brightness": "Max. jas",
+            "off": "Vypnuté",
+            "max": "Max.",
+            "color_temp": "Teplota farby",
+            "cool_150": "150 (studená)",
+            "warm_500": "500 (teplá)",
+            "cie_x": "CIE X",
+            "cie_y": "CIE Y",
+            "position": "Poloha",
+            "closed": "Zatvorené",
+            "open": "Otvorené",
+            "tilt": "Náklon",
+            "timer": "Časovač",
+            "transition": "Prechod",
+            "hue": "Odtieň",
+            "saturation": "Sýtosť",
+            "value": "Hodnota",
+            "white": "Biela",
+            "color": "Farba",
+            "red": "Červená",
+            "green": "Zelená",
+            "blue": "Modrá",
+            "range": "Rozsah",
+            "sensitivity": "Citlivosť",
+            "low": "Nízka",
+            "medium": "Stredná",
+            "high": "Vysoká",
+            "generic": "Hodnota",
+            "pick_color": "Vybrať farbu"
+        }
     }
 }

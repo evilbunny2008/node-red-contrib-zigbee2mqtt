@@ -1,0 +1,33 @@
+<script type="text/x-red" data-help-name="zigbee2mqtt-eb-out">
+    <p>Envía un comando MQTT a tu dispositivo.</p>
+    <h3>Configuración</h3>
+    <dl class="message-properties">
+        <dt class="optional">Nombre <span class="property-type">cadena</span></dt><dd>Elige cualquier nombre para identificar el nodo.</dd>
+        <dt>Servidor <span class="property-type">objeto</span></dt><dd>Elige la instancia del servidor Zigbee2MQTT que se utilizará.</dd>
+        <dt>Dispositivo <span class="property-type">cadena</span></dt><dd>Selecciona tu dispositivo.</dd>
+        <dt>Comando <span class="property-type">cadena</span></dt>
+        <dd>
+            <ul>
+                <li><b>zigbee2mqtt:</b> comandos predefinidos</li>
+                <li><b>homekit:</b> selecciónalo si los datos proceden de un nodo HomeKit</li>
+                <li><b>json:</b> datos personalizados en formato JSON</li>
+            </ul>
+        </dd>
+        <dt>Payload <span class="property-type">cadena u objeto</span></dt><dd>Selecciona el origen de los datos del payload.</dd>
+        <dt class="optional">Salida tras actualizar el estado <span class="property-type">booleano</span></dt>
+        <dd>Añade una salida que emite el <b>estado actualizado</b> del dispositivo o grupo después del comando. El nodo espera hasta 30 s a que Zigbee2MQTT publique un estado que contenga la propiedad enviada (p. ej., <code>state</code>, <code>brightness</code>), con un máximo de 20 comandos pendientes por dispositivo; el mensaje original se reenvía con:
+            <ul>
+                <li><code>payload</code> / <code>payload_raw</code>: el estado acumulado del dispositivo;</li>
+                <li><code>payload_in</code>: el payload recibido por este nodo;</li>
+                <li><code>topic</code>, <code>selector</code>, <code>item</code>, <code>homekit</code>, <code>format</code>.</li>
+            </ul>
+            Sin esta opción, el nodo no tiene salidas. La casilla modifica el nodo <b>de inmediato</b>: al activarla se añade la salida y al desactivarla se elimina <b>y se desconectan sus cables</b>. <i>Cancelar</i> restaura ambas cosas.
+        </dd>
+    </dl>
+
+<!--    <h3>Opciones</h3>-->
+<!--    <dl class="message-properties">-->
+<!--        <dt class="optional">Tiempo de transición <span class="property-type">int</span></dt><dd>Funciona con brightness.</dd>-->
+<!--    </dl>-->
+</script>
+

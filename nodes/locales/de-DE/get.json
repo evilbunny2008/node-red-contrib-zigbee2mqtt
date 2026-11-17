@@ -1,0 +1,25 @@
+{
+    "label": {
+        "name": "Name",
+        "friendly_name": "Gerätename",
+        "server": "Server",
+        "topic": "Gerät",
+        "state": "Payload-Ausgabe",
+        "refresh": "Aktualisieren",
+        "legacy_api": "Legacy-API",
+        "refresh_devices_list": "Geräteliste aktualisieren",
+        "enable_multiple": "Mehrere Eingänge",
+        "enable_multiple_help": "Mehrere Geräte abfragen"
+    },
+    "placeholder": {
+        "name": "Name",
+        "friendly_name": "Gerätename"
+    },
+    "multiselect": {
+        "devices": "Geräte",
+        "filter_devices": "Geräte filtern…",
+        "refresh": "Geräteliste aktualisieren",
+        "none_selected": "Nichts ausgewählt",
+        "complete_payload": "Vollständiger Status-Payload"
+    }
+}

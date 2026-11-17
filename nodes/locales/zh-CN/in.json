@@ -1,0 +1,52 @@
+{
+    "label": {
+        "name": "名称",
+        "friendly_name": "设备名称",
+        "server": "服务器",
+        "topic": "设备",
+        "state": "Payload 输出",
+        "refresh": "刷新",
+        "refresh_devices_list": "刷新设备列表",
+        "start_output": "启动时输出",
+        "start_output_help": "启动时发送数值",
+        "always": "始终",
+        "on_state_change": "状态变化时",
+        "on_update": "每次更新时",
+        "filter_changes": "筛选",
+        "filter_changes_help": "仅在数值变化时发送",
+        "output": "输出",
+        "enable_multiple": "多输入",
+        "enable_multiple_help": "监听多个设备",
+        "filter_properties": "筛选属性",
+        "filter_properties_help": "仅所选属性的变化才算变化（留空 = 完整 payload）",
+        "expose_to_home_assistant": "Home Assistant",
+        "expose_to_home_assistant_help": "向 Home Assistant 开放（MQTT Discovery，带启用开关）"
+    },
+    "placeholder": {
+        "name": "名称",
+        "friendly_name": "设备名称"
+    },
+    "status": {
+        "no_server": "未配置服务器节点",
+        "no_device": "未找到设备",
+        "no_connection": "连接断开",
+        "connected": "已连接",
+        "received": "已接收",
+        "waiting_ha": "正在等待 Home Assistant",
+        "disabled_ha": "已禁用（Home Assistant）"
+    },
+    "multiselect": {
+        "devices": "设备",
+        "filter_devices": "筛选设备…",
+        "refresh": "刷新设备列表",
+        "none_selected": "未选择任何项",
+        "complete_payload": "完整状态",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "群组",
+        "all_properties": "所有属性"
+    },
+    "tip": {
+        "deploy": "<b>重要：</b>部署服务器节点以加载设备列表"
+    }
+}

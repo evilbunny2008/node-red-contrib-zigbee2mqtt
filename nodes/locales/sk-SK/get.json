@@ -1,19 +1,23 @@
 {
     "label": {
         "name": "Meno",
+        "friendly_name": "Názov zariadenia",
         "server": "Server",
         "topic": "Zariadenie",
         "state": "Výstup dát",
         "refresh": "Obnoviť",
-        "legacy_api": "Stará API",
-        "refresh_devices_list": "Obnoviť zoznam zariadení"
+        "legacy_api": "Legacy API",
+        "refresh_devices_list": "Obnoviť zoznam zariadení",
+        "enable_multiple": "Viacero vstupov",
+        "enable_multiple_help": "Počúvať viacero zariadení"
     },
     "placeholder": {
-        "name": "Meno"
+        "name": "Meno",
+        "friendly_name": "Názov zariadenia"
     },
     "multiselect": {
         "devices": "Zariadenia",
-        "filter_devices": "Filtrovať zariadenia...",
+        "filter_devices": "Filtrovať zariadenia…",
         "refresh": "Obnoviť zoznam zariadení",
         "none_selected": "Žiadne vybrané",
         "complete_payload": "Kompletný stavový payload"

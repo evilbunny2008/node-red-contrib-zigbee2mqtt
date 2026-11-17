@@ -1,0 +1,52 @@
+{
+    "label": {
+        "name": "Имя",
+        "friendly_name": "Имя устройства",
+        "server": "Сервер",
+        "topic": "Устройство",
+        "state": "Вывод payload",
+        "refresh": "Обновить",
+        "refresh_devices_list": "Обновить список устройств",
+        "start_output": "Выводить при запуске",
+        "start_output_help": "Отправить значение при запуске",
+        "always": "Всегда",
+        "on_state_change": "При изменении состояния",
+        "on_update": "При каждом обновлении",
+        "filter_changes": "Фильтр",
+        "filter_changes_help": "Отправлять только при изменении значения",
+        "output": "Вывод",
+        "enable_multiple": "Несколько входов",
+        "enable_multiple_help": "Слушать несколько устройств",
+        "filter_properties": "Фильтр свойств",
+        "filter_properties_help": "Изменением считаются только изменения выбранных свойств (пусто = весь payload)",
+        "expose_to_home_assistant": "Home Assistant",
+        "expose_to_home_assistant_help": "Добавить в Home Assistant (MQTT Discovery, с переключателем включения)"
+    },
+    "placeholder": {
+        "name": "Имя",
+        "friendly_name": "Имя устройства"
+    },
+    "status": {
+        "no_server": "нет серверного узла",
+        "no_device": "устройство не найдено",
+        "no_connection": "нет соединения",
+        "connected": "подключено",
+        "received": "получено",
+        "waiting_ha": "ожидание Home Assistant",
+        "disabled_ha": "отключено (Home Assistant)"
+    },
+    "multiselect": {
+        "devices": "Устройства",
+        "filter_devices": "Фильтр устройств…",
+        "refresh": "Обновить список устройств",
+        "none_selected": "Ничего не выбрано",
+        "complete_payload": "Полное состояние",
+        "zigbee2mqtt": "Zigbee2MQTT",
+        "homekit": "HomeKit",
+        "groups": "Группы",
+        "all_properties": "Все свойства"
+    },
+    "tip": {
+        "deploy": "<b>Важно:</b> разверните серверный узел, чтобы загрузить список устройств"
+    }
+}

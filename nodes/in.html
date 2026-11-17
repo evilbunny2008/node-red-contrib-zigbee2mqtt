@@ -25,6 +25,11 @@
         <label for="node-input-state" class="l-width"><i class="fa fa-tag"></i> <span data-i18n="label.state"></span></label>
         <select id="node-input-state" class="s-width" multiple="multiple" data-i18n="[placeholder]multiselect.complete_payload"></select>
     </div>
+    <!-- v3.1.0: propriedades do JSON cuja alteração conta como "mudança" (vazio = payload completo) -->
+    <div class="form-row">
+        <label for="node-input-filterProperties" class="l-width"><i class="fa fa-filter"></i> <span data-i18n="label.filter_properties"></span></label>
+        <select id="node-input-filterProperties" class="s-width" multiple="multiple" data-i18n="[placeholder]multiselect.all_properties"></select>
+    </div>
     <div class="form-row">
         <label for="force-refresh" class="l-width"><i class="fa fa-refresh"></i> <span data-i18n="label.refresh"></span></label>
         <a class="red-ui-button s-width" id="force-refresh" name="force-refresh"><span data-i18n="label.refresh_devices_list"></span></a>
@@ -40,6 +45,11 @@
     <div class="form-row">
         <label for='node-input-filterChanges' class="l-width"><i class='fa fa-share-square'></i> <span data-i18n="label.filter_changes"></span></label>
         <input type="checkbox" id="node-input-filterChanges" checked="checked" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.filter_changes_help"></span></input>
+    </div>
+    <!-- v3.1.0: exposição ao Home Assistant (MQTT Discovery + switch "enabled") -->
+    <div class="form-row">
+        <label for='node-input-exposeToHomeAssistant' class="l-width"><i class='fa fa-home'></i> <span data-i18n="label.expose_to_home_assistant"></span></label>
+        <input type="checkbox" id="node-input-exposeToHomeAssistant" style="display: inline-block; width: auto; vertical-align: top;"> <span data-i18n="label.expose_to_home_assistant_help"></span></input>
     </div>
 </script>
 
@@ -66,6 +76,10 @@
             state: {
                 value: null
             },
+            // v3.1.0: array de chaves do JSON a comparar na deteção de mudanças (null = payload completo)
+            filterProperties: {
+                value: null
+            },
             outputAtStartup: {
                 value: true,
                 required: true
@@ -78,12 +92,20 @@
                 value: false,
                 required: true
             },
+            // v3.1.0: expor este nó ao Home Assistant via MQTT Discovery
+            exposeToHomeAssistant: {
+                value: false
+            },
         },
         inputs: 0,
         outputs: 1,
         outputLabels: ["value"],
         paletteLabel: 'in',
-        icon: "icon.png",
+        icon: function () {
+            // Flow Icon definido no nó servidor (reativo); fallback: icon.png
+            var srv = this.server ? RED.nodes.node(this.server) : null;
+            return (srv && srv.flowIcon) ? srv.flowIcon : "icon.png";
+        },
         label: function () {
             var label = 'z2m-input';
 
@@ -95,6 +117,11 @@
                 label = this.device_id;
             }
 
+            // Flow Label do nó servidor (reativo: lido a cada redraw)
+            var srvNode = this.server ? RED.nodes.node(this.server) : null;
+            if (srvNode && srvNode.flowLabel) {
+                label = '[' + srvNode.flowLabel + '] ' + label;
+            }
             return label;
         },
         oneditprepare: async function () {
@@ -109,7 +136,7 @@
             setTimeout(() => {
                     // ✨ Passar mode: 'in' (ou omitir, pois é default)
                     new Zigbee2MqttEditor(node, {
-                        'mode': 'in'  // â† ESPECIFICAR IN
+                        'mode': 'in'  // ← ESPECIFICAR IN
                     }).build();
                 }, 100);
 
@@ -132,6 +159,16 @@
 
             let state = $('#node-input-state').multipleSelect('getSelects', 'value');
             this.state = state.length ? state : null;
+
+            // v3.1.0: filterProperties - array de chaves, ou null se nada estiver escolhido.
+            // Se o seletor ainda não foi construído (editor fechado antes do build) mantém o valor guardado.
+            try {
+                let filterProperties = $('#node-input-filterProperties').multipleSelect('getSelects', 'value');
+                this.filterProperties = (filterProperties && filterProperties.length) ? filterProperties : null;
+            } catch (e) {
+                console.warn('[Z2M In] filterProperties not read, keeping the saved value:', e.message);
+            }
+            // exposeToHomeAssistant é uma checkbox declarada em "defaults": o Node-RED grava-a sozinho
         }
     });
 
