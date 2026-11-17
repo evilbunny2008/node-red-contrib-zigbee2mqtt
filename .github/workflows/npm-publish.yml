@@ -1,10 +1,7 @@
 name: Publish to npm
 on:
-  push:
-    tags:
-      - 'v*'
-
-  workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: read
@@ -19,10 +16,29 @@ jobs:
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-      # Trusted publishing (OIDC) needs npm >= 11.5.1; Node 24's bundled npm may be older
-      - run: npm install -g npm@latest
       - run: npm ci
+      - run: npm test
+      # Use the release tag (v1.2.3 or 1.2.3) as the package version
+      - run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --allow-same-version
       - run: npm publish --access public
-        env:
-          # Only needed until a Trusted Publisher is configured on npmjs.com; remove afterwards
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # The Flow Library only picks up new versions when its "add node" form is submitted. It reads the version from
+      # registry.npmjs.org, so wait until that reports the version just published, otherwise it would see the old one.
+      - name: Refresh flows.nodered.org
+        continue-on-error: true
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          for i in $(seq 1 40); do
+            latest=$(curl -sf "https://registry.npmjs.org/$name" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{console.log(JSON.parse(d)["dist-tags"].latest)}catch(e){}})')
+            [ "$latest" = "$version" ] && break
+            echo "npm reports ${latest:-nothing} for $name, waiting for $version"
+            sleep 30
+          done
+          if [ "$latest" != "$version" ]; then
+            echo "npm still doesn't report $version after 20 minutes, submit $name at https://flows.nodered.org/add/node by hand"
+            exit 1
+          fi
+          token=$(curl -sf -c jar.txt https://flows.nodered.org/add/node | sed -n 's/.*name="_csrf" type="hidden" value="\([^"]*\)".*/\1/p')
+          result=$(curl -s -b jar.txt -w '\n%{http_code}' --data-urlencode "module=$name" --data-urlencode "_csrf=$token" https://flows.nodered.org/add/node)
+          echo "$result"
+          [ "$(echo "$result" | tail -1)" = "200" ]
