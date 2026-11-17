@@ -115,8 +115,8 @@
     }
 
     // Keep only the commands the device can use. Devices without exposes (and groups,
-    // which have no definition) and devices none of the commands apply to keep the full
-    // list; `keep` stays listed so a saved command isn't replaced when the editor opens.
+    // which have no definition) and devices with nothing writable keep the full list;
+    // `keep` stays listed so a saved command isn't replaced when the editor opens.
     function filterCommandOptions(commands, device, keep = null) {
         const exposes = device && device.definition && device.definition.exposes;
         if (!Array.isArray(exposes) || !exposes.length) return commands;
@@ -138,7 +138,7 @@
             if (value === 'scene' || value === 'alert') return types.has('light');
             return writable.has(getCommandProperty(value));
         };
-        if (!commands.some(supported)) return commands;
+        if (!writable.size) return commands;
         return commands.filter((command) => command.value === keep || supported(command));
     }
 

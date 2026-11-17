@@ -68,6 +68,13 @@ test('Out commands are limited to what the selected device supports', () => {
         { property: 'state', access: 7 }, { property: 'position', access: 7 }
     ] }] } }), ['state', 'position']);
     assert.deepEqual(values(light, 'tilt'), ['state', 'brightness', 'brightness_move', 'color_temp', 'color_temp_step', 'tilt', 'scene', 'alert']);
+    // IR blaster (ZS06): only its own properties are writable, so no built-in command applies
+    assert.deepEqual(values({ definition: { exposes: [
+        { type: 'binary', property: 'learn_ir_code', access: 2 },
+        { type: 'text', property: 'learned_ir_code', access: 1 },
+        { type: 'text', property: 'ir_code_to_send', access: 2 },
+        { type: 'numeric', property: 'linkquality', access: 1 }
+    ] } }), []);
     assert.deepEqual(values({ definition: { exposes: [{ property: 'temperature', access: 1 }] } }), commands.map(({ value }) => value));
     assert.deepEqual(values(null), commands.map(({ value }) => value));
     assert.deepEqual(values({ friendly_name: 'room' }), commands.map(({ value }) => value));
