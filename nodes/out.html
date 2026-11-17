@@ -256,6 +256,12 @@
                 const exposeOptions = Zigbee2mqttEditorUtils.getWritableExposeOptions(device)
                     .filter(({value}) => !commandValues.has(value))
                     .map(({value, label}) => ({value, label}));
+                // keep a saved device property (e.g. ir_code_to_send) listed before the device has
+                // loaded, otherwise typedInput falls back to the first option and saves 'state'
+                const savedOptions = savedCommand && !commandValues.has(savedCommand)
+                    && !exposeOptions.some(({value}) => value === savedCommand)
+                    ? [{value: savedCommand, label: savedCommand}]
+                    : [];
 
                 return [
                     //z2m commands
@@ -263,7 +269,7 @@
                         value: 'z2m_cmd',
                         label: 'zigbee2mqtt',
                         icon: 'icons/@evilbunny/node-red-contrib-zigbee2mqtt/icon.png',
-                        options: [...commands, ...exposeOptions]
+                        options: [...commands, ...exposeOptions, ...savedOptions]
                     },
                     //homekit
                     {
