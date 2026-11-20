@@ -5,7 +5,7 @@
   },
   "name": "@evilbunny/node-red-contrib-zigbee2mqtt",
   "description": "Zigbee2mqtt connectivity nodes for node-red",
-  "version": "3.3.16",
+  "version": "3.3.17",
   "scripts": {
     "test": "node --test",
     "release": "npm version ${BUMP:-patch} && git push --follow-tags && gh release create v$(node -p \"require('./package.json').version\") --generate-notes"
