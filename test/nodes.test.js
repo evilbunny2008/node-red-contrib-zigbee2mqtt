@@ -726,6 +726,22 @@ test('output node wraps color objects when the command comes from the message', 
     assert.equal(server.mqtt.publications.at(-1)[1], '{"color":{"hue":240,"saturation":100}}');
 });
 
+test('output node reads nested message properties for payload, command and options', (t) => {
+    const server = makeServer();
+    const { node } = instantiate(registerOut, 'zigbee2mqtt-eb-out', {
+        server: 'server', device_id: 'lamp', payloadType: 'msg', payload: 'payload.value',
+        commandType: 'msg', command: 'payload.command',
+        optionsType: 'msg', optionsValue: 'payload.options'
+    }, server);
+    t.after(() => clearTimeout(node.cleanTimer));
+
+    node.emit('input', { payload: { command: 'brightness', value: 120, options: { retain: true } } });
+    assert.deepEqual(server.calls.find((call) => call.method === 'setDeviceOptions'), {
+        method: 'setDeviceOptions', args: ['lamp', { retain: true }]
+    });
+    assert.deepEqual(JSON.parse(server.mqtt.publications.at(-1)[1]), { brightness: 120 });
+});
+
 test('output node supports lock, color and HomeKit commands', (t) => {
     const server = makeServer();
     const lock = instantiate(registerOut, 'zigbee2mqtt-eb-out', {

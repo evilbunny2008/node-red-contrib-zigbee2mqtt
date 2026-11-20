@@ -43,6 +43,8 @@ function createRuntime({ nodes = {}, evaluateNodeProperty } = {}) {
         },
         util: {
             cloneMessage: (message) => structuredClone(message),
+            getMessageProperty: (message, path) => String(path).replace(/^msg\./, '').split('.')
+                .reduce((value, key) => (value == null ? undefined : value[key]), message),
             evaluateNodeProperty: evaluateNodeProperty || ((property, type, node, message, done) => {
                 done(null, type === 'msg' ? message[property] : property);
             })

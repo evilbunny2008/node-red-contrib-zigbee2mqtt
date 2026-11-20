@@ -187,7 +187,7 @@ module.exports = function(RED) {
 
                             case 'msg':
                             default: {
-                                payload = message[node.config.payload];
+                                payload = RED.util.getMessageProperty(message, node.config.payload);
                                 break;
                             }
                         }
@@ -202,7 +202,7 @@ module.exports = function(RED) {
                                 break;
 
                             case 'msg': {
-                                command = message[node.config.command];
+                                command = RED.util.getMessageProperty(message, node.config.command);
                                 if (command === 'color' && payload && typeof payload === 'object' && !Array.isArray(payload)
                                     && !Object.prototype.hasOwnProperty.call(payload, 'color')) {
                                     payload = { color: payload };
@@ -311,13 +311,15 @@ module.exports = function(RED) {
                             case 'nothing':
                                 break;
 
-                            case 'msg':
-                                if (node.config.optionsValue in message && typeof(message[node.config.optionsValue]) == 'object') {
-                                    optionsToSend = message[node.config.optionsValue];
+                            case 'msg': {
+                                const optionsValue = RED.util.getMessageProperty(message, node.config.optionsValue);
+                                if (optionsValue && typeof optionsValue === 'object') {
+                                    optionsToSend = optionsValue;
                                 } else {
                                     node.logger.warning('Options value has invalid format');
                                 }
                                 break;
+                            }
 
                             case 'json':
                                 if (Zigbee2mqttHelper.isJson(node.config.optionsValue)) {
